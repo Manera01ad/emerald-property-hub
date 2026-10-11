@@ -56,13 +56,14 @@ export function Listings() {
                     <option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option>
                   </select>
                 </td>
-                <td><VerificationBadge status={p.verification_status} /></td>
+                <td><VerificationBadge status={p.verification_status} />{p.verification_expiry && p.verification_expiry < new Date().toISOString().slice(0, 10) && <div className="text-xs text-destructive">Expired {p.verification_expiry}</div>}</td>
                 <td>{p.listing_permission ? "Yes" : <span className="text-destructive">Missing</span>}</td>
                 <td className="text-right"><Button size="icon" variant="ghost" onClick={() => setEditing(p)}><Pencil /></Button></td>
               </tr>
             ))}
           </tbody>
         </table>
+        {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No listings here yet. Click “New listing” to add one.</p>}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">The public only sees listings that are published, have permission recorded, and are not demo records.</p>
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
@@ -120,6 +121,10 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
       permission_evidence: s("permission_evidence"),
       source: s("source"),
       rera_number: s("rera_number"),
+      survey_number: s("survey_number"),
+      approval_details: s("approval_details"),
+      verification_date: s("verification_date"),
+      verification_expiry: s("verification_expiry"),
       description: s("description"),
       amenities: String(f.get("amenities") || "").split(",").map((x) => x.trim()).filter(Boolean),
       latitude: n("latitude"),
@@ -162,8 +167,12 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
           <div className="space-y-1"><Label>Availability</Label><select name="availability" className={selectCls} defaultValue={initial?.availability ?? "ready"}>{Object.entries(AVAILABILITY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
           <Field initial={initial} name="built_area_sqft" label="Built-up area (sq ft)" type="number" min={0} />
           <Field initial={initial} name="land_area_sqft" label="Land area (sq ft)" type="number" min={0} />
-          <Field initial={initial} name="rera_number" label="RERA number" />
+          <Field initial={initial} name="rera_number" label="TNRERA number (if applicable)" />
           <Field initial={initial} name="source" label="Source (who supplied it)" />
+          <Field initial={initial} name="survey_number" label="Survey number" />
+          <Field initial={initial} name="approval_details" label="Approval details (no., authority, date)" />
+          <Field initial={initial} name="verification_date" label="Verification date" type="date" />
+          <Field initial={initial} name="verification_expiry" label="Verification expiry date" type="date" />
           <Field initial={initial} name="latitude" label="Latitude" type="number" step="any" />
           <Field initial={initial} name="longitude" label="Longitude" type="number" step="any" />
           <div className="space-y-1"><Label>Partner</Label><select name="partner_id" className={selectCls} defaultValue={initial?.partner_id ?? ""}><option value="">None</option>{partners.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>

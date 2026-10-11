@@ -30,6 +30,17 @@ export function Overview() {
 
   return (
     <div className="mt-4 space-y-6">
+      <Panel>
+        <p className="mb-2 font-medium">Getting started</p>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          <li>Settings: enter your WhatsApp number, contact details, TNRERA registration status and confirmed Tamil Nadu cost rates.</li>
+          <li>Partners: add the developers and owners you work with.</li>
+          <li>Listings: create a draft, record owner permission and evidence, documents, survey number and verification dates.</li>
+          <li>Add nearby schools, hospitals and transport only with a source you checked, then publish.</li>
+          <li>Enquiries: move each buyer through New → Contacted → Qualified → Site visit → Negotiation → Won / Lost.</li>
+          <li>Commissions: record the agreement, deal value, invoice, payment and receipt.</li>
+        </ol>
+      </Panel>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Live listings" value={live} sub={`${props.length} total incl. drafts/demo`} />
         <Stat label="Open enquiries" value={open} sub={`${enq.length} total`} />

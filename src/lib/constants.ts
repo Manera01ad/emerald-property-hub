@@ -41,9 +41,8 @@ export const PLACE_CATEGORIES: Record<string, string> = {
 export const ENQUIRY_STATUSES = [
   "new",
   "contacted",
-  "follow_up",
-  "visit_scheduled",
-  "visited",
+  "qualified",
+  "site_visit",
   "negotiation",
   "won",
   "lost",
