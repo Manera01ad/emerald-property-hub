@@ -17,7 +17,7 @@ const schema = z.object({
   email: z.string().trim().email("Invalid email").max(200).optional().or(z.literal("")),
   budget: z.number().positive().optional(),
   message: z.string().max(2000).optional(),
-  consent: z.literal(true),
+  consent: z.literal(true, { message: "Please tick the consent box to continue" }),
 });
 
 export function EnquiryForm({
@@ -54,7 +54,9 @@ export function EnquiryForm({
     setBusy(true);
     const bedrooms = String(f.get("bedrooms") || "");
     const visit = String(f.get("visit_date") || "");
-    const { error } = await supabase.from("enquiries").insert({
+    let error: unknown = null;
+    try {
+    ({ error } = await supabase.from("enquiries").insert({
       enquiry_type: type,
       property_id: propertyId ?? null,
       name: parsed.data.name,
@@ -67,7 +69,10 @@ export function EnquiryForm({
       bedrooms: bedrooms ? Number(bedrooms) : null,
       preferred_visit_date: visit || null,
       consent: true,
-    });
+    }));
+    } catch (err) {
+      error = err;
+    }
     setBusy(false);
     if (error) {
       toast.error("Could not send your request. Please try again.");
