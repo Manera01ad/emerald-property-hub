@@ -1,0 +1,3 @@
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS survey_number text, ADD COLUMN IF NOT EXISTS approval_details text, ADD COLUMN IF NOT EXISTS verification_date date, ADD COLUMN IF NOT EXISTS verification_expiry date;
+ALTER TABLE public.commissions ADD COLUMN IF NOT EXISTS deal_value numeric, ADD COLUMN IF NOT EXISTS receipt_number text;
+INSERT INTO public.app_settings(key,value,label) VALUES ('rera_agent_status','Not registered','TNRERA agent registration status (shown publicly — state truthfully)') ON CONFLICT (key) DO NOTHING;

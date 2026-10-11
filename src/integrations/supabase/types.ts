@@ -40,6 +40,7 @@ export type Database = {
           agreement_terms: string | null
           commission_pct: number | null
           created_at: string
+          deal_value: number | null
           enquiry_id: string | null
           expected_amount: number
           id: string
@@ -49,12 +50,14 @@ export type Database = {
           paid_date: string | null
           partner_id: string | null
           property_id: string | null
+          receipt_number: string | null
           status: string
         }
         Insert: {
           agreement_terms?: string | null
           commission_pct?: number | null
           created_at?: string
+          deal_value?: number | null
           enquiry_id?: string | null
           expected_amount?: number
           id?: string
@@ -64,12 +67,14 @@ export type Database = {
           paid_date?: string | null
           partner_id?: string | null
           property_id?: string | null
+          receipt_number?: string | null
           status?: string
         }
         Update: {
           agreement_terms?: string | null
           commission_pct?: number | null
           created_at?: string
+          deal_value?: number | null
           enquiry_id?: string | null
           expected_amount?: number
           id?: string
@@ -79,6 +84,7 @@ export type Database = {
           paid_date?: string | null
           partner_id?: string | null
           property_id?: string | null
+          receipt_number?: string | null
           status?: string
         }
         Relationships: [
@@ -293,6 +299,7 @@ export type Database = {
         Row: {
           address: string | null
           amenities: string[]
+          approval_details: string | null
           approvals: string[]
           asking_price: number
           availability: string
@@ -320,14 +327,18 @@ export type Database = {
           rera_number: string | null
           source: string | null
           status: string
+          survey_number: string | null
           title: string
           updated_at: string
+          verification_date: string | null
           verification_evidence: string | null
+          verification_expiry: string | null
           verification_status: string
         }
         Insert: {
           address?: string | null
           amenities?: string[]
+          approval_details?: string | null
           approvals?: string[]
           asking_price: number
           availability?: string
@@ -355,14 +366,18 @@ export type Database = {
           rera_number?: string | null
           source?: string | null
           status?: string
+          survey_number?: string | null
           title: string
           updated_at?: string
+          verification_date?: string | null
           verification_evidence?: string | null
+          verification_expiry?: string | null
           verification_status?: string
         }
         Update: {
           address?: string | null
           amenities?: string[]
+          approval_details?: string | null
           approvals?: string[]
           asking_price?: number
           availability?: string
@@ -390,9 +405,12 @@ export type Database = {
           rera_number?: string | null
           source?: string | null
           status?: string
+          survey_number?: string | null
           title?: string
           updated_at?: string
+          verification_date?: string | null
           verification_evidence?: string | null
+          verification_expiry?: string | null
           verification_status?: string
         }
         Relationships: [
