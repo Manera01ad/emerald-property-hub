@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Admin Sign In — PropWise AI" },
-      { name: "description", content: "Administrator access for PropWise AI." },
-      { property: "og:title", content: "Admin Sign In — PropWise AI" },
-      { property: "og:description", content: "Administrator access." },
+      { title: "Sign In — PropWise AI" },
+      { name: "description", content: "Sign in to save your property research." },
+      { property: "og:title", content: "Sign In — PropWise AI" },
+      { property: "og:description", content: "Sign in to save your property research." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -34,12 +34,12 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
       if (error) { toast.error(error.message); return; }
-      navigate({ to: "/admin" });
+      navigate({ to: "/my" });
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/admin` } });
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/my` } });
       setBusy(false);
       if (error) { toast.error(error.message); return; }
-      if (data.session) navigate({ to: "/admin" });
+      if (data.session) navigate({ to: "/my" });
       else toast.success("Check your email to confirm your account.");
     }
   }
@@ -48,13 +48,13 @@ function AuthPage() {
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (r.error) { toast.error("Google sign-in failed"); return; }
     if (r.redirected) return;
-    navigate({ to: "/admin" });
+    navigate({ to: "/my" });
   }
 
   return (
     <div className="mx-auto max-w-sm px-4 py-20">
-      <h1 className="text-3xl">{mode === "in" ? "Admin sign in" : "Create account"}</h1>
-      <p className="mt-2 text-sm text-muted-foreground">For PropWise administrators only. Visitors don't need an account.</p>
+      <h1 className="text-3xl">{mode === "in" ? "Sign in" : "Create account"}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">Save your preferences, cost analysis and reports. Browsing listings needs no account.</p>
       <form onSubmit={submit} className="mt-8 space-y-4">
         <div className="space-y-1.5"><Label htmlFor="email">Email</Label><Input id="email" name="email" type="email" required /></div>
         <div className="space-y-1.5"><Label htmlFor="password">Password</Label><Input id="password" name="password" type="password" minLength={8} required /></div>
