@@ -35,6 +35,93 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_profiles: {
+        Row: {
+          bedrooms: number | null
+          budget: number | null
+          commute_destinations: string[]
+          created_at: string
+          financing: string | null
+          id: string
+          intent: string
+          lifestyle_priorities: string[]
+          min_area_sqft: number | null
+          monthly_rent_budget: number | null
+          move_in_timeframe: string | null
+          preferred_locations: string[]
+          property_types: string[]
+          school_preference: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bedrooms?: number | null
+          budget?: number | null
+          commute_destinations?: string[]
+          created_at?: string
+          financing?: string | null
+          id?: string
+          intent?: string
+          lifestyle_priorities?: string[]
+          min_area_sqft?: number | null
+          monthly_rent_budget?: number | null
+          move_in_timeframe?: string | null
+          preferred_locations?: string[]
+          property_types?: string[]
+          school_preference?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bedrooms?: number | null
+          budget?: number | null
+          commute_destinations?: string[]
+          created_at?: string
+          financing?: string | null
+          id?: string
+          intent?: string
+          lifestyle_priorities?: string[]
+          min_area_sqft?: number | null
+          monthly_rent_budget?: number | null
+          move_in_timeframe?: string | null
+          preferred_locations?: string[]
+          property_types?: string[]
+          school_preference?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      buyer_reports: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json
+          kind: string
+          result: Json
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          kind: string
+          result?: Json
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          kind?: string
+          result?: Json
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           agreement_terms: string | null

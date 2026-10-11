@@ -43,6 +43,13 @@
       "when": 1791734842044,
       "tag": "0005_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791736568119,
+      "tag": "0006_buyer_intelligence",
+      "breakpoints": true
     }
   ]
 }
