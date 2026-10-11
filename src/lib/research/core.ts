@@ -129,10 +129,10 @@ export function ppsf(c: Comparable): number | null {
   const a = areaOf(c);
   return a && c.asking_price ? Number(c.asking_price) / a : null;
 }
-function median(xs: number[]) {
+function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b);
   const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 }
 
 export type QualityResult = { flags: string[]; quarantine: boolean };

@@ -179,7 +179,7 @@ async function dealAnalysis(db: DB, limit: number): Promise<Result> {
   if (!todo?.length) return { status: "success", items: 0, message: "Nothing new to analyse." };
   const { data: settings } = await db.from("app_settings").select("key,value");
   const s = Object.fromEntries((settings ?? []).map((r) => [r.key, Number(r.value)]));
-  const rates = { stampDutyPct: s.stamp_duty_pct || 0, registrationPct: s.registration_pct || 0, legalFee: s.legal_fee_flat || 0 };
+  const rates = { stampDutyPct: s["stamp_duty_pct"] || 0, registrationPct: s["registration_pct"] || 0, legalFee: s["legal_fee_flat"] || 0 };
   const { data: pool } = await db.from("source_observations").select("id,property_type,location,asking_price,built_area_sqft,land_area_sqft").in("review_status", ["pending", "approved"]);
   const { data: props } = await db.from("properties").select("id,property_type,location,asking_price,built_area_sqft,land_area_sqft").eq("is_demo", false);
   let scored = 0;
