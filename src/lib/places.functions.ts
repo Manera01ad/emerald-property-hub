@@ -24,8 +24,8 @@ export const findNearbyPlaces = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Admins only");
-    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-    const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+    const LOVABLE_API_KEY = process.env["LOVABLE_API_KEY"];
+    const GOOGLE_MAPS_API_KEY = process.env["GOOGLE_MAPS_API_KEY"];
     if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) throw new Error("Google Maps is not connected");
     const res = await fetch("https://connector-gateway.lovable.dev/google_maps/places/v1/places:searchText", {
       method: "POST",

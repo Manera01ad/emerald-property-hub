@@ -173,9 +173,9 @@ function PropertyPage() {
                 })}
               </div>
             )}
-            {p.latitude && p.longitude && import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY && (
+            {p.latitude && p.longitude && import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] && (
               <iframe title="Property location map" loading="lazy" className="mt-4 h-64 w-full rounded-lg border" referrerPolicy="no-referrer-when-downgrade"
-                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY}&q=${p.latitude},${p.longitude}&zoom=14`} />
+                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"]}&q=${p.latitude},${p.longitude}&zoom=14`} />
             )}
             {p.latitude && p.longitude && (
               <a className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline" target="_blank" rel="noreferrer"
