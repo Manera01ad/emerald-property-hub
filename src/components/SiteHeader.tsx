@@ -41,7 +41,7 @@ export function SiteHeader() {
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
-            <Link to={session ? "/admin" : "/auth"}>{session ? "Dashboard" : "Admin"}</Link>
+            <Link to={session ? "/my" : "/auth"}>{session ? "My research" : "Sign in"}</Link>
           </Button>
           <Button asChild variant="gold" size="sm">
             <Link to="/consult">Book a consultation</Link>
@@ -58,8 +58,8 @@ export function SiteHeader() {
               {n.label} {n.to === "/compare" && ids.length > 0 && `(${ids.length})`}
             </Link>
           ))}
-          <Link to={session ? "/admin" : "/auth"} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
-            {session ? "Dashboard" : "Admin sign in"}
+          <Link to={session ? "/my" : "/auth"} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
+            {session ? "My research" : "Sign in"}
           </Link>
         </nav>
       )}

@@ -19,3 +19,4 @@
 - Agents only contact sources marked authorised and enabled, read structured feeds only, and never publish: research output becomes draft, unverified listings without listing permission (test-fixture drafts are also marked demo).
 - Every scheduler call is logged in research_ticks; the database job sends X-PropWise-Origin: pg_cron so automatic runs are distinguishable from manual calls to the tick address.
 - Feed onboarding (CSV/JSON) requires identity, permission evidence and an ID field mapping; imports go through an admin-checked server function and stay private observations.
+- Buyer/renter data lives in buyer_profiles and buyer_reports, owner-only via RLS with admin read; buy/rent maths is pure in src/lib/buyer.ts so it stays testable.
