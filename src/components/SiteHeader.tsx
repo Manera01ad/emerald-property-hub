@@ -8,6 +8,8 @@ import { useSession } from "@/lib/auth";
 const NAV = [
   { to: "/properties", label: "Properties" },
   { to: "/compare", label: "Compare" },
+  { to: "/valuation", label: "Valuation" },
+  { to: "/research-services", label: "Research" },
   { to: "/infrastructure", label: "Infrastructure" },
   { to: "/consult", label: "Consult" },
   { to: "/contact", label: "Contact" },
