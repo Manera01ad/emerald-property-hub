@@ -16,7 +16,7 @@ export function SettingsPanel() {
       const v = String(f.get(s.key) ?? "");
       if (v !== s.value) {
         const { error } = await supabase.from("app_settings").update({ value: v, updated_at: new Date().toISOString() }).eq("key", s.key);
-        if (error) return toast.error(error.message);
+        if (error) { toast.error(error.message); return; }
       }
     }
     inv("app_settings");

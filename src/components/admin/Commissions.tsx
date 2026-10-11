@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,13 +28,13 @@ export function Commissions() {
       commission_pct: f.get("pct") ? Number(f.get("pct")) : null,
       expected_amount: Number(f.get("expected") || 0),
     });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     form.reset();
     inv("commissions");
   }
-  async function update(id: string, patch: Record<string, unknown>) {
+  async function update(id: string, patch: TablesUpdate<"commissions">) {
     const { error } = await supabase.from("commissions").update(patch).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     inv("commissions");
   }
 

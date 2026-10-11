@@ -22,7 +22,7 @@ export function Partners() {
       rera_number: String(f.get("rera") || "") || null,
       notes: String(f.get("notes") || "") || null,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     form.reset();
     inv("partners");
   }

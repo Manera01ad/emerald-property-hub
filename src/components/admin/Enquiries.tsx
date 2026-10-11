@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,9 +16,9 @@ export function Enquiries() {
   const [filter, setFilter] = useState("");
   const [notes, setNotes] = useState<Record<string, string>>({});
 
-  async function update(id: string, patch: Record<string, unknown>) {
+  async function update(id: string, patch: TablesUpdate<"enquiries">) {
     const { error } = await supabase.from("enquiries").update(patch).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     inv("enquiries");
     toast.success("Saved");
   }
@@ -60,7 +61,7 @@ export function Enquiries() {
                 </div>
                 <div className="mt-3 flex gap-2">
                   <Textarea rows={1} placeholder="Internal notes" defaultValue={e.admin_notes ?? ""} onChange={(ev) => setNotes({ ...notes, [e.id]: ev.target.value })} />
-                  {notes[e.id] !== undefined && <Button size="sm" onClick={() => update(e.id, { admin_notes: notes[e.id] })}>Save</Button>}
+                  {notes[e.id] !== undefined && <Button size="sm" onClick={() => update(e.id, { admin_notes: notes[e.id] ?? null })}>Save</Button>}
                 </div>
               </div>
             );

@@ -17,7 +17,7 @@ const schema = z.object({
   email: z.string().trim().email("Invalid email").max(200).optional().or(z.literal("")),
   budget: z.number().positive().optional(),
   message: z.string().max(2000).optional(),
-  consent: z.literal(true, { errorMap: () => ({ message: "Consent is required" }) }),
+  consent: z.literal(true),
 });
 
 export function EnquiryForm({
@@ -48,7 +48,7 @@ export function EnquiryForm({
       consent,
     });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
+      toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
       return;
     }
     setBusy(true);

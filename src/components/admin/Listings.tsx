@@ -23,9 +23,9 @@ export function Listings() {
   const [filter, setFilter] = useState("");
 
   async function setStatus(p: Property, status: string) {
-    if (status === "published" && !p.listing_permission) return toast.error("Record the owner/developer listing permission before publishing.");
+    if (status === "published" && !p.listing_permission) return void toast.error("Record the owner/developer listing permission before publishing.");
     const { error } = await supabase.from("properties").update({ status }).eq("id", p.id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     inv("properties");
     toast.success(`Listing ${status}`);
   }
@@ -86,7 +86,7 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;
-    if (!permission) return toast.error("Confirm owner permission before uploading photos.");
+    if (!permission) return void toast.error("Confirm owner permission before uploading photos.");
     setBusy(true);
     const added: string[] = [];
     for (const file of Array.from(files)) {
@@ -130,14 +130,14 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
       photos,
       ...docs,
     };
-    if (!payload.title || !(payload.asking_price >= 0)) return toast.error("Title and price are required.");
+    if (!payload.title || !(payload.asking_price >= 0)) return void toast.error("Title and price are required.");
     setBusy(true);
     const q = initial
       ? supabase.from("properties").update(payload).eq("id", initial.id).select().single()
       : supabase.from("properties").insert({ ...payload, status: "draft" }).select().single();
     const { data, error } = await q;
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success(initial ? "Listing updated" : "Draft created — add nearby places, then publish");
     onDone(data as Property);
   }
@@ -148,28 +148,24 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
     onDone();
   }
 
-  const F = ({ name, label, ...rest }: { name: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
-    <div className="space-y-1"><Label htmlFor={name}>{label}</Label><Input id={name} name={name} defaultValue={(initial?.[name as keyof Property] as string | number | null) ?? ""} {...rest} /></div>
-  );
-
   return (
     <div className="space-y-6">
       <form onSubmit={submit} className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2"><F name="title" label="Title *" required /></div>
+          <div className="sm:col-span-2"><Field initial={initial} name="title" label="Title *" required /></div>
           <div className="space-y-1"><Label>Type</Label><select name="property_type" className={selectCls} defaultValue={initial?.property_type ?? "villa"}>{PROPERTY_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}</select></div>
           <div className="space-y-1"><Label>Location</Label><select name="location" className={selectCls} defaultValue={initial?.location ?? MARKETS[0]}>{MARKETS.map((m) => <option key={m}>{m}</option>)}</select></div>
-          <div className="sm:col-span-2"><F name="address" label="Address / landmark" /></div>
-          <F name="asking_price" label="Asking price (₹) *" type="number" required min={0} />
-          <F name="guideline_value" label="Guideline value (₹)" type="number" min={0} />
-          <F name="bedrooms" label="Bedrooms" type="number" min={0} />
+          <div className="sm:col-span-2"><Field initial={initial} name="address" label="Address / landmark" /></div>
+          <Field initial={initial} name="asking_price" label="Asking price (₹) *" type="number" required min={0} />
+          <Field initial={initial} name="guideline_value" label="Guideline value (₹)" type="number" min={0} />
+          <Field initial={initial} name="bedrooms" label="Bedrooms" type="number" min={0} />
           <div className="space-y-1"><Label>Availability</Label><select name="availability" className={selectCls} defaultValue={initial?.availability ?? "ready"}>{Object.entries(AVAILABILITY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-          <F name="built_area_sqft" label="Built-up area (sq ft)" type="number" min={0} />
-          <F name="land_area_sqft" label="Land area (sq ft)" type="number" min={0} />
-          <F name="rera_number" label="RERA number" />
-          <F name="source" label="Source (who supplied it)" />
-          <F name="latitude" label="Latitude" type="number" step="any" />
-          <F name="longitude" label="Longitude" type="number" step="any" />
+          <Field initial={initial} name="built_area_sqft" label="Built-up area (sq ft)" type="number" min={0} />
+          <Field initial={initial} name="land_area_sqft" label="Land area (sq ft)" type="number" min={0} />
+          <Field initial={initial} name="rera_number" label="RERA number" />
+          <Field initial={initial} name="source" label="Source (who supplied it)" />
+          <Field initial={initial} name="latitude" label="Latitude" type="number" step="any" />
+          <Field initial={initial} name="longitude" label="Longitude" type="number" step="any" />
           <div className="space-y-1"><Label>Partner</Label><select name="partner_id" className={selectCls} defaultValue={initial?.partner_id ?? ""}><option value="">None</option>{partners.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
           <div className="space-y-1"><Label>Amenities (comma separated)</Label><Input name="amenities" defaultValue={initial?.amenities.join(", ")} /></div>
         </div>
@@ -181,7 +177,7 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
         </div>
         <div className="space-y-2"><Label>Documents recorded</Label>
           <div className="grid gap-2 sm:grid-cols-2">{DOCS.map((d) => (
-            <label key={d.key} className="flex items-center gap-1.5 text-sm"><Checkbox checked={docs[d.key]} onCheckedChange={(v) => setDocs({ ...docs, [d.key]: v === true })} />{d.label}</label>
+            <label key={d.key} className="flex items-center gap-1.5 text-sm"><Checkbox checked={!!docs[d.key]} onCheckedChange={(v) => setDocs({ ...docs, [d.key]: v === true })} />{d.label}</label>
           ))}</div>
         </div>
         <div className="grid gap-3 rounded-lg bg-muted p-4 sm:grid-cols-2">
@@ -233,7 +229,7 @@ function NearbyEditor({ propertyId }: { propertyId: string }) {
       source: String(f.get("source") || "") || null,
       verified: f.get("verified") === "on",
     });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     form.reset();
     qc.invalidateQueries({ queryKey: key });
   }
@@ -260,4 +256,8 @@ function NearbyEditor({ propertyId }: { propertyId: string }) {
       </ul>
     </div>
   );
+}
+
+function Field({ name, label, initial, ...rest }: { name: string; label: string; initial: Property | null } & React.InputHTMLAttributes<HTMLInputElement>) {
+  return <div className="space-y-1"><Label htmlFor={name}>{label}</Label><Input id={name} name={name} defaultValue={(initial?.[name as keyof Property] as string | number | null) ?? ""} {...rest} /></div>;
 }
