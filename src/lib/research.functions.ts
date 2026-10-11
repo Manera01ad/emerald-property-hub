@@ -18,3 +18,15 @@ export const runResearchAgent = createServerFn({ method: "POST" })
     for (const k of keys) results.push(await runAgent(supabaseAdmin, k, data.trigger));
     return results;
   });
+
+/** Admin-only: import CSV rows (already parsed in the browser) into an authorised CSV source. */
+export const importCsvRows = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ sourceId: z.string().uuid(), rows: z.array(z.record(z.string(), z.string().max(2000))).max(500) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Admins only");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { ingestCsvRows } = await import("@/lib/research/engine.server");
+    return ingestCsvRows(supabaseAdmin, data.sourceId, data.rows);
+  });
