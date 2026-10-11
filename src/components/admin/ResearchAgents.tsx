@@ -12,10 +12,11 @@ import { formatINR, formatINRFull } from "@/lib/format";
 import { humanize } from "@/lib/constants";
 import { runResearchAgent } from "@/lib/research.functions";
 import { Panel, selectCls, Stat } from "./shared";
+import { FeedWizard, OpsReport } from "./FeedWizard";
 
 type Obs = Tables<"source_observations">;
 const KINDS = ["licensed_feed", "partner_api", "developer_site", "owner_submitted", "public_webpage", "government", "google_maps", "test_fixture"];
-const METHODS = ["json_feed", "fixture", "google_places", "manual"];
+const METHODS = ["json_feed", "fixture", "google_places", "manual", "csv_upload"];
 const PERMS = ["pending", "authorised", "denied", "expired"];
 
 function useT<T>(key: string, fn: () => Promise<T>) {
@@ -35,6 +36,8 @@ export function ResearchAgents() {
   const { data: changes = [] } = useT("changes", async () => (await supabase.from("price_history").select("*").neq("change_type", "initial").order("observed_at", { ascending: false }).limit(50)).data ?? []);
   const { data: runs = [] } = useT("runs", async () => (await supabase.from("research_runs").select("*").order("started_at", { ascending: false }).limit(40)).data ?? []);
 
+  const { data: ticks = [] } = useT("ticks", async () => (await supabase.from("research_ticks").select("*").order("started_at", { ascending: false }).limit(50)).data ?? []);
+  const { data: infraUnverified = 0 } = useT("infra", async () => (await supabase.from("infrastructure_projects").select("id", { count: "exact", head: true }).eq("verified", false)).count ?? 0);
   async function doRun(key: string, trigger: "manual" | "retry") {
     setBusy(key);
     try {
@@ -116,6 +119,8 @@ export function ResearchAgents() {
         <p className="mt-3 text-xs text-muted-foreground">The backend scheduler checks hourly and runs agents that are due. Discovery and price checks are daily; location and infrastructure are weekly; quality and analysis also run straight after any source update.</p>
       </Panel>
 
+      <OpsReport ticks={ticks} sources={sources} agents={agents} runs={runs} obsPending={queue.length} changes={changes.length} infraUnverified={infraUnverified} />
+      <FeedWizard onChange={refresh} />
       <Sources sources={sources} onChange={refresh} />
       <ReviewQueue queue={queue} sources={sources} onChange={refresh} />
 
@@ -193,6 +198,8 @@ function Sources({ sources, onChange }: { sources: Tables<"research_sources">[];
               <p className="font-medium">{s.name} {s.kind === "test_fixture" && <Badge variant="secondary">TEST FIXTURE</Badge>}</p>
               <p className="break-all text-xs text-muted-foreground">{humanize(s.kind)} · {humanize(s.access_method)} · {s.url}</p>
               <p className="text-xs text-muted-foreground">Every {s.refresh_hours} h · max {s.rate_limit_per_run}/run · last checked {when(s.last_checked_at)} {s.last_status && `· ${s.last_status}`}</p>
+              {s.source_identity && <p className="text-xs">Identity: {s.source_identity}</p>}
+              {s.notes && <p className="text-xs text-muted-foreground">{s.notes}</p>}
             </div>
             <Input className="h-8 w-56" placeholder="Permission evidence" defaultValue={s.permission_evidence ?? ""} onBlur={(e) => e.target.value !== (s.permission_evidence ?? "") && update(s.id, { permission_evidence: e.target.value || null })} />
             <select className={selectCls + " h-8 w-32"} value={s.permission_status} onChange={(e) => update(s.id, { permission_status: e.target.value })}>{PERMS.map((p) => <option key={p} value={p}>{humanize(p)}</option>)}</select>
