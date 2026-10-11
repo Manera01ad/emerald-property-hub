@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSession } from "@/lib/auth";
+import { Link } from "@tanstack/react-router";
+import { useIsAdmin, useSession } from "@/lib/auth";
 import { costRulesFrom, publicPropertiesQuery, useSettings } from "@/lib/data";
 import { MARKETS, PROPERTY_TYPES } from "@/lib/constants";
 import { formatINR } from "@/lib/format";
@@ -42,6 +43,7 @@ const sel = "h-9 w-full rounded-md border border-input bg-background px-2 text-s
 function MyPage() {
   const { session } = useSession();
   const uid = session?.user.id;
+  const { data: isAdmin } = useIsAdmin(uid);
   const qc = useQueryClient();
   const { data: settings } = useSettings();
   const rules = costRulesFrom(settings);
@@ -114,7 +116,7 @@ function MyPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-4xl">My property research</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-4xl">My property research</h1>{isAdmin && <Button asChild variant="outline" size="sm"><Link to="/admin">Admin dashboard</Link></Button>}</div>
       <p className="mt-2 text-muted-foreground">Estimates only. Tamil Nadu duty rates shown here are unconfirmed placeholders. Nothing here is legal verification.</p>
       <Tabs defaultValue="profile" className="mt-6">
         <TabsList className="flex h-auto flex-wrap">

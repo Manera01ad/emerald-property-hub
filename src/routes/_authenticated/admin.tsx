@@ -73,6 +73,7 @@ function AdminPage() {
         <TabsContent value="overview"><Overview /></TabsContent>
         <TabsContent value="listings"><Listings /></TabsContent>
         <TabsContent value="enquiries"><Enquiries /></TabsContent>
+        <TabsContent value="buyers"><Buyers /></TabsContent>
         <TabsContent value="visits"><SiteVisits /></TabsContent>
         <TabsContent value="partners"><Partners /></TabsContent>
         <TabsContent value="commissions"><Commissions /></TabsContent>
