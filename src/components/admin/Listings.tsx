@@ -216,7 +216,7 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : initial ? "Save changes" : "Create draft"}</Button>
         </div>
       </form>
-      {initial && <NearbyEditor propertyId={initial.id} />}
+      {initial && <NearbyEditor propertyId={initial.id} lat={initial.latitude} lng={initial.longitude} />}
     </div>
   );
 }
