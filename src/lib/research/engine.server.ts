@@ -159,7 +159,7 @@ async function quality(db: DB, limit: number): Promise<Result> {
   for (const o of todo) {
     const q = qualityCheck(o, [...(allObs ?? []), ...(props ?? [])]);
     const dupProp = (props ?? []).find((p) => p.id !== o.property_id && isLikelyDuplicate(o, p));
-    const dupObs = (allObs ?? []).find((x) => x.id !== o.id && x.first_seen_at <= o.first_seen_at && isLikelyDuplicate(o, x));
+    const dupObs = (allObs ?? []).find((x) => x.id !== o.id && (x.first_seen_at < o.first_seen_at || (x.first_seen_at === o.first_seen_at && x.id < o.id)) && isLikelyDuplicate(o, x));
     let review_status = o.review_status === "approved" ? "approved" : "pending";
     if (dupProp || dupObs) { review_status = "duplicate"; q.flags.push("possible_duplicate"); dup++; }
     else if (q.quarantine) { review_status = "quarantined"; quar++; }
@@ -207,7 +207,7 @@ async function location(db: DB, limit: number, budgetLeft: number): Promise<Resu
   const { data: placed } = await db.from("nearby_places").select("property_id").like("source", "Google Maps%");
   const done = new Set((placed ?? []).map((p) => p.property_id));
   const todo = (props ?? []).filter((p) => !done.has(p.id)).slice(0, limit);
-  if (!todo.length) return { status: "success", items: 0, message: "Every listing with coordinates already has Google Maps suggestions." };
+  if (!todo.length) return { status: "success", items: 0, message: `No listing needs suggestions (${props?.length ?? 0} listings have coordinates; add latitude/longitude in Listings).` };
   let calls = 0, added = 0;
   for (const p of todo) {
     for (const [category, textQuery] of Object.entries(PLACE_QUERY)) {
