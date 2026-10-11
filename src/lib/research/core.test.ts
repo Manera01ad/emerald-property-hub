@@ -24,6 +24,10 @@ describe("research engine", () => {
     const b = all[2]!, repost = all[5]!;
     expect(isLikelyDuplicate({ id: "1", ...b }, { id: "2", ...repost })).toBe(true);
   });
+  it("different RERA numbers are never duplicates", () => {
+    const all = fixtureListings("a").map((x) => normaliseItem(x)!);
+    expect(isLikelyDuplicate({ id: "1", ...all[1]!, asking_price: 4950000 }, { id: "2", ...all[2]!, asking_price: 5000000 })).toBe(false);
+  });
   it("does not match different localities", () => {
     const n = normaliseItem(fixtureListings("a")[0]!)!;
     expect(isLikelyDuplicate({ id: "1", ...n }, { id: "2", ...n, location: "Tambaram" })).toBe(false);

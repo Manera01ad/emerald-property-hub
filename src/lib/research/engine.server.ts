@@ -78,8 +78,11 @@ async function discovery(db: DB, limit: number): Promise<Result> {
   const sources = (await feedSources(db)).filter((s) => s.kind !== "government");
   if (!sources.length) return { status: "skipped", items: 0, message: "No enabled, authorised property source is configured." };
   let added = 0, skipped = 0;
+  const errors: string[] = [];
   for (const src of sources) {
-    const { listings, skipped: sk } = await readFeed(db, src);
+    let feed;
+    try { feed = await readFeed(db, src); } catch (e) { errors.push(`${src.name}: ${(e as Error).message}`); continue; }
+    const { listings, skipped: sk } = feed;
     skipped += sk;
     const { data: existing } = await db.from("source_observations").select("external_id").eq("source_id", src.id);
     const known = new Set((existing ?? []).map((e) => e.external_id));
@@ -94,6 +97,7 @@ async function discovery(db: DB, limit: number): Promise<Result> {
     }
     await db.from("research_sources").update({ last_checked_at: new Date().toISOString(), last_status: `ok: ${listings.length} listings read` }).eq("id", src.id);
   }
+  if (errors.length) throw new Error(`${errors.join("; ")} (other sources processed: ${added} new)`);
   return { status: "success", items: added, message: `${added} new candidates from ${sources.length} source(s); ${skipped} items without an id ignored.` };
 }
 
@@ -102,8 +106,10 @@ async function priceMonitor(db: DB, limit: number): Promise<Result> {
   if (!sources.length) return { status: "skipped", items: 0, message: "No enabled, authorised property source to recheck." };
   const counts = { increase: 0, reduction: 0, content_change: 0, missing: 0, reappeared: 0, autoUpdated: 0 };
   const now = new Date().toISOString();
+  const errors: string[] = [];
   for (const src of sources) {
-    const { listings } = await readFeed(db, src);
+    let listings;
+    try { ({ listings } = await readFeed(db, src)); } catch (e) { errors.push(`${src.name}: ${(e as Error).message}`); continue; }
     const byId = new Map(listings.map((l) => [l.external_id, l]));
     const { data: known } = await db.from("source_observations").select("*").eq("source_id", src.id).limit(limit);
     for (const o of known ?? []) {
@@ -146,6 +152,7 @@ async function priceMonitor(db: DB, limit: number): Promise<Result> {
     }
     await db.from("research_sources").update({ last_checked_at: now, last_status: `ok: rechecked ${known?.length ?? 0}` }).eq("id", src.id);
   }
+  if (errors.length) throw new Error(`${errors.join("; ")} (other sources rechecked)`);
   const n = counts.increase + counts.reduction + counts.content_change + counts.missing + counts.reappeared;
   return { status: "success", items: n, message: `${counts.reduction} reductions, ${counts.increase} increases, ${counts.content_change} content changes, ${counts.missing} missing, ${counts.reappeared} reappeared.`, details: counts };
 }
@@ -153,8 +160,8 @@ async function priceMonitor(db: DB, limit: number): Promise<Result> {
 async function quality(db: DB, limit: number): Promise<Result> {
   const { data: todo } = await db.from("source_observations").select("*").is("quality_checked_at", null).in("review_status", ["pending", "quarantined", "duplicate"]).order("first_seen_at").limit(limit);
   if (!todo?.length) return { status: "success", items: 0, message: "Nothing new to check." };
-  const { data: allObs } = await db.from("source_observations").select("id,title,property_type,location,bedrooms,asking_price,built_area_sqft,land_area_sqft,first_seen_at").neq("review_status", "rejected");
-  const { data: props } = await db.from("properties").select("id,title,property_type,location,bedrooms,asking_price,built_area_sqft,land_area_sqft");
+  const { data: allObs } = await db.from("source_observations").select("id,title,property_type,location,bedrooms,asking_price,built_area_sqft,land_area_sqft,first_seen_at,rera_claim").neq("review_status", "rejected");
+  const { data: props } = await db.from("properties").select("id,title,property_type,location,bedrooms,asking_price,built_area_sqft,land_area_sqft,rera_claim:rera_number");
   let dup = 0, quar = 0;
   for (const o of todo) {
     const q = qualityCheck(o, [...(allObs ?? []), ...(props ?? [])]);

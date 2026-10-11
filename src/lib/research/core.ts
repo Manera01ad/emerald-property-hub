@@ -111,7 +111,8 @@ export type Comparable = {
 };
 
 /** Likely the same physical property: same locality and type, plus matching size/bedrooms and price within 5%. */
-export function isLikelyDuplicate(a: Comparable, b: Comparable): boolean {
+export function isLikelyDuplicate(a: Comparable & { rera_claim?: string | null }, b: Comparable & { rera_claim?: string | null }): boolean {
+  if (a.rera_claim && b.rera_claim && norm(a.rera_claim) !== norm(b.rera_claim)) return false;
   if (!a.location || !b.location || norm(a.location) !== norm(b.location)) return false;
   if (!a.property_type || a.property_type !== b.property_type) return false;
   const sameTitle = !!a.title && norm(a.title) === norm(b.title);
