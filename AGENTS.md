@@ -17,3 +17,5 @@
 - Research engine logic lives in src/lib/research (pure rules in core.ts, I/O in engine.server.ts) and runs with the admin client only from the scheduler route or an admin-checked server function, so agents never run from the browser.
 - The hourly scheduler authenticates with a token kept in the private schema and checked by a service-role-only function, because the publishable key is visible to anyone.
 - Agents only contact sources marked authorised and enabled, read structured feeds only, and never publish: research output becomes draft, unverified listings without listing permission (test-fixture drafts are also marked demo).
+- Every scheduler call is logged in research_ticks; the database job sends X-PropWise-Origin: pg_cron so automatic runs are distinguishable from manual calls to the tick address.
+- Feed onboarding (CSV/JSON) requires identity, permission evidence and an ID field mapping; imports go through an admin-checked server function and stay private observations.
