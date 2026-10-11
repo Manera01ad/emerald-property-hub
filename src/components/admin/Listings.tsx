@@ -148,28 +148,24 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
     onDone();
   }
 
-  const F = ({ name, label, ...rest }: { name: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
-    <div className="space-y-1"><Label htmlFor={name}>{label}</Label><Input id={name} name={name} defaultValue={(initial?.[name as keyof Property] as string | number | null) ?? ""} {...rest} /></div>
-  );
-
   return (
     <div className="space-y-6">
       <form onSubmit={submit} className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2"><F name="title" label="Title *" required /></div>
+          <div className="sm:col-span-2"><Field initial={initial} name="title" label="Title *" required /></div>
           <div className="space-y-1"><Label>Type</Label><select name="property_type" className={selectCls} defaultValue={initial?.property_type ?? "villa"}>{PROPERTY_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}</select></div>
           <div className="space-y-1"><Label>Location</Label><select name="location" className={selectCls} defaultValue={initial?.location ?? MARKETS[0]}>{MARKETS.map((m) => <option key={m}>{m}</option>)}</select></div>
-          <div className="sm:col-span-2"><F name="address" label="Address / landmark" /></div>
-          <F name="asking_price" label="Asking price (₹) *" type="number" required min={0} />
-          <F name="guideline_value" label="Guideline value (₹)" type="number" min={0} />
-          <F name="bedrooms" label="Bedrooms" type="number" min={0} />
+          <div className="sm:col-span-2"><Field initial={initial} name="address" label="Address / landmark" /></div>
+          <Field initial={initial} name="asking_price" label="Asking price (₹) *" type="number" required min={0} />
+          <Field initial={initial} name="guideline_value" label="Guideline value (₹)" type="number" min={0} />
+          <Field initial={initial} name="bedrooms" label="Bedrooms" type="number" min={0} />
           <div className="space-y-1"><Label>Availability</Label><select name="availability" className={selectCls} defaultValue={initial?.availability ?? "ready"}>{Object.entries(AVAILABILITY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-          <F name="built_area_sqft" label="Built-up area (sq ft)" type="number" min={0} />
-          <F name="land_area_sqft" label="Land area (sq ft)" type="number" min={0} />
-          <F name="rera_number" label="RERA number" />
-          <F name="source" label="Source (who supplied it)" />
-          <F name="latitude" label="Latitude" type="number" step="any" />
-          <F name="longitude" label="Longitude" type="number" step="any" />
+          <Field initial={initial} name="built_area_sqft" label="Built-up area (sq ft)" type="number" min={0} />
+          <Field initial={initial} name="land_area_sqft" label="Land area (sq ft)" type="number" min={0} />
+          <Field initial={initial} name="rera_number" label="RERA number" />
+          <Field initial={initial} name="source" label="Source (who supplied it)" />
+          <Field initial={initial} name="latitude" label="Latitude" type="number" step="any" />
+          <Field initial={initial} name="longitude" label="Longitude" type="number" step="any" />
           <div className="space-y-1"><Label>Partner</Label><select name="partner_id" className={selectCls} defaultValue={initial?.partner_id ?? ""}><option value="">None</option>{partners.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
           <div className="space-y-1"><Label>Amenities (comma separated)</Label><Input name="amenities" defaultValue={initial?.amenities.join(", ")} /></div>
         </div>
@@ -260,4 +256,8 @@ function NearbyEditor({ propertyId }: { propertyId: string }) {
       </ul>
     </div>
   );
+}
+
+function Field({ name, label, initial, ...rest }: { name: string; label: string; initial: Property | null } & React.InputHTMLAttributes<HTMLInputElement>) {
+  return <div className="space-y-1"><Label htmlFor={name}>{label}</Label><Input id={name} name={name} defaultValue={(initial?.[name as keyof Property] as string | number | null) ?? ""} {...rest} /></div>;
 }
