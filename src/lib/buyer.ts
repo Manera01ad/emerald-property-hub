@@ -12,7 +12,7 @@ export function emi(principal: number, annualRatePct: number, years: number): nu
 
 export type BuyInputs = {
   price: number; guidelineValue?: number; otherCosts: number;
-  downPayment: number; ratePct: number; years: number; budget?: number;
+  downPayment: number; ratePct: number; years: number; budget?: number | undefined;
 };
 
 export function buyAnalysis(i: BuyInputs, rules: CostRules) {

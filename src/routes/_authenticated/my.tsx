@@ -72,14 +72,14 @@ function MyPage() {
       school_preference: f.school_preference || null, commute_destinations: list(f.commute_destinations),
       lifestyle_priorities: list(f.lifestyle_priorities), financing: f.financing || null, move_in_timeframe: f.move_in_timeframe || null,
     }, { onConflict: "user_id" });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Preferences saved");
     qc.invalidateQueries({ queryKey: ["buyer-profile"] });
   }
   async function deleteProfile() {
     if (!confirm("Delete your saved preferences?")) return;
     const { error } = await supabase.from("buyer_profiles").delete().eq("user_id", uid!);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setF(empty); toast.success("Preferences deleted");
     qc.invalidateQueries({ queryKey: ["buyer-profile"] });
   }
@@ -90,7 +90,7 @@ function MyPage() {
   const [b, setB] = useState({ price: 5_000_000, otherCosts: 0, downPayment: 1_000_000, ratePct: 8.5, years: 20 });
   const [r, setR] = useState({ rent: 20000, deposit: 200000, brokerage: 0, maintenance: 2000, moving: 10000, renewalIncreasePct: 5 });
   const [horizon, setHorizon] = useState(5);
-  const buy = buyAnalysis({ ...b, budget: f.budget ?? undefined }, rules);
+  const buy = buyAnalysis({ ...b, ...(f.budget != null ? { budget: f.budget } : {}) }, rules);
   const rent = rentAnalysis(r);
   const rvb = rentVsBuy(buy, r, horizon);
 
@@ -109,7 +109,7 @@ function MyPage() {
     };
     const title = `${kind === "buy" ? "Purchase" : kind === "rent" ? "Rental" : "Rent vs buy"} analysis — ${new Date().toLocaleDateString("en-IN")}`;
     const { error } = await supabase.from("buyer_reports").insert({ user_id: uid!, kind, title, inputs: { b, r, horizon } as unknown as Json, result: result as unknown as Json });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Report saved to your account");
     qc.invalidateQueries({ queryKey: ["buyer-reports"] });
   }
@@ -215,7 +215,7 @@ function Rows({ rows, action }: { rows: [string, number][]; action: React.ReactN
 function esc(s: unknown) { return String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!); }
 function section(title: string, v: unknown) { return `<h2>${esc(title)}</h2><pre>${esc(JSON.stringify(v, null, 2))}</pre>`; }
 function download(title: string, result: Json) {
-  const r = (result ?? {}) as Record<string, unknown>;
+  const r = (result ?? {}) as { requirements?: unknown; observed_facts?: unknown; calculations?: unknown; assumptions?: unknown; interpretation?: unknown; inventory_note?: string; due_diligence_questions?: string[] };
   const html = `<!doctype html><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:sans-serif;max-width:800px;margin:2rem auto}pre{white-space:pre-wrap;background:#f4f4f4;padding:1rem}</style>
 <h1>${esc(title)}</h1><p><b>PropWise AI buyer decision report.</b> Estimates only — not legal verification, a title certificate or an approval certification.</p>
 ${section("Your requirements", r.requirements)}${section("Observed facts (from listings)", r.observed_facts)}${section("Calculations", r.calculations)}${section("Assumptions", r.assumptions)}${section("AI interpretation", r.interpretation)}${r.inventory_note ? `<p><i>${esc(r.inventory_note)}</i></p>` : ""}
