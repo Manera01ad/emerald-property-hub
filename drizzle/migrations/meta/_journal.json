@@ -22,6 +22,13 @@
       "when": 1791721252214,
       "tag": "0002_site_visits_and_crm_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791733320992,
+      "tag": "0003_fix_enquiry_stages",
+      "breakpoints": true
     }
   ]
 }

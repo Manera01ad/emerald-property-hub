@@ -298,7 +298,7 @@ function NearbyEditor({ propertyId, lat, lng }: { propertyId: string; lat: numbe
       <ul className="mt-3 space-y-1 text-sm">
         {data.map((x) => (
           <li key={x.id} className="flex items-center justify-between">
-            <span>{PLACE_CATEGORIES[x.category]}: {x.name} {x.distance_km != null && `· ${x.distance_km} km`} {x.verified ? "✓" : "(unverified)"}</span>
+            <span>{PLACE_CATEGORIES[x.category]}: {x.name} {x.distance_km != null && `· ${x.distance_km} km straight-line`} {x.verified ? "✓" : "(unverified)"}</span>
             <Button size="icon" variant="ghost" onClick={async () => { await supabase.from("nearby_places").delete().eq("id", x.id); qc.invalidateQueries({ queryKey: key }); }}><Trash2 /></Button>
           </li>
         ))}

@@ -30,8 +30,10 @@ export function SiteVisits() {
     if (error) return void toast.error(error.message);
     if (enquiry_id) {
       const cur = enq.find((x) => x.id === enquiry_id);
-      if (cur && ["new", "contacted", "qualified"].includes(cur.status))
-        await supabase.from("enquiries").update({ status: "site_visit" }).eq("id", enquiry_id);
+      if (!cur || ["new", "contacted", "qualified"].includes(cur.status)) {
+        const { error: stageErr } = await supabase.from("enquiries").update({ status: "site_visit" }).eq("id", enquiry_id).in("status", ["new", "contacted", "qualified"]);
+        if (stageErr) toast.error("Visit saved, but the buyer's stage could not be updated: " + stageErr.message);
+      }
       inv("enquiries");
     }
     form.reset();

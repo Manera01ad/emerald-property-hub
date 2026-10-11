@@ -164,7 +164,7 @@ function PropertyPage() {
                         {list.map((x) => (
                           <li key={x.id} className="flex justify-between gap-2">
                             <span>{x.name}{!x.verified && <span className="ml-1 text-xs text-warning">(unverified)</span>}{x.source && <span className="block text-xs text-muted-foreground">Source: {x.source}</span>}</span>
-                            <span className="text-muted-foreground">{x.distance_km != null ? `${x.distance_km} km` : "—"}</span>
+                            <span className="text-muted-foreground">{x.distance_km != null ? `${x.distance_km} km straight-line` : "—"}</span>
                           </li>
                         ))}
                       </ul>

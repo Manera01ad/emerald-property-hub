@@ -24,7 +24,7 @@ export function SiteHeader() {
           <span className="font-display text-2xl font-semibold text-primary">PropWise</span>
           <span className="font-display text-2xl font-semibold text-gold">AI</span>
         </Link>
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           {NAV.map((n) => (
             <Link
               key={n.to}
@@ -39,7 +39,7 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
             <Link to={session ? "/admin" : "/auth"}>{session ? "Dashboard" : "Admin"}</Link>
           </Button>
@@ -47,12 +47,12 @@ export function SiteHeader() {
             <Link to="/consult">Book a consultation</Link>
           </Button>
         </div>
-        <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+        <button className="lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X /> : <Menu />}
         </button>
       </div>
       {open && (
-        <nav className="border-t bg-background px-4 py-3 md:hidden">
+        <nav className="border-t bg-background px-4 py-3 lg:hidden">
           {NAV.map((n) => (
             <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="block py-2 text-sm font-medium">
               {n.label} {n.to === "/compare" && ids.length > 0 && `(${ids.length})`}
