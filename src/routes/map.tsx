@@ -116,7 +116,8 @@ function MapPage() {
     try {
       const res = await geocode({ data: { address } });
       if (!res.length) return setMsg("No match found for that address.");
-      setMsg(""); goTo({ lat: res[0].lat, lng: res[0].lng }, res[0].address, res[0].approximate);
+      const top = res[0]!;
+      setMsg(""); goTo({ lat: top.lat, lng: top.lng }, top.address, top.approximate);
     } catch (e) { setMsg((e as Error).message); }
   }
   function pickProperty(id: string) {
