@@ -14,6 +14,7 @@ import { dealScore, negotiationHints, pricePerSqft, purchaseCost } from "@/lib/d
 import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { hiddenReasons } from "@/lib/visibility";
+import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 
 export const Route = createFileRoute("/properties/$id")({
   head: () => ({
@@ -163,6 +164,27 @@ function PropertyPage() {
               </div>
             )}
             <div className="mt-4"><EstimateNote>Based only on listings in PropWise — not a market valuation. We do not predict appreciation.</EstimateNote></div>
+          </Section>
+
+          <Section title="Independent value estimate">
+            {(() => {
+              const area = Number(p.property_type === "plot" ? p.land_area_sqft : p.built_area_sqft ?? p.land_area_sqft) || 0;
+              const comps = pool.filter((c) => c.id !== p.id && c.location === p.location && c.property_type === p.property_type)
+                .map((c) => ({ price: Number(c.asking_price), area_sqft: Number(p.property_type === "plot" ? c.land_area_sqft : c.built_area_sqft ?? c.land_area_sqft) || 0, kind: "asking" as const }));
+              const v = valueProperty({ kind: p.property_type as Kind, area_sqft: area, comparables: comps,
+                guideline_value_per_sqft: p.guideline_value && area ? Number(p.guideline_value) / area : null });
+              const flags = evidenceFlags(p);
+              return (
+                <div className="space-y-3 text-sm">
+                  <p className="text-2xl">{v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)}` : "Not enough evidence for a range"}</p>
+                  <p>Confidence: <b>{v.confidence}</b> · Method: {v.method}</p>
+                  {v.warnings.map((w) => <p key={w} className="text-destructive">{w}</p>)}
+                  <p className="font-medium">Missing or unconfirmed information</p>
+                  <ul className="list-disc pl-5 text-muted-foreground">{flags.map((f) => <li key={f}>{f}</li>)}</ul>
+                  <EstimateNote>Estimate from asking prices in PropWise only. Not a guaranteed sale value, and we do not certify title or approvals.</EstimateNote>
+                </div>
+              );
+            })()}
           </Section>
 
           <Section title="Location intelligence">

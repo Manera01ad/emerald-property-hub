@@ -18,7 +18,9 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResearchServicesRouteImport } from './routes/research-services'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ValuationRouteImport } from './routes/valuation'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
@@ -69,9 +71,19 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResearchServicesRoute = ResearchServicesRouteImport.update({
+  id: '/research-services',
+  path: '/research-services',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ValuationRoute = ValuationRouteImport.update({
+  id: '/valuation',
+  path: '/valuation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -109,7 +121,9 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
   '/privacy': typeof PrivacyRoute
+  '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
+  '/valuation': typeof ValuationRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/my': typeof AuthenticatedMyRoute
   '/properties/$id': typeof PropertiesIdRoute
@@ -125,7 +139,9 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
   '/privacy': typeof PrivacyRoute
+  '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
+  '/valuation': typeof ValuationRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/my': typeof AuthenticatedMyRoute
   '/properties/$id': typeof PropertiesIdRoute
@@ -143,7 +159,9 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
   '/privacy': typeof PrivacyRoute
+  '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
+  '/valuation': typeof ValuationRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/properties/$id': typeof PropertiesIdRoute
@@ -161,7 +179,9 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/infrastructure'
     | '/privacy'
+    | '/research-services'
     | '/terms'
+    | '/valuation'
     | '/admin'
     | '/my'
     | '/properties/$id'
@@ -177,7 +197,9 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/infrastructure'
     | '/privacy'
+    | '/research-services'
     | '/terms'
+    | '/valuation'
     | '/admin'
     | '/my'
     | '/properties/$id'
@@ -194,7 +216,9 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/infrastructure'
     | '/privacy'
+    | '/research-services'
     | '/terms'
+    | '/valuation'
     | '/_authenticated/admin'
     | '/_authenticated/my'
     | '/properties/$id'
@@ -212,7 +236,9 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   InfrastructureRoute: typeof InfrastructureRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResearchServicesRoute: typeof ResearchServicesRoute
   TermsRoute: typeof TermsRoute
+  ValuationRoute: typeof ValuationRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
   ApiPublicResearchTickRoute: typeof ApiPublicResearchTickRoute
@@ -283,11 +309,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/research-services': {
+      id: '/research-services'
+      path: '/research-services'
+      fullPath: '/research-services'
+      preLoaderRoute: typeof ResearchServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/valuation': {
+      id: '/valuation'
+      path: '/valuation'
+      fullPath: '/valuation'
+      preLoaderRoute: typeof ValuationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -351,7 +391,9 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   InfrastructureRoute: InfrastructureRoute,
   PrivacyRoute: PrivacyRoute,
+  ResearchServicesRoute: ResearchServicesRoute,
   TermsRoute: TermsRoute,
+  ValuationRoute: ValuationRoute,
   PropertiesIdRoute: PropertiesIdRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,
   ApiPublicResearchTickRoute: ApiPublicResearchTickRoute,
