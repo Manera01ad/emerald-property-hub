@@ -12,6 +12,7 @@ import { Commissions } from "@/components/admin/Commissions";
 import { SiteVisits } from "@/components/admin/SiteVisits";
 import { Infrastructure } from "@/components/admin/Infrastructure";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
+import { ResearchAgents } from "@/components/admin/ResearchAgents";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -64,6 +65,7 @@ function AdminPage() {
           <TabsTrigger value="partners">Partners</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="infra">Infrastructure</TabsTrigger>
+          <TabsTrigger value="research">AI Research Agents</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><Overview /></TabsContent>
@@ -73,6 +75,7 @@ function AdminPage() {
         <TabsContent value="partners"><Partners /></TabsContent>
         <TabsContent value="commissions"><Commissions /></TabsContent>
         <TabsContent value="infra"><Infrastructure /></TabsContent>
+        <TabsContent value="research"><ResearchAgents /></TabsContent>
         <TabsContent value="settings"><SettingsPanel /></TabsContent>
       </Tabs>
     </div>

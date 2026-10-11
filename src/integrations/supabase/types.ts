@@ -193,42 +193,62 @@ export type Database = {
       }
       infrastructure_projects: {
         Row: {
+          authority: string | null
           created_at: string
           description: string | null
+          external_ref: string | null
           id: string
           is_published: boolean
           last_checked: string | null
           location: string
           name: string
           progress_status: string
+          published_on: string | null
+          source_id: string | null
           source_url: string | null
           verified: boolean
         }
         Insert: {
+          authority?: string | null
           created_at?: string
           description?: string | null
+          external_ref?: string | null
           id?: string
           is_published?: boolean
           last_checked?: string | null
           location: string
           name: string
           progress_status?: string
+          published_on?: string | null
+          source_id?: string | null
           source_url?: string | null
           verified?: boolean
         }
         Update: {
+          authority?: string | null
           created_at?: string
           description?: string | null
+          external_ref?: string | null
           id?: string
           is_published?: boolean
           last_checked?: string | null
           location?: string
           name?: string
           progress_status?: string
+          published_on?: string | null
+          source_id?: string | null
           source_url?: string | null
           verified?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "infrastructure_projects_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "research_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nearby_places: {
         Row: {
@@ -306,6 +326,57 @@ export type Database = {
           rera_number?: string | null
         }
         Relationships: []
+      }
+      price_history: {
+        Row: {
+          change_type: string
+          evidence: Json
+          id: string
+          observation_id: string
+          observed_at: string
+          previous_price: number | null
+          price: number | null
+          property_id: string | null
+          source_url: string | null
+        }
+        Insert: {
+          change_type: string
+          evidence?: Json
+          id?: string
+          observation_id: string
+          observed_at?: string
+          previous_price?: number | null
+          price?: number | null
+          property_id?: string | null
+          source_url?: string | null
+        }
+        Update: {
+          change_type?: string
+          evidence?: Json
+          id?: string
+          observation_id?: string
+          observed_at?: string
+          previous_price?: number | null
+          price?: number | null
+          property_id?: string | null
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_observation_id_fkey"
+            columns: ["observation_id"]
+            isOneToOne: false
+            referencedRelation: "source_observations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_history_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       properties: {
         Row: {
@@ -435,6 +506,176 @@ export type Database = {
           },
         ]
       }
+      research_agents: {
+        Row: {
+          api_calls_month: number
+          consecutive_failures: number
+          cost_month: string | null
+          description: string | null
+          est_cost_month: number
+          interval_hours: number
+          key: string
+          last_error: string | null
+          last_run_at: string | null
+          last_status: string | null
+          last_success_at: string | null
+          lease_until: string | null
+          max_items_per_run: number
+          monthly_cost_cap_usd: number
+          name: string
+          next_run_at: string
+          status: string
+        }
+        Insert: {
+          api_calls_month?: number
+          consecutive_failures?: number
+          cost_month?: string | null
+          description?: string | null
+          est_cost_month?: number
+          interval_hours?: number
+          key: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          last_success_at?: string | null
+          lease_until?: string | null
+          max_items_per_run?: number
+          monthly_cost_cap_usd?: number
+          name: string
+          next_run_at?: string
+          status?: string
+        }
+        Update: {
+          api_calls_month?: number
+          consecutive_failures?: number
+          cost_month?: string | null
+          description?: string | null
+          est_cost_month?: number
+          interval_hours?: number
+          key?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          last_success_at?: string | null
+          lease_until?: string | null
+          max_items_per_run?: number
+          monthly_cost_cap_usd?: number
+          name?: string
+          next_run_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      research_runs: {
+        Row: {
+          agent_key: string
+          api_calls: number
+          details: Json
+          error: string | null
+          est_cost: number
+          finished_at: string | null
+          id: string
+          items_processed: number
+          message: string | null
+          started_at: string
+          status: string
+          trigger: string
+        }
+        Insert: {
+          agent_key: string
+          api_calls?: number
+          details?: Json
+          error?: string | null
+          est_cost?: number
+          finished_at?: string | null
+          id?: string
+          items_processed?: number
+          message?: string | null
+          started_at?: string
+          status?: string
+          trigger: string
+        }
+        Update: {
+          agent_key?: string
+          api_calls?: number
+          details?: Json
+          error?: string | null
+          est_cost?: number
+          finished_at?: string | null
+          id?: string
+          items_processed?: number
+          message?: string | null
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_runs_agent_key_fkey"
+            columns: ["agent_key"]
+            isOneToOne: false
+            referencedRelation: "research_agents"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      research_sources: {
+        Row: {
+          access_method: string
+          can_publish: boolean
+          created_at: string
+          enabled: boolean
+          id: string
+          kind: string
+          last_checked_at: string | null
+          last_status: string | null
+          name: string
+          notes: string | null
+          permission_evidence: string | null
+          permission_status: string
+          permitted_usage: string | null
+          rate_limit_per_run: number
+          refresh_hours: number
+          url: string
+        }
+        Insert: {
+          access_method: string
+          can_publish?: boolean
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind: string
+          last_checked_at?: string | null
+          last_status?: string | null
+          name: string
+          notes?: string | null
+          permission_evidence?: string | null
+          permission_status?: string
+          permitted_usage?: string | null
+          rate_limit_per_run?: number
+          refresh_hours?: number
+          url: string
+        }
+        Update: {
+          access_method?: string
+          can_publish?: boolean
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind?: string
+          last_checked_at?: string | null
+          last_status?: string | null
+          name?: string
+          notes?: string | null
+          permission_evidence?: string | null
+          permission_status?: string
+          permitted_usage?: string | null
+          rate_limit_per_run?: number
+          refresh_hours?: number
+          url?: string
+        }
+        Relationships: []
+      }
       site_visits: {
         Row: {
           created_at: string
@@ -483,6 +724,140 @@ export type Database = {
           },
         ]
       }
+      source_observations: {
+        Row: {
+          address: string | null
+          analysed_at: string | null
+          analysis: Json | null
+          approval_claims: string[]
+          asking_price: number | null
+          availability: string | null
+          bedrooms: number | null
+          built_area_sqft: number | null
+          content_hash: string | null
+          duplicate_of_observation: string | null
+          duplicate_of_property: string | null
+          external_id: string
+          first_seen_at: string
+          id: string
+          land_area_sqft: number | null
+          last_seen_at: string
+          listed_at: string | null
+          location: string | null
+          missing_since: string | null
+          property_id: string | null
+          property_type: string | null
+          quality_checked_at: string | null
+          quality_flags: string[]
+          raw: Json
+          rera_claim: string | null
+          review_status: string
+          seller_name: string | null
+          source_id: string
+          source_updated_at: string | null
+          source_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          analysed_at?: string | null
+          analysis?: Json | null
+          approval_claims?: string[]
+          asking_price?: number | null
+          availability?: string | null
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          content_hash?: string | null
+          duplicate_of_observation?: string | null
+          duplicate_of_property?: string | null
+          external_id: string
+          first_seen_at?: string
+          id?: string
+          land_area_sqft?: number | null
+          last_seen_at?: string
+          listed_at?: string | null
+          location?: string | null
+          missing_since?: string | null
+          property_id?: string | null
+          property_type?: string | null
+          quality_checked_at?: string | null
+          quality_flags?: string[]
+          raw?: Json
+          rera_claim?: string | null
+          review_status?: string
+          seller_name?: string | null
+          source_id: string
+          source_updated_at?: string | null
+          source_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          analysed_at?: string | null
+          analysis?: Json | null
+          approval_claims?: string[]
+          asking_price?: number | null
+          availability?: string | null
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          content_hash?: string | null
+          duplicate_of_observation?: string | null
+          duplicate_of_property?: string | null
+          external_id?: string
+          first_seen_at?: string
+          id?: string
+          land_area_sqft?: number | null
+          last_seen_at?: string
+          listed_at?: string | null
+          location?: string | null
+          missing_since?: string | null
+          property_id?: string | null
+          property_type?: string | null
+          quality_checked_at?: string | null
+          quality_flags?: string[]
+          raw?: Json
+          rera_claim?: string | null
+          review_status?: string
+          seller_name?: string | null
+          source_id?: string
+          source_updated_at?: string | null
+          source_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_observations_duplicate_of_observation_fkey"
+            columns: ["duplicate_of_observation"]
+            isOneToOne: false
+            referencedRelation: "source_observations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_observations_duplicate_of_property_fkey"
+            columns: ["duplicate_of_property"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_observations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_observations_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "research_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -513,6 +888,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      verify_scheduler_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin"

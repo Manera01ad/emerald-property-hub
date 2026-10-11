@@ -14,3 +14,6 @@
 - Property photos live in a private bucket and are shown via short-lived signed links (workspace blocks public buckets).
 - Purchase-cost rates and contact/WhatsApp numbers come from the app_settings table, never hardcoded, so the owner can change them.
 - The first account that signs up becomes admin (database trigger); further admins must be granted in user_roles.
+- Research engine logic lives in src/lib/research (pure rules in core.ts, I/O in engine.server.ts) and runs with the admin client only from the scheduler route or an admin-checked server function, so agents never run from the browser.
+- The hourly scheduler authenticates with a token kept in the private schema and checked by a service-role-only function, because the publishable key is visible to anyone.
+- Agents only contact sources marked authorised and enabled, read structured feeds only, and never publish: research output becomes draft, unverified listings without listing permission (test-fixture drafts are also marked demo).

@@ -22,6 +22,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesIdRouteImport } from './routes/properties.$id'
+import { Route as ApiPublicResearchTickRouteImport } from './routes/api/public/research/tick'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -87,6 +88,11 @@ const PropertiesIdRoute = PropertiesIdRouteImport.update({
   path: '/properties/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicResearchTickRoute = ApiPublicResearchTickRouteImport.update({
+  id: '/api/public/research/tick',
+  path: '/api/public/research/tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/api/public/research/tick': typeof ApiPublicResearchTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties': typeof PropertiesIndexRoute
+  '/api/public/research/tick': typeof ApiPublicResearchTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/api/public/research/tick': typeof ApiPublicResearchTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/properties/$id'
     | '/properties/'
+    | '/api/public/research/tick'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/properties/$id'
     | '/properties'
+    | '/api/public/research/tick'
   id:
     | '__root__'
     | '/'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/properties/$id'
     | '/properties/'
+    | '/api/public/research/tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
+  ApiPublicResearchTickRoute: typeof ApiPublicResearchTickRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertiesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/research/tick': {
+      id: '/api/public/research/tick'
+      path: '/api/public/research/tick'
+      fullPath: '/api/public/research/tick'
+      preLoaderRoute: typeof ApiPublicResearchTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -313,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   PropertiesIdRoute: PropertiesIdRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,
+  ApiPublicResearchTickRoute: ApiPublicResearchTickRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
