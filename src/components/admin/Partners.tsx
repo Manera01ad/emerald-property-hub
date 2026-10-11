@@ -44,12 +44,13 @@ export function Partners() {
         <Input name="notes" placeholder="Notes" className="md:col-span-7" />
       </form>
       <table className="mt-6 w-full text-sm">
-        <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Name</th><th>Type</th><th>Contact</th><th>RERA</th><th /></tr></thead>
+        <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Name</th><th>Type</th><th>Contact</th><th>RERA</th><th>Agreement</th><th /></tr></thead>
         <tbody>
           {data.map((p) => (
             <tr key={p.id} className="border-b last:border-0">
               <td className="py-2 font-medium">{p.name}<div className="text-xs font-normal text-muted-foreground">{p.notes}</div></td>
               <td>{humanize(p.kind)}</td><td>{[p.phone, p.email].filter(Boolean).join(" · ")}</td><td>{p.rera_number}</td>
+              <td><select className={selectCls + " h-8 w-36"} value={p.agreement_status} onChange={async (e) => { const { error } = await supabase.from("partners").update({ agreement_status: e.target.value }).eq("id", p.id); if (error) toast.error(error.message); inv("partners"); }}>{["none", "in_discussion", "signed", "expired"].map((s) => <option key={s} value={s}>{humanize(s)}</option>)}</select></td>
               <td className="text-right"><Button size="icon" variant="ghost" onClick={() => del(p.id)}><Trash2 /></Button></td>
             </tr>
           ))}

@@ -59,7 +59,8 @@ export function Enquiries() {
                     <Input type="date" className="w-40" defaultValue={e.next_follow_up ?? ""} onBlur={(ev) => ev.target.value !== (e.next_follow_up ?? "") && update(e.id, { next_follow_up: ev.target.value || null })} title="Next follow-up" />
                   </div>
                 </div>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Input className="w-48" placeholder="Assigned consultant" defaultValue={e.assigned_consultant ?? ""} onBlur={(ev) => ev.target.value !== (e.assigned_consultant ?? "") && update(e.id, { assigned_consultant: ev.target.value || null })} />
                   <Textarea rows={1} placeholder="Internal notes" defaultValue={e.admin_notes ?? ""} onChange={(ev) => setNotes({ ...notes, [e.id]: ev.target.value })} />
                   {notes[e.id] !== undefined && <Button size="sm" onClick={() => update(e.id, { admin_notes: notes[e.id] ?? null })}>Save</Button>}
                 </div>

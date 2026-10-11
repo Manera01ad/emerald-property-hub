@@ -10,6 +10,7 @@ export function Overview() {
   const { data: props = [] } = useAdminTable("properties");
   const { data: enq = [] } = useAdminTable("enquiries");
   const { data: com = [] } = useAdminTable("commissions");
+  const { data: visits = [] } = useAdminTable("site_visits", "visit_at");
 
   const months: string[] = [];
   const now = new Date();
@@ -27,6 +28,9 @@ export function Overview() {
   const open = enq.filter((e) => !["won", "lost"].includes(e.status)).length;
   const today = new Date().toISOString().slice(0, 10);
   const due = enq.filter((e) => e.next_follow_up && e.next_follow_up <= today && !["won", "lost"].includes(e.status));
+  const qualified = enq.filter((e) => ["qualified", "site_visit", "negotiation", "won"].includes(e.status)).length;
+  const scheduled = visits.filter((v) => v.status === "scheduled").length;
+  const wonDeals = enq.filter((e) => e.status === "won").length;
 
   return (
     <div className="mt-4 space-y-6">
@@ -46,6 +50,10 @@ export function Overview() {
         <Stat label="Open enquiries" value={open} sub={`${enq.length} total`} />
         <Stat label="Commission expected" value={formatINR(expected)} />
         <Stat label="Commission received" value={formatINR(paid)} sub={`${formatINR(expected - paid)} outstanding`} />
+        <Stat label="Total enquiries" value={enq.length} />
+        <Stat label="Qualified buyers" value={qualified} />
+        <Stat label="Scheduled site visits" value={scheduled} />
+        <Stat label="Won deals" value={wonDeals} />
       </div>
       <Panel>
         <p className="mb-4 font-medium">Monthly performance (last 6 months)</p>

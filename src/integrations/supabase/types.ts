@@ -43,6 +43,7 @@ export type Database = {
           deal_value: number | null
           enquiry_id: string | null
           expected_amount: number
+          fixed_amount: number | null
           id: string
           invoice_date: string | null
           invoice_number: string | null
@@ -52,6 +53,7 @@ export type Database = {
           property_id: string | null
           receipt_number: string | null
           status: string
+          updated_at: string
         }
         Insert: {
           agreement_terms?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           deal_value?: number | null
           enquiry_id?: string | null
           expected_amount?: number
+          fixed_amount?: number | null
           id?: string
           invoice_date?: string | null
           invoice_number?: string | null
@@ -69,6 +72,7 @@ export type Database = {
           property_id?: string | null
           receipt_number?: string | null
           status?: string
+          updated_at?: string
         }
         Update: {
           agreement_terms?: string | null
@@ -77,6 +81,7 @@ export type Database = {
           deal_value?: number | null
           enquiry_id?: string | null
           expected_amount?: number
+          fixed_amount?: number | null
           id?: string
           invoice_date?: string | null
           invoice_number?: string | null
@@ -86,6 +91,7 @@ export type Database = {
           property_id?: string | null
           receipt_number?: string | null
           status?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -114,6 +120,7 @@ export type Database = {
       enquiries: {
         Row: {
           admin_notes: string | null
+          assigned_consultant: string | null
           bedrooms: number | null
           budget: number | null
           consent: boolean
@@ -134,6 +141,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          assigned_consultant?: string | null
           bedrooms?: number | null
           budget?: number | null
           consent: boolean
@@ -154,6 +162,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          assigned_consultant?: string | null
           bedrooms?: number | null
           budget?: number | null
           consent?: boolean
@@ -264,6 +273,7 @@ export type Database = {
       }
       partners: {
         Row: {
+          agreement_status: string
           created_at: string
           email: string | null
           id: string
@@ -274,6 +284,7 @@ export type Database = {
           rera_number: string | null
         }
         Insert: {
+          agreement_status?: string
           created_at?: string
           email?: string | null
           id?: string
@@ -284,6 +295,7 @@ export type Database = {
           rera_number?: string | null
         }
         Update: {
+          agreement_status?: string
           created_at?: string
           email?: string | null
           id?: string
@@ -419,6 +431,54 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_visits: {
+        Row: {
+          created_at: string
+          enquiry_id: string | null
+          id: string
+          notes: string | null
+          property_id: string | null
+          status: string
+          updated_at: string
+          visit_at: string
+        }
+        Insert: {
+          created_at?: string
+          enquiry_id?: string | null
+          id?: string
+          notes?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+          visit_at: string
+        }
+        Update: {
+          created_at?: string
+          enquiry_id?: string | null
+          id?: string
+          notes?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+          visit_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_visits_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_visits_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]

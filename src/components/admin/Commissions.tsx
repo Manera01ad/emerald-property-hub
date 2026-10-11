@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { humanize } from "@/lib/constants";
 import { formatINRFull } from "@/lib/format";
 import { Panel, selectCls, useAdminTable, useInvalidateAdmin } from "./shared";
+import { expectedCommission } from "@/lib/commission";
 
 const STATUSES = ["agreed", "invoiced", "partially_paid", "paid", "cancelled"];
 
@@ -14,20 +15,25 @@ export function Commissions() {
   const { data = [] } = useAdminTable("commissions");
   const { data: partners = [] } = useAdminTable("partners");
   const { data: props = [] } = useAdminTable("properties");
+  const { data: enq = [] } = useAdminTable("enquiries");
   const inv = useInvalidateAdmin();
   const s = (f: FormData, k: string) => String(f.get(k) || "") || null;
+  const n = (f: FormData, k: string) => (f.get(k) ? Number(f.get(k)) : null);
 
   async function add(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const f = new FormData(form);
+    const terms = { commission_pct: n(f, "pct"), fixed_amount: n(f, "fixed"), deal_value: n(f, "deal") };
+    const exp = expectedCommission(terms);
+    if (exp == null) return void toast.error("Enter a fixed amount, or a sale value with a commission %.");
     const { error } = await supabase.from("commissions").insert({
       partner_id: s(f, "partner"),
       property_id: s(f, "property"),
+      enquiry_id: s(f, "enquiry"),
       agreement_terms: s(f, "terms"),
-      commission_pct: f.get("pct") ? Number(f.get("pct")) : null,
-      expected_amount: Number(f.get("expected") || 0),
-      deal_value: f.get("deal") ? Number(f.get("deal")) : null,
+      ...terms,
+      expected_amount: exp,
     });
     if (error) return void toast.error(error.message);
     form.reset();
@@ -42,12 +48,13 @@ export function Commissions() {
   return (
     <Panel>
       <p className="mb-2 font-medium">Record a commission agreement</p>
-      <form onSubmit={add} className="grid gap-2 md:grid-cols-7">
+      <form onSubmit={add} className="grid gap-2 md:grid-cols-4">
         <select name="partner" className={selectCls}><option value="">Partner…</option>{partners.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
         <select name="property" className={selectCls}><option value="">Property…</option>{props.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select>
-        <Input name="deal" type="number" placeholder="Deal value ₹" />
+        <select name="enquiry" className={selectCls}><option value="">Buyer…</option>{enq.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select>
+        <Input name="deal" type="number" placeholder="Agreed sale value ₹" />
         <Input name="pct" type="number" step="0.01" placeholder="Commission %" />
-        <Input name="expected" type="number" placeholder="Expected ₹ *" required />
+        <Input name="fixed" type="number" placeholder="or fixed amount ₹" />
         <Input name="terms" placeholder="Agreement terms" />
         <Button type="submit">Add</Button>
       </form>

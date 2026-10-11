@@ -9,6 +9,7 @@ import { Listings } from "@/components/admin/Listings";
 import { Enquiries } from "@/components/admin/Enquiries";
 import { Partners } from "@/components/admin/Partners";
 import { Commissions } from "@/components/admin/Commissions";
+import { SiteVisits } from "@/components/admin/SiteVisits";
 import { Infrastructure } from "@/components/admin/Infrastructure";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 
@@ -59,6 +60,7 @@ function AdminPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="listings">Listings</TabsTrigger>
           <TabsTrigger value="enquiries">Enquiries</TabsTrigger>
+          <TabsTrigger value="visits">Site visits</TabsTrigger>
           <TabsTrigger value="partners">Partners</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="infra">Infrastructure</TabsTrigger>
@@ -67,6 +69,7 @@ function AdminPage() {
         <TabsContent value="overview"><Overview /></TabsContent>
         <TabsContent value="listings"><Listings /></TabsContent>
         <TabsContent value="enquiries"><Enquiries /></TabsContent>
+        <TabsContent value="visits"><SiteVisits /></TabsContent>
         <TabsContent value="partners"><Partners /></TabsContent>
         <TabsContent value="commissions"><Commissions /></TabsContent>
         <TabsContent value="infra"><Infrastructure /></TabsContent>
