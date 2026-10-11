@@ -17,7 +17,7 @@ export function Enquiries() {
 
   async function update(id: string, patch: Record<string, unknown>) {
     const { error } = await supabase.from("enquiries").update(patch).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     inv("enquiries");
     toast.success("Saved");
   }

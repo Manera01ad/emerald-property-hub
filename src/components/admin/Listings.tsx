@@ -23,9 +23,9 @@ export function Listings() {
   const [filter, setFilter] = useState("");
 
   async function setStatus(p: Property, status: string) {
-    if (status === "published" && !p.listing_permission) return toast.error("Record the owner/developer listing permission before publishing.");
+    if (status === "published" && !p.listing_permission) return void toast.error("Record the owner/developer listing permission before publishing.");
     const { error } = await supabase.from("properties").update({ status }).eq("id", p.id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     inv("properties");
     toast.success(`Listing ${status}`);
   }
@@ -86,7 +86,7 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;
-    if (!permission) return toast.error("Confirm owner permission before uploading photos.");
+    if (!permission) return void toast.error("Confirm owner permission before uploading photos.");
     setBusy(true);
     const added: string[] = [];
     for (const file of Array.from(files)) {
@@ -130,14 +130,14 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
       photos,
       ...docs,
     };
-    if (!payload.title || !(payload.asking_price >= 0)) return toast.error("Title and price are required.");
+    if (!payload.title || !(payload.asking_price >= 0)) return void toast.error("Title and price are required.");
     setBusy(true);
     const q = initial
       ? supabase.from("properties").update(payload).eq("id", initial.id).select().single()
       : supabase.from("properties").insert({ ...payload, status: "draft" }).select().single();
     const { data, error } = await q;
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success(initial ? "Listing updated" : "Draft created — add nearby places, then publish");
     onDone(data as Property);
   }
@@ -229,7 +229,7 @@ function NearbyEditor({ propertyId }: { propertyId: string }) {
       source: String(f.get("source") || "") || null,
       verified: f.get("verified") === "on",
     });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     form.reset();
     qc.invalidateQueries({ queryKey: key });
   }

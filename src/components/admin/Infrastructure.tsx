@@ -30,7 +30,7 @@ export function Infrastructure() {
       source_url: String(f.get("source") || "") || null,
       last_checked: new Date().toISOString().slice(0, 10),
     });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     form.reset();
     inv("infrastructure_projects");
   }

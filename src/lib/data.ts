@@ -6,12 +6,14 @@ import type { CostRules } from "./deal";
 export type Property = Tables<"properties">;
 export type Place = Tables<"nearby_places">;
 
+export type Settings = Partial<Record<"stamp_duty_pct" | "registration_pct" | "legal_fee_flat" | "whatsapp_number" | "contact_email" | "contact_phone", string>>;
+
 export const settingsQuery = queryOptions({
   queryKey: ["settings"],
   queryFn: async () => {
     const { data, error } = await supabase.from("app_settings").select("key,value,label");
     if (error) throw error;
-    return Object.fromEntries((data ?? []).map((r) => [r.key, r.value])) as Record<string, string>;
+    return Object.fromEntries((data ?? []).map((r) => [r.key, r.value])) as Settings;
   },
   staleTime: 60_000,
 });
@@ -20,7 +22,7 @@ export function useSettings() {
   return useQuery(settingsQuery);
 }
 
-export function costRulesFrom(s?: Record<string, string>): CostRules {
+export function costRulesFrom(s?: Settings): CostRules {
   return {
     stampDutyPct: Number(s?.stamp_duty_pct ?? 7),
     registrationPct: Number(s?.registration_pct ?? 2),
