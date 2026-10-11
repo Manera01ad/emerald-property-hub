@@ -61,7 +61,7 @@ export function Enquiries() {
                 </div>
                 <div className="mt-3 flex gap-2">
                   <Textarea rows={1} placeholder="Internal notes" defaultValue={e.admin_notes ?? ""} onChange={(ev) => setNotes({ ...notes, [e.id]: ev.target.value })} />
-                  {notes[e.id] !== undefined && <Button size="sm" onClick={() => update(e.id, { admin_notes: notes[e.id] })}>Save</Button>}
+                  {notes[e.id] !== undefined && <Button size="sm" onClick={() => update(e.id, { admin_notes: notes[e.id] ?? null })}>Save</Button>}
                 </div>
               </div>
             );
