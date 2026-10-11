@@ -27,6 +27,7 @@ export function Commissions() {
       agreement_terms: s(f, "terms"),
       commission_pct: f.get("pct") ? Number(f.get("pct")) : null,
       expected_amount: Number(f.get("expected") || 0),
+      deal_value: f.get("deal") ? Number(f.get("deal")) : null,
     });
     if (error) return void toast.error(error.message);
     form.reset();
@@ -41,29 +42,31 @@ export function Commissions() {
   return (
     <Panel>
       <p className="mb-2 font-medium">Record a commission agreement</p>
-      <form onSubmit={add} className="grid gap-2 md:grid-cols-6">
+      <form onSubmit={add} className="grid gap-2 md:grid-cols-7">
         <select name="partner" className={selectCls}><option value="">Partner…</option>{partners.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
         <select name="property" className={selectCls}><option value="">Property…</option>{props.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select>
+        <Input name="deal" type="number" placeholder="Deal value ₹" />
         <Input name="pct" type="number" step="0.01" placeholder="Commission %" />
         <Input name="expected" type="number" placeholder="Expected ₹ *" required />
         <Input name="terms" placeholder="Agreement terms" />
         <Button type="submit">Add</Button>
       </form>
       <div className="mt-6 overflow-x-auto">
-        <table className="w-full min-w-[900px] text-sm">
-          <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Partner / Property</th><th>Expected</th><th>Invoice #</th><th>Invoice date</th><th>Paid ₹</th><th>Paid date</th><th>Status</th><th /></tr></thead>
+        <table className="w-full min-w-[1000px] text-sm">
+          <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Partner / Property</th><th>Expected</th><th>Invoice #</th><th>Invoice date</th><th>Paid ₹</th><th>Paid date</th><th>Receipt #</th><th>Status</th><th /></tr></thead>
           <tbody>
             {data.map((c) => (
               <tr key={c.id} className="border-b last:border-0">
                 <td className="py-2">
                   <div className="font-medium">{partners.find((p) => p.id === c.partner_id)?.name ?? "—"}</div>
-                  <div className="text-xs text-muted-foreground">{props.find((p) => p.id === c.property_id)?.title} {c.commission_pct && `· ${c.commission_pct}%`} {c.agreement_terms && `· ${c.agreement_terms}`}</div>
+                  <div className="text-xs text-muted-foreground">{props.find((p) => p.id === c.property_id)?.title} {c.deal_value != null && `· Deal ${formatINRFull(c.deal_value)}`} {c.commission_pct && `· ${c.commission_pct}%`} {c.agreement_terms && `· ${c.agreement_terms}`}</div>
                 </td>
                 <td>{formatINRFull(c.expected_amount)}</td>
                 <td><Input className="h-8 w-28" defaultValue={c.invoice_number ?? ""} onBlur={(e) => e.target.value !== (c.invoice_number ?? "") && update(c.id, { invoice_number: e.target.value || null })} /></td>
                 <td><Input className="h-8 w-36" type="date" defaultValue={c.invoice_date ?? ""} onBlur={(e) => update(c.id, { invoice_date: e.target.value || null })} /></td>
                 <td><Input className="h-8 w-28" type="number" defaultValue={c.paid_amount} onBlur={(e) => Number(e.target.value) !== Number(c.paid_amount) && update(c.id, { paid_amount: Number(e.target.value || 0) })} /></td>
                 <td><Input className="h-8 w-36" type="date" defaultValue={c.paid_date ?? ""} onBlur={(e) => update(c.id, { paid_date: e.target.value || null })} /></td>
+                <td><Input className="h-8 w-28" defaultValue={c.receipt_number ?? ""} onBlur={(e) => e.target.value !== (c.receipt_number ?? "") && update(c.id, { receipt_number: e.target.value || null })} /></td>
                 <td><select className={selectCls + " h-8 w-36"} value={c.status} onChange={(e) => update(c.id, { status: e.target.value })}>{STATUSES.map((x) => <option key={x} value={x}>{humanize(x)}</option>)}</select></td>
                 <td><Button size="icon" variant="ghost" onClick={async () => { if (confirm("Delete?")) { await supabase.from("commissions").delete().eq("id", c.id); inv("commissions"); } }}><Trash2 /></Button></td>
               </tr>
