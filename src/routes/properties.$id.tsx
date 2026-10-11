@@ -163,7 +163,7 @@ function PropertyPage() {
                       <ul className="mt-1 space-y-1 text-sm">
                         {list.map((x) => (
                           <li key={x.id} className="flex justify-between gap-2">
-                            <span>{x.name}{!x.verified && <span className="ml-1 text-xs text-warning">(unverified)</span>}</span>
+                            <span>{x.name}{!x.verified && <span className="ml-1 text-xs text-warning">(unverified)</span>}{x.source && <span className="block text-xs text-muted-foreground">Source: {x.source}</span>}</span>
                             <span className="text-muted-foreground">{x.distance_km != null ? `${x.distance_km} km` : "—"}</span>
                           </li>
                         ))}
@@ -173,13 +173,17 @@ function PropertyPage() {
                 })}
               </div>
             )}
+            {p.latitude && p.longitude && import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY && (
+              <iframe title="Property location map" loading="lazy" className="mt-4 h-64 w-full rounded-lg border" referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY}&q=${p.latitude},${p.longitude}&zoom=14`} />
+            )}
             {p.latitude && p.longitude && (
               <a className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline" target="_blank" rel="noreferrer"
                 href={`https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}`}>
                 Open location in Google Maps <ExternalLink className="size-3.5" />
               </a>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">Distances are entered by our team with their source; live map travel times are not yet enabled.</p>
+            <p className="mt-3 text-xs text-muted-foreground">Distances are straight-line estimates with their source shown, not travel distances or times.</p>
           </Section>
         </div>
 

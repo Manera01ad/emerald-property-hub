@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { findNearbyPlaces } from "@/lib/places.functions";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -221,10 +223,32 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
   );
 }
 
-function NearbyEditor({ propertyId }: { propertyId: string }) {
+function NearbyEditor({ propertyId, lat, lng }: { propertyId: string; lat: number | null; lng: number | null }) {
   const qc = useQueryClient();
   const key = ["places", propertyId];
   const { data = [] } = useQuery({ queryKey: key, queryFn: async () => (await supabase.from("nearby_places").select("*").eq("property_id", propertyId).order("category")).data ?? [] });
+  const findFn = useServerFn(findNearbyPlaces);
+  const [gCat, setGCat] = useState("cbse_school");
+  const [found, setFound] = useState<{ id: string; name: string; address: string; distance_km: number }[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  async function search() {
+    if (lat == null || lng == null) return void toast.error("Save latitude and longitude for this listing first.");
+    setSearching(true);
+    try { setFound(await findFn({ data: { lat: Number(lat), lng: Number(lng), category: gCat as "cbse_school" } })); }
+    catch (e) { toast.error((e as Error).message); }
+    setSearching(false);
+  }
+
+  async function addFound(x: { name: string; distance_km: number }) {
+    const { error } = await supabase.from("nearby_places").insert({
+      property_id: propertyId, category: gCat, name: x.name, distance_km: x.distance_km,
+      source: "Google Maps (straight-line distance)", verified: false,
+    });
+    if (error) return void toast.error(error.message);
+    setFound((f) => f?.filter((y) => y.name !== x.name) ?? null);
+    qc.invalidateQueries({ queryKey: key });
+  }
 
   async function add(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -247,6 +271,22 @@ function NearbyEditor({ propertyId }: { propertyId: string }) {
     <div className="border-t pt-4">
       <p className="font-medium">Nearby places</p>
       <p className="text-xs text-muted-foreground">Enter distances only from a reliable source (e.g. measured on Google Maps) and note it.</p>
+      <div className="mt-3 rounded-lg bg-muted p-3">
+        <p className="text-sm font-medium">Find with Google Maps</p>
+        <p className="text-xs text-muted-foreground">Suggestions only. Google doesn't confirm CBSE affiliation — check each school before marking it verified.</p>
+        <div className="mt-2 flex gap-2">
+          <select className={selectCls + " max-w-56"} value={gCat} onChange={(e) => { setGCat(e.target.value); setFound(null); }}>{Object.entries(PLACE_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+          <Button type="button" size="sm" variant="outline" onClick={search} disabled={searching}>{searching ? "Searching…" : "Search nearby"}</Button>
+        </div>
+        {found && (found.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">No results found.</p> : (
+          <ul className="mt-2 space-y-1 text-sm">{found.map((x) => (
+            <li key={x.id} className="flex items-center justify-between gap-2">
+              <span>{x.name} · {x.distance_km} km <span className="text-xs text-muted-foreground">{x.address}</span></span>
+              <Button type="button" size="sm" variant="ghost" onClick={() => addFound(x)}><Plus /> Add</Button>
+            </li>
+          ))}</ul>
+        ))}
+      </div>
       <form onSubmit={add} className="mt-3 grid gap-2 sm:grid-cols-6">
         <select name="category" className={selectCls + " sm:col-span-2"}>{Object.entries(PLACE_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
         <Input name="name" placeholder="Name *" required className="sm:col-span-2" />
