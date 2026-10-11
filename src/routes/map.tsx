@@ -75,6 +75,7 @@ function MapPage() {
 
   useEffect(() => {
     if (window.location.hostname.includes("-devserver-")) { setStatus("error"); setMapErr("The live map is hidden in this private preview. Open the published site to see it."); return; }
+    (window as any).gm_authFailure = () => { setStatus("error"); setMapErr("Google Maps refused this website address. The map works only on the PropWise site addresses the key allows."); };
     loadMaps().then(() => {
       if (!el.current) return;
       const g = window.google.maps;
