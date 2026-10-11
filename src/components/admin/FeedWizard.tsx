@@ -27,7 +27,7 @@ export function FeedWizard({ onChange }: { onChange: () => void }) {
     const parsed = parseCsv(await file.text());
     if (!parsed.length) return void toast.error("No rows found in that file.");
     setRows(parsed);
-    const cols = Object.keys(parsed[0]);
+    const cols = Object.keys(parsed[0] ?? {});
     setColumns(cols);
     // Pre-fill obvious matches
     setMap(Object.fromEntries(MAPPABLE_FIELDS.map((m) => [m, cols.find((c) => c.toLowerCase().replace(/\W/g, "") === m.replace(/_/g, "")) ?? ""])));
