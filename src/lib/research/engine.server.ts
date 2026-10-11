@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables, TablesInsert } from "@/integrations/supabase/types";
-import { analyse, classifyPriceChange, isLikelyDuplicate, normaliseItem, qualityCheck, type NormalisedListing, type RawItem } from "./core";
+import { analyse, applyMapping, classifyPriceChange, isLikelyDuplicate, normaliseItem, qualityCheck, type NormalisedListing, type RawItem } from "./core";
 import { fixtureListings } from "./fixture";
 
 type DB = SupabaseClient<Database>;
@@ -60,7 +60,8 @@ async function loadItems(src: Source): Promise<RawItem[]> {
   const json = await fetchWithRetry(src.url);
   const items = Array.isArray(json) ? json : ((json as { listings?: unknown; items?: unknown })?.listings ?? (json as { items?: unknown })?.items);
   if (!Array.isArray(items)) throw new Error("Feed did not return a list of listings");
-  return items as RawItem[];
+  const mapping = (src.field_mapping ?? {}) as Record<string, string>;
+  return (items as Record<string, unknown>[]).map((it) => applyMapping(it, mapping));
 }
 
 async function readFeed(db: DB, src: Source) {
@@ -246,7 +247,7 @@ async function infrastructure(db: DB, limit: number): Promise<Result> {
   let n = 0;
   for (const src of sources) {
     const items = (await loadItems(src)).slice(0, Math.min(limit, src.rate_limit_per_run));
-    for (const it of items) {
+    for (const it of items as (RawItem & { document_url?: unknown; facts?: unknown })[]) {
       const ref = String(it.id ?? "").slice(0, 200);
       const name = String(it.name ?? "").slice(0, 200);
       if (!ref || !name) continue;
@@ -256,6 +257,9 @@ async function infrastructure(db: DB, limit: number): Promise<Result> {
         source_url: it.url ? String(it.url) : src.url, authority: it.authority ? String(it.authority) : null,
         published_on: it.published_on ? String(it.published_on).slice(0, 10) : null, last_checked: new Date().toISOString().slice(0, 10),
         source_id: src.id, external_ref: ref,
+        document_url: it.document_url ? String(it.document_url).slice(0, 1000) : null,
+        extracted_facts: (it.facts && typeof it.facts === "object" ? it.facts : { name, status: it.status ?? null, authority: it.authority ?? null }) as never,
+        extracted_at: new Date().toISOString(),
       };
       const { data: ex } = await db.from("infrastructure_projects").select("id").eq("source_id", src.id).eq("external_ref", ref).maybeSingle();
       // New records stay unpublished and unverified until an admin reviews them.
@@ -269,7 +273,7 @@ async function infrastructure(db: DB, limit: number): Promise<Result> {
 }
 
 /** Runs one agent with a database lease (single-flight), timeout, cost cap and a run log. */
-export async function runAgent(db: DB, key: AgentKey, trigger: Trigger, opts: { ignorePause?: boolean } = {}) {
+export async function runAgent(db: DB, key: AgentKey, trigger: Trigger, opts: { ignorePause?: boolean; tickId?: string | null } = {}) {
   const now = new Date();
   const { data: agent } = await db.from("research_agents").select("*").eq("key", key).single();
   if (!agent) throw new Error(`Unknown agent ${key}`);
@@ -282,7 +286,7 @@ export async function runAgent(db: DB, key: AgentKey, trigger: Trigger, opts: { 
   const month = now.toISOString().slice(0, 7);
   const spent = agent.cost_month === month ? Number(agent.est_cost_month) : 0;
   const calls = agent.cost_month === month ? agent.api_calls_month : 0;
-  const { data: run } = await db.from("research_runs").insert({ agent_key: key, trigger }).select("id").single();
+  const { data: run } = await db.from("research_runs").insert({ agent_key: key, trigger, tick_id: opts.tickId ?? null }).select("id").single();
   let r: Result;
   let error: string | null = null;
   try {
@@ -313,7 +317,7 @@ export async function runAgent(db: DB, key: AgentKey, trigger: Trigger, opts: { 
 }
 
 /** Scheduler entry: runs every active agent that is due, in pipeline order. Analysis follows source updates. */
-export async function runDueAgents(db: DB) {
+export async function runDueAgents(db: DB, tickId: string | null = null) {
   const { data: due } = await db.from("research_agents").select("key").eq("status", "active").lte("next_run_at", new Date().toISOString());
   const dueKeys = new Set((due ?? []).map((d) => d.key));
   const results = [];
@@ -321,9 +325,42 @@ export async function runDueAgents(db: DB) {
   for (const key of AGENT_KEYS) {
     const followUp = sourceUpdated && (key === "quality" || key === "deal_analysis");
     if (!dueKeys.has(key) && !followUp) continue;
-    const r = await runAgent(db, key, "schedule");
+    const r = await runAgent(db, key, "schedule", { tickId });
     if ((key === "discovery" || key === "price_monitor") && r.status === "success") sourceUpdated = true;
     results.push(r);
   }
   return results;
+}
+
+/** Imports rows uploaded by an admin from an authorised CSV source. New rows become pending observations; known rows get price-change history. Nothing is published. */
+export async function ingestCsvRows(db: DB, sourceId: string, rows: Record<string, unknown>[]) {
+  const { data: src } = await db.from("research_sources").select("*").eq("id", sourceId).single();
+  if (!src) throw new Error("Source not found");
+  if (src.access_method !== "csv_upload") throw new Error("This source is not a CSV source");
+  if (!src.enabled || src.permission_status !== "authorised" || !src.permission_evidence) throw new Error("Source must be authorised, enabled and have permission evidence before importing");
+  const mapping = (src.field_mapping ?? {}) as Record<string, string>;
+  const listings = rows.slice(0, src.rate_limit_per_run).map((r) => normaliseItem(applyMapping(r, mapping))).filter((x): x is NormalisedListing => !!x);
+  const { data: known } = await db.from("source_observations").select("*").eq("source_id", src.id);
+  const byId = new Map((known ?? []).map((o) => [o.external_id, o]));
+  const now = new Date().toISOString();
+  let added = 0, changed = 0;
+  const fresh = listings.filter((l) => !byId.has(l.external_id));
+  if (fresh.length) {
+    const { data: ins, error } = await db.from("source_observations").upsert(fresh.map((l) => ({ ...l, source_id: src.id, raw: l as never })), { onConflict: "source_id,external_id", ignoreDuplicates: true }).select("id,asking_price,source_url");
+    if (error) throw error;
+    if (ins?.length) await db.from("price_history").insert(ins.map((o) => ({ observation_id: o.id, price: o.asking_price, change_type: "initial", source_url: o.source_url, evidence: { source: src.name, via: "csv" } })));
+    added = ins?.length ?? 0;
+  }
+  for (const l of listings) {
+    const o = byId.get(l.external_id);
+    if (!o) continue;
+    const pc = classifyPriceChange(o.asking_price, l.asking_price);
+    if (pc) {
+      await db.from("price_history").insert({ observation_id: o.id, property_id: o.property_id, price: l.asking_price, previous_price: o.asking_price, change_type: pc, source_url: l.source_url, evidence: { source: src.name, via: "csv", checked_at: now } });
+      changed++;
+    }
+    await db.from("source_observations").update(pc || l.content_hash !== o.content_hash ? { ...l, raw: l as never, last_seen_at: now, quality_checked_at: null, analysed_at: null } : { last_seen_at: now }).eq("id", o.id);
+  }
+  await db.from("research_sources").update({ last_checked_at: now, last_status: `ok: CSV ${listings.length} rows read, ${added} new, ${changed} price changes` }).eq("id", src.id);
+  return { read: listings.length, ignored: rows.length - listings.length, added, changed };
 }

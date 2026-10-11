@@ -207,3 +207,42 @@ export function analyse(o: Comparable & { rera_claim?: string | null; approval_c
     note: "Based on asking prices only — not transaction prices, guideline values or legal verification.",
   };
 }
+
+/** Renames source fields to PropWise fields using an admin-defined mapping { propwiseField: sourceField }. Unmapped fields pass through. */
+export function applyMapping(item: Record<string, unknown>, mapping: Record<string, string>): RawItem {
+  const out: Record<string, unknown> = { ...item };
+  for (const [target, from] of Object.entries(mapping)) {
+    if (from && from in item) out[target] = item[from];
+  }
+  return out as RawItem;
+}
+
+/** Minimal RFC-4180 CSV parser (quoted fields, escaped quotes, CRLF). First row is the header. */
+export function parseCsv(text: string): Record<string, string>[] {
+  const rows: string[][] = [];
+  let row: string[] = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') q = false;
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); cell = "";
+      if (row.some((x) => x.trim())) rows.push(row);
+      row = [];
+    } else cell += c;
+  }
+  row.push(cell);
+  if (row.some((x) => x.trim())) rows.push(row);
+  const [head, ...body] = rows;
+  if (!head) return [];
+  const keys = head.map((h) => h.trim());
+  return body.map((r) => Object.fromEntries(keys.map((k, i) => [k, (r[i] ?? "").trim()])));
+}
+
+/** PropWise fields an admin can map a feed or CSV column to. */
+export const MAPPABLE_FIELDS = ["id", "url", "title", "property_type", "location", "address", "price", "land_area_sqft", "built_area_sqft", "bedrooms", "seller", "listed_at", "updated_at", "rera", "availability"] as const;

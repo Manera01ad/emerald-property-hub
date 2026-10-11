@@ -44,3 +44,20 @@ describe("research engine", () => {
     expect(a.estimated_total_cost).toBe(10915000);
   });
 });
+
+import { applyMapping, parseCsv } from "./core";
+describe("feed onboarding helpers", () => {
+  it("parses quoted CSV with commas, quotes and CRLF", () => {
+    const rows = parseCsv('ref,Price,Name\r\nA1,"52,00,000","Villa ""East"""\r\nA2,4800000,Plot\r\n');
+    expect(rows).toEqual([{ ref: "A1", Price: "52,00,000", Name: 'Villa "East"' }, { ref: "A2", Price: "4800000", Name: "Plot" }]);
+  });
+  it("maps source columns onto PropWise fields so listings normalise", () => {
+    const n = normaliseItem(applyMapping({ ref: "A1", Price: "52,00,000", Kind: "Flat" }, { id: "ref", price: "Price", property_type: "Kind" }));
+    expect(n?.external_id).toBe("A1");
+    expect(n?.asking_price).toBe(5200000);
+    expect(n?.property_type).toBe("apartment");
+  });
+  it("rows without a mapped id are ignored", () => {
+    expect(normaliseItem(applyMapping({ ref: "" }, { id: "ref" }))).toBeNull();
+  });
+});
