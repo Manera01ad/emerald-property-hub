@@ -1,6 +1,7 @@
 /** Pure research-engine logic (no I/O) so it can be unit tested. */
 
-export type RawItem = Record<string, unknown>;
+type RawKey = "id" | "external_id" | "listing_id" | "approvals" | "url" | "source_url" | "title" | "property_type" | "type" | "locality" | "location" | "address" | "price" | "asking_price" | "land_area_sqft" | "land_area" | "built_area_sqft" | "built_area" | "bedrooms" | "seller" | "developer" | "listed_at" | "listing_date" | "updated_at" | "update_date" | "rera" | "rera_number" | "availability" | "status" | "name" | "description" | "authority" | "published_on";
+export type RawItem = Partial<Record<RawKey, unknown>>;
 
 export type NormalisedListing = {
   external_id: string;

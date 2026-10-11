@@ -20,11 +20,12 @@ describe("research engine", () => {
     expect(classifyPriceChange(null, 100)).toBeNull();
   });
   it("detects the fixture repost as a duplicate", () => {
-    const [, , b, , , repost] = fixtureListings("a").map((x) => normaliseItem(x)!);
+    const all = fixtureListings("a").map((x) => normaliseItem(x)!);
+    const b = all[2]!, repost = all[5]!;
     expect(isLikelyDuplicate({ id: "1", ...b }, { id: "2", ...repost })).toBe(true);
   });
   it("does not match different localities", () => {
-    const n = normaliseItem(fixtureListings("a")[0])!;
+    const n = normaliseItem(fixtureListings("a")[0]!)!;
     expect(isLikelyDuplicate({ id: "1", ...n }, { id: "2", ...n, location: "Tambaram" })).toBe(false);
   });
   it("quarantines a listing with no price", () => {
