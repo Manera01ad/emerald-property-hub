@@ -177,7 +177,7 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
         </div>
         <div className="space-y-2"><Label>Documents recorded</Label>
           <div className="grid gap-2 sm:grid-cols-2">{DOCS.map((d) => (
-            <label key={d.key} className="flex items-center gap-1.5 text-sm"><Checkbox checked={docs[d.key]} onCheckedChange={(v) => setDocs({ ...docs, [d.key]: v === true })} />{d.label}</label>
+            <label key={d.key} className="flex items-center gap-1.5 text-sm"><Checkbox checked={!!docs[d.key]} onCheckedChange={(v) => setDocs({ ...docs, [d.key]: v === true })} />{d.label}</label>
           ))}</div>
         </div>
         <div className="grid gap-3 rounded-lg bg-muted p-4 sm:grid-cols-2">

@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +16,7 @@ export function Enquiries() {
   const [filter, setFilter] = useState("");
   const [notes, setNotes] = useState<Record<string, string>>({});
 
-  async function update(id: string, patch: Record<string, unknown>) {
+  async function update(id: string, patch: TablesUpdate<"enquiries">) {
     const { error } = await supabase.from("enquiries").update(patch).eq("id", id);
     if (error) return void toast.error(error.message);
     inv("enquiries");

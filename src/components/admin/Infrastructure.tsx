@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +13,7 @@ const STATUSES = ["announced", "approved", "under_construction", "completed", "s
 export function Infrastructure() {
   const { data = [] } = useAdminTable("infrastructure_projects");
   const inv = useInvalidateAdmin();
-  const up = async (id: string, patch: Record<string, unknown>) => {
+  const up = async (id: string, patch: TablesUpdate<"infrastructure_projects">) => {
     const { error } = await supabase.from("infrastructure_projects").update(patch).eq("id", id);
     if (error) toast.error(error.message);
     inv("infrastructure_projects");

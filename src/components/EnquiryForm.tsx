@@ -48,7 +48,7 @@ export function EnquiryForm({
       consent,
     });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
+      toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
       return;
     }
     setBusy(true);
