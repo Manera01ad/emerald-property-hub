@@ -15,6 +15,13 @@
       "when": 1791720670329,
       "tag": "0001_listing_compliance_and_commission_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791721252214,
+      "tag": "0002_site_visits_and_crm_fields",
+      "breakpoints": true
     }
   ]
 }
