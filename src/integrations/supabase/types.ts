@@ -196,7 +196,10 @@ export type Database = {
           authority: string | null
           created_at: string
           description: string | null
+          document_url: string | null
           external_ref: string | null
+          extracted_at: string | null
+          extracted_facts: Json | null
           id: string
           is_published: boolean
           last_checked: string | null
@@ -212,7 +215,10 @@ export type Database = {
           authority?: string | null
           created_at?: string
           description?: string | null
+          document_url?: string | null
           external_ref?: string | null
+          extracted_at?: string | null
+          extracted_facts?: Json | null
           id?: string
           is_published?: boolean
           last_checked?: string | null
@@ -228,7 +234,10 @@ export type Database = {
           authority?: string | null
           created_at?: string
           description?: string | null
+          document_url?: string | null
           external_ref?: string | null
+          extracted_at?: string | null
+          extracted_facts?: Json | null
           id?: string
           is_published?: boolean
           last_checked?: string | null
@@ -579,6 +588,7 @@ export type Database = {
           message: string | null
           started_at: string
           status: string
+          tick_id: string | null
           trigger: string
         }
         Insert: {
@@ -593,6 +603,7 @@ export type Database = {
           message?: string | null
           started_at?: string
           status?: string
+          tick_id?: string | null
           trigger: string
         }
         Update: {
@@ -607,6 +618,7 @@ export type Database = {
           message?: string | null
           started_at?: string
           status?: string
+          tick_id?: string | null
           trigger?: string
         }
         Relationships: [
@@ -617,14 +629,23 @@ export type Database = {
             referencedRelation: "research_agents"
             referencedColumns: ["key"]
           },
+          {
+            foreignKeyName: "research_runs_tick_id_fkey"
+            columns: ["tick_id"]
+            isOneToOne: false
+            referencedRelation: "research_ticks"
+            referencedColumns: ["id"]
+          },
         ]
       }
       research_sources: {
         Row: {
           access_method: string
+          api_docs_url: string | null
           can_publish: boolean
           created_at: string
           enabled: boolean
+          field_mapping: Json
           id: string
           kind: string
           last_checked_at: string | null
@@ -636,13 +657,16 @@ export type Database = {
           permitted_usage: string | null
           rate_limit_per_run: number
           refresh_hours: number
+          source_identity: string | null
           url: string
         }
         Insert: {
           access_method: string
+          api_docs_url?: string | null
           can_publish?: boolean
           created_at?: string
           enabled?: boolean
+          field_mapping?: Json
           id?: string
           kind: string
           last_checked_at?: string | null
@@ -654,13 +678,16 @@ export type Database = {
           permitted_usage?: string | null
           rate_limit_per_run?: number
           refresh_hours?: number
+          source_identity?: string | null
           url: string
         }
         Update: {
           access_method?: string
+          api_docs_url?: string | null
           can_publish?: boolean
           created_at?: string
           enabled?: boolean
+          field_mapping?: Json
           id?: string
           kind?: string
           last_checked_at?: string | null
@@ -672,7 +699,35 @@ export type Database = {
           permitted_usage?: string | null
           rate_limit_per_run?: number
           refresh_hours?: number
+          source_identity?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      research_ticks: {
+        Row: {
+          agents: Json
+          error: string | null
+          finished_at: string | null
+          id: string
+          origin: string
+          started_at: string
+        }
+        Insert: {
+          agents?: Json
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          origin: string
+          started_at?: string
+        }
+        Update: {
+          agents?: Json
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          origin?: string
+          started_at?: string
         }
         Relationships: []
       }
