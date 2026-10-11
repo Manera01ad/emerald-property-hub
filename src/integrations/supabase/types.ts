@@ -14,16 +14,430 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          key: string
+          label: string | null
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          label?: string | null
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          label?: string | null
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      commissions: {
+        Row: {
+          agreement_terms: string | null
+          commission_pct: number | null
+          created_at: string
+          enquiry_id: string | null
+          expected_amount: number
+          id: string
+          invoice_date: string | null
+          invoice_number: string | null
+          paid_amount: number
+          paid_date: string | null
+          partner_id: string | null
+          property_id: string | null
+          status: string
+        }
+        Insert: {
+          agreement_terms?: string | null
+          commission_pct?: number | null
+          created_at?: string
+          enquiry_id?: string | null
+          expected_amount?: number
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          paid_amount?: number
+          paid_date?: string | null
+          partner_id?: string | null
+          property_id?: string | null
+          status?: string
+        }
+        Update: {
+          agreement_terms?: string | null
+          commission_pct?: number | null
+          created_at?: string
+          enquiry_id?: string | null
+          expected_amount?: number
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          paid_amount?: number
+          paid_date?: string | null
+          partner_id?: string | null
+          property_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enquiries: {
+        Row: {
+          admin_notes: string | null
+          bedrooms: number | null
+          budget: number | null
+          consent: boolean
+          created_at: string
+          email: string | null
+          enquiry_type: string
+          id: string
+          message: string | null
+          name: string
+          next_follow_up: string | null
+          phone: string
+          preferred_locations: string[]
+          preferred_visit_date: string | null
+          property_id: string | null
+          property_types: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          bedrooms?: number | null
+          budget?: number | null
+          consent: boolean
+          created_at?: string
+          email?: string | null
+          enquiry_type: string
+          id?: string
+          message?: string | null
+          name: string
+          next_follow_up?: string | null
+          phone: string
+          preferred_locations?: string[]
+          preferred_visit_date?: string | null
+          property_id?: string | null
+          property_types?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          bedrooms?: number | null
+          budget?: number | null
+          consent?: boolean
+          created_at?: string
+          email?: string | null
+          enquiry_type?: string
+          id?: string
+          message?: string | null
+          name?: string
+          next_follow_up?: string | null
+          phone?: string
+          preferred_locations?: string[]
+          preferred_visit_date?: string | null
+          property_id?: string | null
+          property_types?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      infrastructure_projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          last_checked: string | null
+          location: string
+          name: string
+          progress_status: string
+          source_url: string | null
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          last_checked?: string | null
+          location: string
+          name: string
+          progress_status?: string
+          source_url?: string | null
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          last_checked?: string | null
+          location?: string
+          name?: string
+          progress_status?: string
+          source_url?: string | null
+          verified?: boolean
+        }
+        Relationships: []
+      }
+      nearby_places: {
+        Row: {
+          category: string
+          created_at: string
+          distance_km: number | null
+          id: string
+          name: string
+          property_id: string
+          source: string | null
+          verified: boolean
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          distance_km?: number | null
+          id?: string
+          name: string
+          property_id: string
+          source?: string | null
+          verified?: boolean
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          distance_km?: number | null
+          id?: string
+          name?: string
+          property_id?: string
+          source?: string | null
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nearby_places_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          kind: string
+          name: string
+          notes: string | null
+          phone: string | null
+          rera_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          rera_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          rera_number?: string | null
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          amenities: string[]
+          approvals: string[]
+          asking_price: number
+          availability: string
+          bedrooms: number | null
+          built_area_sqft: number | null
+          created_at: string
+          description: string | null
+          doc_approved_plan: boolean
+          doc_building_permit: boolean
+          doc_encumbrance: boolean
+          doc_patta: boolean
+          doc_title_deed: boolean
+          guideline_value: number | null
+          id: string
+          is_demo: boolean
+          land_area_sqft: number | null
+          latitude: number | null
+          listing_permission: boolean
+          location: string
+          longitude: number | null
+          partner_id: string | null
+          permission_evidence: string | null
+          photos: string[]
+          property_type: string
+          rera_number: string | null
+          source: string | null
+          status: string
+          title: string
+          updated_at: string
+          verification_evidence: string | null
+          verification_status: string
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[]
+          approvals?: string[]
+          asking_price: number
+          availability?: string
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          created_at?: string
+          description?: string | null
+          doc_approved_plan?: boolean
+          doc_building_permit?: boolean
+          doc_encumbrance?: boolean
+          doc_patta?: boolean
+          doc_title_deed?: boolean
+          guideline_value?: number | null
+          id?: string
+          is_demo?: boolean
+          land_area_sqft?: number | null
+          latitude?: number | null
+          listing_permission?: boolean
+          location: string
+          longitude?: number | null
+          partner_id?: string | null
+          permission_evidence?: string | null
+          photos?: string[]
+          property_type: string
+          rera_number?: string | null
+          source?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          verification_evidence?: string | null
+          verification_status?: string
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[]
+          approvals?: string[]
+          asking_price?: number
+          availability?: string
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          created_at?: string
+          description?: string | null
+          doc_approved_plan?: boolean
+          doc_building_permit?: boolean
+          doc_encumbrance?: boolean
+          doc_patta?: boolean
+          doc_title_deed?: boolean
+          guideline_value?: number | null
+          id?: string
+          is_demo?: boolean
+          land_area_sqft?: number | null
+          latitude?: number | null
+          listing_permission?: boolean
+          location?: string
+          longitude?: number | null
+          partner_id?: string | null
+          permission_evidence?: string | null
+          photos?: string[]
+          property_type?: string
+          rera_number?: string | null
+          source?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          verification_evidence?: string | null
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +564,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+    },
   },
 } as const
