@@ -13,6 +13,7 @@ import { costRulesFrom, publicPropertiesQuery, usePhotoUrls, useSettings, whatsa
 import { dealScore, negotiationHints, pricePerSqft, purchaseCost } from "@/lib/deal";
 import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
+import { hiddenReasons } from "@/lib/visibility";
 
 export const Route = createFileRoute("/properties/$id")({
   head: () => ({
@@ -28,9 +29,13 @@ export const Route = createFileRoute("/properties/$id")({
 
 function PropertyPage() {
   const { id } = Route.useParams();
-  const { data: p, isLoading } = useQuery({
+  const { data: p, isLoading, isError, refetch } = useQuery({
     queryKey: ["property", id],
-    queryFn: async () => (await supabase.from("properties").select("*").eq("id", id).maybeSingle()).data,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("properties").select("*").eq("id", id).maybeSingle();
+      if (error && error.code !== "22P02") throw error; // 22P02 = malformed id → treat as not found
+      return data ?? null;
+    },
   });
   const { data: places = [] } = useQuery({
     queryKey: ["places", id],
@@ -44,6 +49,13 @@ function PropertyPage() {
   const { has, toggle } = useCompare();
 
   if (isLoading) return <div className="mx-auto max-w-7xl px-4 py-20 text-muted-foreground">Loading…</div>;
+  if (isError) return (
+    <div className="mx-auto max-w-xl px-4 py-24 text-center">
+      <h1 className="text-3xl">Couldn't load this listing</h1>
+      <p className="mt-2 text-muted-foreground">Please check your connection and try again.</p>
+      <Button className="mt-6" onClick={() => refetch()}>Try again</Button>
+    </div>
+  );
   if (!p) return (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
       <h1 className="text-3xl">Listing not available</h1>
@@ -58,12 +70,14 @@ function PropertyPage() {
   const hints = negotiationHints(p, pool);
   const ppsf = pricePerSqft(p);
   const wa = whatsappLink(settings?.whatsapp_number, `Hi PropWise, I'm interested in: ${p.title} (${p.location})`);
+  const hidden = hiddenReasons(p);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      {p.is_demo && (
-        <div className="mb-6 flex items-center gap-2 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning">
-          <AlertTriangle className="size-4" /> DEMO record for testing only — not a real property and hidden from the public.
+      {hidden.length > 0 && (
+        <div className="mb-6 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning">
+          <p className="flex items-center gap-2 font-semibold"><AlertTriangle className="size-4" /> Admin preview — this listing is NOT visible to the public</p>
+          <ul className="mt-1 list-disc pl-10">{hidden.map((r) => <li key={r}>{r}</li>)}</ul>
         </div>
       )}
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">

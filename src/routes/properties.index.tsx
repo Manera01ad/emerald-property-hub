@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { z } from "zod";
@@ -42,7 +42,7 @@ const sel = "h-9 w-full rounded-md border border-input bg-background px-2 text-s
 function PropertiesPage() {
   const s = Route.useSearch();
   const navigate = useNavigate({ from: "/properties/" });
-  const { data, isLoading } = useQuery(publicPropertiesQuery);
+  const { data, isLoading, isError } = useQuery(publicPropertiesQuery);
   const { data: settings } = useSettings();
   const rules = costRulesFrom(settings);
   const set = (patch: Partial<Search>) => navigate({ search: (prev) => ({ ...prev, ...patch }) });
@@ -103,7 +103,15 @@ function PropertiesPage() {
         </aside>
         <div>
           <p className="mb-4 text-sm text-muted-foreground">{isLoading ? "Loading…" : `${results.length} properties`}</p>
-          {!isLoading && results.length === 0 ? (
+          {isError ? (
+            <div className="rounded-xl border border-dashed p-12 text-center text-destructive">Couldn't load listings. Please refresh to try again.</div>
+          ) : !isLoading && (data ?? []).length === 0 ? (
+            <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
+              <p className="font-medium text-foreground">No verified listings are live yet.</p>
+              <p className="mt-1 text-sm">We only show properties whose owner or developer has given us permission. Tell us what you need and a consultant will help you search.</p>
+              <Button asChild variant="gold" className="mt-4"><Link to="/consult">Request a consultation</Link></Button>
+            </div>
+          ) : !isLoading && results.length === 0 ? (
             <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">No listings match these filters yet.</div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{results.map((p) => <PropertyCard key={p.id} p={p} />)}</div>
