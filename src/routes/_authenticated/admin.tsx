@@ -13,6 +13,7 @@ import { SiteVisits } from "@/components/admin/SiteVisits";
 import { Infrastructure } from "@/components/admin/Infrastructure";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { ResearchAgents } from "@/components/admin/ResearchAgents";
+import { Buyers } from "@/components/admin/Buyers";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -61,6 +62,7 @@ function AdminPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="listings">Listings</TabsTrigger>
           <TabsTrigger value="enquiries">Enquiries</TabsTrigger>
+          <TabsTrigger value="buyers">Buyers & renters</TabsTrigger>
           <TabsTrigger value="visits">Site visits</TabsTrigger>
           <TabsTrigger value="partners">Partners</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
