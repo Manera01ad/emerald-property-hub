@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { findNearbyPlaces } from "@/lib/places.functions";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { hiddenReasons, isPubliclyVisible } from "@/lib/visibility";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,8 +43,8 @@ export function Listings() {
         <Button onClick={() => setEditing("new")}><Plus /> New listing</Button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-sm">
-          <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Title</th><th>Price</th><th>Status</th><th>Verification</th><th>Permission</th><th /></tr></thead>
+        <table className="w-full min-w-[980px] text-sm">
+          <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Title</th><th>Price</th><th>Status</th><th>Verification</th><th>Permission</th><th>Public visibility</th><th /></tr></thead>
           <tbody>
             {rows.map((p) => (
               <tr key={p.id} className="border-b last:border-0">
@@ -60,7 +61,16 @@ export function Listings() {
                 </td>
                 <td><VerificationBadge status={p.verification_status} />{p.verification_expiry && p.verification_expiry < new Date().toISOString().slice(0, 10) && <div className="text-xs text-destructive">Expired {p.verification_expiry}</div>}</td>
                 <td>{p.listing_permission ? "Yes" : <span className="text-destructive">Missing</span>}</td>
-                <td className="text-right"><Button size="icon" variant="ghost" onClick={() => setEditing(p)}><Pencil /></Button></td>
+                <td className="max-w-56 text-xs">
+                  {isPubliclyVisible(p) ? <span className="font-medium text-success">Public</span> : (
+                    <div><span className="font-medium text-warning">Hidden:</span>
+                      <ul className="list-disc pl-4 text-muted-foreground">{hiddenReasons(p).map((r) => <li key={r}>{r}</li>)}</ul></div>
+                  )}
+                </td>
+                <td className="whitespace-nowrap text-right">
+                  <Button asChild size="sm" variant="ghost"><Link to="/properties/$id" params={{ id: p.id }}><Eye /> {isPubliclyVisible(p) ? "View" : "Preview draft"}</Link></Button>
+                  <Button size="icon" variant="ghost" onClick={() => setEditing(p)}><Pencil /></Button>
+                </td>
               </tr>
             ))}
           </tbody>
