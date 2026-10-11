@@ -17,6 +17,7 @@ import { Route as ConsultRouteImport } from './routes/consult'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResearchServicesRouteImport } from './routes/research-services'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -64,6 +65,11 @@ const DisclaimerRoute = DisclaimerRouteImport.update({
 const InfrastructureRoute = InfrastructureRouteImport.update({
   id: '/infrastructure',
   path: '/infrastructure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
+  '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
+  '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
+  '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/disclaimer'
     | '/infrastructure'
+    | '/map'
     | '/privacy'
     | '/research-services'
     | '/terms'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/disclaimer'
     | '/infrastructure'
+    | '/map'
     | '/privacy'
     | '/research-services'
     | '/terms'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/disclaimer'
     | '/infrastructure'
+    | '/map'
     | '/privacy'
     | '/research-services'
     | '/terms'
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DisclaimerRoute: typeof DisclaimerRoute
   InfrastructureRoute: typeof InfrastructureRoute
+  MapRoute: typeof MapRoute
   PrivacyRoute: typeof PrivacyRoute
   ResearchServicesRoute: typeof ResearchServicesRoute
   TermsRoute: typeof TermsRoute
@@ -300,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/infrastructure'
       fullPath: '/infrastructure'
       preLoaderRoute: typeof InfrastructureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DisclaimerRoute: DisclaimerRoute,
   InfrastructureRoute: InfrastructureRoute,
+  MapRoute: MapRoute,
   PrivacyRoute: PrivacyRoute,
   ResearchServicesRoute: ResearchServicesRoute,
   TermsRoute: TermsRoute,
