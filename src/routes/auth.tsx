@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -17,13 +18,17 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { next?: string | undefined } => ({ next: typeof s['next'] === "string" ? (s['next'] as string) : undefined }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next: rawNext } = Route.useSearch();
+  const next = rawNext ? oauthReturnPath(rawNext) : "/my";
   const [mode, setMode] = useState<"in" | "up">("in");
   const [busy, setBusy] = useState(false);
+  const go = () => { if (next.startsWith("/.lovable/")) window.location.href = next; else navigate({ to: next }); };
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,21 +39,21 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
       if (error) { toast.error(error.message); return; }
-      navigate({ to: "/my" });
+      go();
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/my` } });
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: new URL(next, window.location.origin).href } });
       setBusy(false);
       if (error) { toast.error(error.message); return; }
-      if (data.session) navigate({ to: "/my" });
+      if (data.session) go();
       else toast.success("Check your email to confirm your account.");
     }
   }
 
   async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: new URL(next, window.location.origin).href });
     if (r.error) { toast.error("Google sign-in failed"); return; }
     if (r.redirected) return;
-    navigate({ to: "/my" });
+    go();
   }
 
   return (
