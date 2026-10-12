@@ -18,14 +18,17 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResearchServicesRouteImport } from './routes/research-services'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ValuationRouteImport } from './routes/valuation'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesIdRouteImport } from './routes/properties.$id'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicResearchTickRouteImport } from './routes/api/public/research/tick'
 
 const IndexRoute = IndexRouteImport.update({
@@ -72,6 +75,11 @@ const MapRoute = MapRouteImport.update({
   path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -92,6 +100,12 @@ const ValuationRoute = ValuationRouteImport.update({
   path: '/valuation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -112,6 +126,11 @@ const PropertiesIdRoute = PropertiesIdRouteImport.update({
   path: '/properties/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicResearchTickRoute = ApiPublicResearchTickRouteImport.update({
   id: '/api/public/research/tick',
   path: '/api/public/research/tick',
@@ -127,14 +146,17 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
   '/map': typeof MapRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
   '/valuation': typeof ValuationRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/my': typeof AuthenticatedMyRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/research/tick': typeof ApiPublicResearchTickRoute
 }
 export interface FileRoutesByTo {
@@ -146,14 +168,17 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
   '/map': typeof MapRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
   '/valuation': typeof ValuationRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/my': typeof AuthenticatedMyRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties': typeof PropertiesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/research/tick': typeof ApiPublicResearchTickRoute
 }
 export interface FileRoutesById {
@@ -167,14 +192,17 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/infrastructure': typeof InfrastructureRoute
   '/map': typeof MapRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/terms': typeof TermsRoute
   '/valuation': typeof ValuationRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/research/tick': typeof ApiPublicResearchTickRoute
 }
 export interface FileRouteTypes {
@@ -188,14 +216,17 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/infrastructure'
     | '/map'
+    | '/mcp'
     | '/privacy'
     | '/research-services'
     | '/terms'
     | '/valuation'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/my'
     | '/properties/$id'
     | '/properties/'
+    | '/.lovable/oauth/consent'
     | '/api/public/research/tick'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -207,14 +238,17 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/infrastructure'
     | '/map'
+    | '/mcp'
     | '/privacy'
     | '/research-services'
     | '/terms'
     | '/valuation'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/my'
     | '/properties/$id'
     | '/properties'
+    | '/.lovable/oauth/consent'
     | '/api/public/research/tick'
   id:
     | '__root__'
@@ -227,14 +261,17 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/infrastructure'
     | '/map'
+    | '/mcp'
     | '/privacy'
     | '/research-services'
     | '/terms'
     | '/valuation'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/my'
     | '/properties/$id'
     | '/properties/'
+    | '/.lovable/oauth/consent'
     | '/api/public/research/tick'
   fileRoutesById: FileRoutesById
 }
@@ -248,12 +285,15 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   InfrastructureRoute: typeof InfrastructureRoute
   MapRoute: typeof MapRoute
+  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   ResearchServicesRoute: typeof ResearchServicesRoute
   TermsRoute: typeof TermsRoute
   ValuationRoute: typeof ValuationRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicResearchTickRoute: typeof ApiPublicResearchTickRoute
 }
 
@@ -322,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -350,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ValuationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -376,6 +430,13 @@ declare module '@tanstack/react-router' {
       path: '/properties/$id'
       fullPath: '/properties/$id'
       preLoaderRoute: typeof PropertiesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/research/tick': {
@@ -411,12 +472,16 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   InfrastructureRoute: InfrastructureRoute,
   MapRoute: MapRoute,
+  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   ResearchServicesRoute: ResearchServicesRoute,
   TermsRoute: TermsRoute,
   ValuationRoute: ValuationRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   PropertiesIdRoute: PropertiesIdRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicResearchTickRoute: ApiPublicResearchTickRoute,
 }
 export const routeTree = rootRouteImport
