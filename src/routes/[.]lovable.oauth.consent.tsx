@@ -15,7 +15,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
   head: () => ({ meta: [{ title: "Connect an app — PropWise AI" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>) => ({
-    authorization_id: typeof s.authorization_id === "string" ? s.authorization_id : "",
+    authorization_id: typeof s['authorization_id'] === "string" ? s['authorization_id'] : "",
   }),
   beforeLoad: async ({ search, location }) => {
     if (!search.authorization_id) throw new Error("Missing authorization_id");
