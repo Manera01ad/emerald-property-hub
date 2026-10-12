@@ -20,3 +20,4 @@
 - Every scheduler call is logged in research_ticks; the database job sends X-PropWise-Origin: pg_cron so automatic runs are distinguishable from manual calls to the tick address.
 - Feed onboarding (CSV/JSON) requires identity, permission evidence and an ID field mapping; imports go through an admin-checked server function and stay private observations.
 - Buyer/renter data lives in buyer_profiles and buyer_reports, owner-only via RLS with admin read; buy/rent maths is pure in src/lib/buyer.ts so it stays testable.
+- Agent integrations (MCP) live in src/lib/mcp (one tool per file) and require OAuth sign-in; tools act as the caller under RLS and listing tools re-apply the public-visibility filter so admin callers never leak drafts.
