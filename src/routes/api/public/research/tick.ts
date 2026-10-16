@@ -6,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
  * so automatic runs can be told apart from manual calls to this address.
  */
 export const Route = createFileRoute("/api/public/research/tick")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       POST: async ({ request }) => {

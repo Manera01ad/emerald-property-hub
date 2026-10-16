@@ -9,8 +9,11 @@ import { Label } from "@/components/ui/label";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Sign In — PropWise AI" },
       { name: "description", content: "Sign in to save your property research." },
       { property: "og:title", content: "Sign In — PropWise AI" },

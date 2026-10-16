@@ -5,8 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useSettings, whatsappLink } from "@/lib/data";
 
 export const Route = createFileRoute("/consult")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/consult" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/consult" },
       { title: "Book a Property Consultation — PropWise AI" },
       { name: "description", content: "Tell us your budget and preferences. Our Chennai property consultants help you shortlist, verify and negotiate." },
       { property: "og:title", content: "Book a Property Consultation — PropWise AI" },

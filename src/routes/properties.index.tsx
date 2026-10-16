@@ -25,9 +25,14 @@ const searchSchema = z.object({
 type Search = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute("/properties/")({
+  staticData: { sitemap: true },
   validateSearch: searchSchema,
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/properties" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/properties" },
       { title: "Search Properties in Chennai — PropWise AI" },
       { name: "description", content: "Filter villas, houses, apartments and plots in Chennai by price, bedrooms, land area and approvals." },
       { property: "og:title", content: "Search Properties in Chennai — PropWise AI" },

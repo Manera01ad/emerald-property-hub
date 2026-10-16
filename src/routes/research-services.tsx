@@ -2,8 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/research-services")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/research-services" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/research-services" },
       { title: "Independent research services — PropWise AI" },
       { name: "description", content: "Buyer-paid property research reports, alerts and field observations for Chennai. Independent of sellers." },
       { property: "og:title", content: "Independent research services — PropWise AI" },

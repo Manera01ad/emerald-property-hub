@@ -12,8 +12,11 @@ import { geocodeAddress, travelRoute } from "@/lib/maps.functions";
 import { useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/map")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/map" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/map" },
       { title: "Map intelligence — PropWise AI" },
       { name: "description", content: "Satellite, hybrid and terrain maps of verified PropWise listings in Chennai, with value estimates and official land-record links." },
       { property: "og:title", content: "Map intelligence — PropWise AI" },

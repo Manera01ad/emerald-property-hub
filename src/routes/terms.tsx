@@ -2,8 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/terms")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/terms" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/terms" },
       { title: "Terms of Use — PropWise AI" },
       { name: "description", content: "Terms governing use of the PropWise AI property comparison and consulting platform." },
       { property: "og:title", content: "Terms of Use — PropWise AI" },
