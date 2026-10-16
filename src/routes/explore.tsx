@@ -8,13 +8,14 @@ import { costRulesFrom, publicPropertiesQuery, useSettings, type Property } from
 import { purchaseCost } from "@/lib/deal";
 import { formatINR } from "@/lib/format";
 import { LAYERS, LAYER_KEYS, distanceKm, livability, overpassQuery, parseOverpass, walkMinutes, type LayerKey, type PoiWithDistance } from "@/lib/livability";
-import { parseLocationInput, validLatLng, type LatLng } from "@/lib/mapurl";
+import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
+import { validLatLng, type LatLng } from "@/lib/mapurl";
 
 export const Route = createFileRoute("/explore")({
   head: () => ({
     meta: [
       { title: "Explore Chennai Properties on a Map — PropWise AI" },
-      { name: "description", content: "See homes with the schools, hospitals, shops and transit around them. Filter by distance from your office." },
+      { name: "description", content: "See homes with the schools, hospitals, shops and transit around them. Pick your area and see homes nearby." },
       { property: "og:title", content: "Explore Chennai Properties on a Map — PropWise AI" },
       { property: "og:description", content: "Live the area before you buy: nearby schools, hospitals, food, shops and transit for every listing." },
     ],
@@ -78,10 +79,10 @@ function ExplorePage() {
 
   const [type, setType] = useState("");
   const [maxLakh, setMaxLakh] = useState("");
-  const [officeInput, setOfficeInput] = useState("");
-  const [office, setOffice] = useState<LatLng | null>(null);
-  const [officeKm, setOfficeKm] = useState("15");
-  const [officeErr, setOfficeErr] = useState("");
+  const [city, setCity] = useState(CITIES[0]!);
+  const [area, setArea] = useState("");
+  const [officeKm, setOfficeKm] = useState("10");
+  const office: LatLng | null = area ? areaPoint(city, area) : null;
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ school: true, hospital: true, food: false, grocery: true, transit: true });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapErr, setMapErr] = useState("");
@@ -90,7 +91,7 @@ function ExplorePage() {
   const visible = useMemo(() => located.filter((p) => {
     if (type && p.property_type !== type) return false;
     if (maxLakh && p.asking_price > Number(maxLakh) * 1e5) return false;
-    if (office && distanceKm(office.lat, office.lng, p.lat, p.lng) > (Number(officeKm) || 15)) return false;
+    if (office && distanceKm(office.lat, office.lng, p.lat, p.lng) > (Number(officeKm) || 10)) return false;
     return true;
   }), [located, type, maxLakh, office, officeKm]);
 
@@ -160,21 +161,18 @@ function ExplorePage() {
     });
   }, [ready, nearby.data, layers]);
 
-  // Office marker
+  // Move the map to the chosen area
+  useEffect(() => {
+    if (ready && office) map.current.flyTo({ center: [office.lng, office.lat], zoom: 11.5 });
+  }, [ready, office?.lat, office?.lng]);
+
+  // Area marker
   useEffect(() => {
     if (!ready) return;
     officeMarker.current?.remove();
     officeMarker.current = null;
     if (office) officeMarker.current = new window.maplibregl.Marker({ color: "#0f172a" }).setLngLat([office.lng, office.lat]).addTo(map.current);
   }, [ready, office]);
-
-  function applyOffice() {
-    const r = parseLocationInput(officeInput);
-    if (!r.ok) { setOfficeErr(r.error); return; }
-    setOfficeErr("");
-    setOffice(r.point);
-    map.current?.flyTo({ center: [r.point.lng, r.point.lat], zoom: 11 });
-  }
 
   const cost = selected ? purchaseCost(selected, rules) : null;
 
@@ -183,7 +181,7 @@ function ExplorePage() {
       <h1 className="text-3xl">Explore by neighbourhood</h1>
       <p className="mt-1 text-sm text-muted-foreground">Tap a price pin to see what is around the home. Neighbourhood data is from OpenStreetMap and may be incomplete — treat scores as estimates.</p>
 
-      <div className="mt-5 grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_1fr_2fr]">
+      <div className="mt-5 grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_1fr_2.2fr]">
         <label className="text-sm">Type
           <select className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">All types</option>
@@ -194,14 +192,20 @@ function ExplorePage() {
           <Input className="mt-1" inputMode="numeric" placeholder="e.g. 60" value={maxLakh} onChange={(e) => setMaxLakh(e.target.value.replace(/[^\d.]/g, ""))} />
         </label>
         <div className="text-sm">
-          <span>Near my office (paste a Google Maps link or 13.0, 80.2)</span>
-          <div className="mt-1 flex gap-2">
-            <Input aria-label="Office location" value={officeInput} onChange={(e) => setOfficeInput(e.target.value)} placeholder="Google Maps link or coordinates" />
-            <Input aria-label="Within kilometres" className="w-20" inputMode="numeric" value={officeKm} onChange={(e) => setOfficeKm(e.target.value.replace(/\D/g, ""))} />
-            <Button onClick={applyOffice}>Apply</Button>
-            {office && <Button variant="outline" onClick={() => { setOffice(null); setOfficeInput(""); }}>Clear</Button>}
+          <span>Where do you want to live or work?</span>
+          <div className="mt-1 grid grid-cols-[1fr_1.4fr_auto] gap-2">
+            <select aria-label="City" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={city} onChange={(e) => { setCity(e.target.value); setArea(""); }}>
+              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select aria-label="Area" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={area} onChange={(e) => setArea(e.target.value)}>
+              <option value="">All areas</option>
+              {Object.keys(AREAS[city] ?? {}).map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+            <select aria-label="Within distance" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={officeKm} onChange={(e) => setOfficeKm(e.target.value)} disabled={!area}>
+              {RADIUS_OPTIONS.map((r) => <option key={r} value={r}>within {r} km</option>)}
+            </select>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">{officeErr || (office ? `Showing homes within ${officeKm || 15} km in a straight line (not road distance).` : "Distances are straight-line, not road distance.")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{area ? `Showing homes within ${officeKm} km of ${area}, measured in a straight line (not road distance).` : "Pick an area to see only homes near it."}</p>
         </div>
       </div>
 
