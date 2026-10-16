@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { humanize } from "@/lib/constants";
 
 export const Route = createFileRoute("/infrastructure")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/infrastructure" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/infrastructure" },
       { title: "Chennai Infrastructure Projects — PropWise AI" },
       { name: "description", content: "Infrastructure projects near Chennai's growth corridors, with sources and verified progress status." },
       { property: "og:title", content: "Chennai Infrastructure Projects — PropWise AI" },

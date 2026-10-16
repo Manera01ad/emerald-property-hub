@@ -11,8 +11,11 @@ import { formatINR } from "@/lib/format";
 import { AVAILABILITY, typeLabel } from "@/lib/constants";
 
 export const Route = createFileRoute("/compare")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/compare" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/compare" },
       { title: "Compare Properties — PropWise AI" },
       { name: "description", content: "Compare up to four Chennai properties side by side on total cost, area, approvals and documents." },
       { property: "og:title", content: "Compare Properties — PropWise AI" },

@@ -2,8 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/disclaimer")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/disclaimer" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/disclaimer" },
       { title: "Disclaimer & RERA — PropWise AI" },
       { name: "description", content: "Estimates, verification labels and RERA information on PropWise AI." },
       { property: "og:title", content: "Disclaimer & RERA — PropWise AI" },

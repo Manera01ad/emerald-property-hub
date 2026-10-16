@@ -4,8 +4,11 @@ import { EnquiryForm } from "@/components/EnquiryForm";
 import { useSettings, whatsappLink } from "@/lib/data";
 
 export const Route = createFileRoute("/contact")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/contact" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/contact" },
       { title: "Contact PropWise AI — Chennai Property Consultants" },
       { name: "description", content: "Get in touch with PropWise AI by phone, WhatsApp or email." },
       { property: "og:title", content: "Contact PropWise AI" },

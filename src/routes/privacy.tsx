@@ -2,8 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/privacy")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/privacy" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/privacy" },
       { title: "Privacy Policy — PropWise AI" },
       { name: "description", content: "How PropWise AI collects, uses and protects your personal information." },
       { property: "og:title", content: "Privacy Policy — PropWise AI" },

@@ -6,8 +6,11 @@ import { valueProperty, type Evidence, type Kind } from "@/lib/valuation";
 import { formatINR } from "@/lib/format";
 
 export const Route = createFileRoute("/valuation")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/valuation" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/valuation" },
       { title: "Property value estimator — PropWise AI" },
       { name: "description", content: "Estimate a value range for plots, houses, apartments and rentals in Chennai from your own comparable evidence." },
       { property: "og:title", content: "Property value estimator — PropWise AI" },

@@ -9,8 +9,11 @@ import { publicPropertiesQuery } from "@/lib/data";
 import { PropertyCard } from "@/components/PropertyCard";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/" },
       { title: "PropWise AI — Compare Chennai Properties with Confidence" },
       { name: "description", content: "Search, compare and analyse villas, apartments and plots in Chennai. See full purchase cost, nearby schools and get expert advice." },
       { property: "og:title", content: "PropWise AI — Compare Smarter. Buy with Confidence." },

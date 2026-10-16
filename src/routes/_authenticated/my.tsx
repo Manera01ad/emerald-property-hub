@@ -16,6 +16,7 @@ import { formatINR } from "@/lib/format";
 import { buyAnalysis, rentAnalysis, rentVsBuy, matchProperty, DUE_DILIGENCE_QUESTIONS } from "@/lib/buyer";
 
 export const Route = createFileRoute("/_authenticated/my")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "My Property Research — PropWise AI" },

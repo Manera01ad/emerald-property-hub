@@ -16,6 +16,7 @@ import { ResearchAgents } from "@/components/admin/ResearchAgents";
 import { Buyers } from "@/components/admin/Buyers";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Admin Dashboard — PropWise AI" },

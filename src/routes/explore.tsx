@@ -12,8 +12,11 @@ import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 
 export const Route = createFileRoute("/explore")({
+  staticData: { sitemap: true },
   head: () => ({
+    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/explore" }],
     meta: [
+      { property: "og:url", content: "https://emerald-property-hub.lovable.app/explore" },
       { title: "Explore Chennai Properties on a Map — PropWise AI" },
       { name: "description", content: "See homes with the schools, hospitals, shops and transit around them. Pick your area and see homes nearby." },
       { property: "og:title", content: "Explore Chennai Properties on a Map — PropWise AI" },
