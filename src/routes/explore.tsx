@@ -16,6 +16,8 @@ export const Route = createFileRoute("/explore")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/explore" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/explore" },
       { title: "Explore Chennai Properties on a Map — PropWise AI" },
       { name: "description", content: "See homes with the schools, hospitals, shops and transit around them. Pick your area and see homes nearby." },

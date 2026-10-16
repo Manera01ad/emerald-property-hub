@@ -13,6 +13,8 @@ export const Route = createFileRoute("/")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/" },
       { title: "PropWise AI — Compare Chennai Properties with Confidence" },
       { name: "description", content: "Search, compare and analyse villas, apartments and plots in Chennai. See full purchase cost, nearby schools and get expert advice." },

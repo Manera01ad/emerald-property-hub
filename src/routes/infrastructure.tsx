@@ -9,6 +9,8 @@ export const Route = createFileRoute("/infrastructure")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/infrastructure" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/infrastructure" },
       { title: "Chennai Infrastructure Projects — PropWise AI" },
       { name: "description", content: "Infrastructure projects near Chennai's growth corridors, with sources and verified progress status." },

@@ -14,7 +14,7 @@ const oauth = () => (supabase.auth as unknown as { oauth: OAuthApi }).oauth;
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   staticData: { sitemap: false },
   ssr: false,
-  head: () => ({ meta: [{ title: "Connect an app — PropWise AI" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Connect an app — PropWise AI" }, { name: "description", content: "Approve or deny an assistant’s access to your PropWise account." }, { property: "og:title", content: "Connect an app — PropWise AI" }, { property: "og:description", content: "Manage your assistant connection request." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>) => ({
     authorization_id: typeof s['authorization_id'] === "string" ? s['authorization_id'] : "",
   }),

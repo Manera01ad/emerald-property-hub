@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Admin Dashboard — PropWise AI" },
       { name: "description", content: "Manage listings, enquiries, partners and commissions." },
       { property: "og:title", content: "Admin Dashboard — PropWise AI" },

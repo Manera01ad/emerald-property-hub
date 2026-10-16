@@ -6,6 +6,8 @@ export const Route = createFileRoute("/disclaimer")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/disclaimer" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/disclaimer" },
       { title: "Disclaimer & RERA — PropWise AI" },
       { name: "description", content: "Estimates, verification labels and RERA information on PropWise AI." },

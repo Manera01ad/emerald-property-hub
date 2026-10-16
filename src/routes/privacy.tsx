@@ -6,6 +6,8 @@ export const Route = createFileRoute("/privacy")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/privacy" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/privacy" },
       { title: "Privacy Policy — PropWise AI" },
       { name: "description", content: "How PropWise AI collects, uses and protects your personal information." },

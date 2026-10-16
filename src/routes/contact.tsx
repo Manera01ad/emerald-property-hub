@@ -8,6 +8,8 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/contact" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/contact" },
       { title: "Contact PropWise AI — Chennai Property Consultants" },
       { name: "description", content: "Get in touch with PropWise AI by phone, WhatsApp or email." },

@@ -15,6 +15,8 @@ export const Route = createFileRoute("/compare")({
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/compare" }],
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/compare" },
       { title: "Compare Properties — PropWise AI" },
       { name: "description", content: "Compare up to four Chennai properties side by side on total cost, area, approvals and documents." },
