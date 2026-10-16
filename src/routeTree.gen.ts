@@ -16,6 +16,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConsultRouteImport } from './routes/consult'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -63,6 +64,11 @@ const ContactRoute = ContactRouteImport.update({
 const DisclaimerRoute = DisclaimerRouteImport.update({
   id: '/disclaimer',
   path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InfrastructureRoute = InfrastructureRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/consult'
     | '/contact'
     | '/disclaimer'
+    | '/explore'
     | '/infrastructure'
     | '/map'
     | '/mcp'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/consult'
     | '/contact'
     | '/disclaimer'
+    | '/explore'
     | '/infrastructure'
     | '/map'
     | '/mcp'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/consult'
     | '/contact'
     | '/disclaimer'
+    | '/explore'
     | '/infrastructure'
     | '/map'
     | '/mcp'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   ConsultRoute: typeof ConsultRoute
   ContactRoute: typeof ContactRoute
   DisclaimerRoute: typeof DisclaimerRoute
+  ExploreRoute: typeof ExploreRoute
   InfrastructureRoute: typeof InfrastructureRoute
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
@@ -346,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/disclaimer'
       fullPath: '/disclaimer'
       preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/infrastructure': {
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConsultRoute: ConsultRoute,
   ContactRoute: ContactRoute,
   DisclaimerRoute: DisclaimerRoute,
+  ExploreRoute: ExploreRoute,
   InfrastructureRoute: InfrastructureRoute,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
