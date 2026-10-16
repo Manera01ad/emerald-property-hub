@@ -21,3 +21,5 @@
 - Feed onboarding (CSV/JSON) requires identity, permission evidence and an ID field mapping; imports go through an admin-checked server function and stay private observations.
 - Buyer/renter data lives in buyer_profiles and buyer_reports, owner-only via RLS with admin read; buy/rent maths is pure in src/lib/buyer.ts so it stays testable.
 - Agent integrations (MCP) live in src/lib/mcp (one tool per file) and require OAuth sign-in; tools act as the caller under RLS and listing tools re-apply the public-visibility filter so admin callers never leak drafts.
+- Public property head metadata and sitemap data use a session-free publishable client with explicit public-visibility filters; this keeps private drafts out of crawler responses while preserving browser-based admin previews.
+- The sitemap derives static URLs from required route-level sitemap decisions and paginates public property IDs; private subtrees are excluded and failures return no partial XML.
