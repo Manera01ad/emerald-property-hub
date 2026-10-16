@@ -15,16 +15,31 @@ import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { hiddenReasons } from "@/lib/visibility";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
+import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
 
 export const Route = createFileRoute("/properties/$id")({
-  head: () => ({
-    meta: [
-      { title: "Property details — PropWise AI" },
-      { name: "description", content: "Specifications, full purchase cost estimate, deal score and nearby amenities." },
-      { property: "og:title", content: "Property details — PropWise AI" },
-      { property: "og:description", content: "See the real cost and verification status before you buy." },
-    ],
-  }),
+  staticData: { sitemap: true },
+  loader: async ({ params }) => {
+    try { return await getPublicPropertyMetadata({ data: { id: params.id } }); }
+    catch { return null; } // Keep the existing listing retry UI available on a data outage.
+  },
+  head: ({ params, loaderData }) => {
+    const url = `https://emerald-property-hub.lovable.app/properties/${encodeURIComponent(params.id)}`;
+    const title = loaderData ? `${loaderData.title} in ${loaderData.location} — PropWise AI` : "Listing not available — PropWise AI";
+    const description = loaderData
+      ? (loaderData.description?.trim() || `Explore this ${typeLabel(loaderData.property_type)} in ${loaderData.location}: specifications, estimated purchase cost and recorded verification status.`).slice(0, 160)
+      : "This listing is unavailable or not publicly published. Browse authorised Chennai property listings on PropWise AI.";
+    return {
+      links: [{ rel: "canonical", href: url }],
+      meta: [
+        { title }, { name: "description", content: description },
+        { property: "og:title", content: title }, { property: "og:description", content: description },
+        { property: "og:url", content: url }, { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(!loaderData ? [{ name: "robots", content: "noindex" }] : []),
+      ],
+    };
+  },
   component: PropertyPage,
 });
 
