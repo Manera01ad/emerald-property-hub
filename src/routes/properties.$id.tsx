@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VerificationBadge, EstimateNote } from "@/components/Badges";
 import { EnquiryForm } from "@/components/EnquiryForm";
+import { ResearchBrief } from "@/components/ResearchBrief";
 import { AVAILABILITY, DOCS, PLACE_CATEGORIES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, usePhotoUrls, useSettings, whatsappLink } from "@/lib/data";
 import { dealScore, negotiationHints, pricePerSqft, purchaseCost } from "@/lib/deal";
@@ -200,6 +201,10 @@ function PropertyPage() {
                 </div>
               );
             })()}
+          </Section>
+
+          <Section title="Buyer research brief">
+            <ResearchBrief property={p} rules={rules} />
           </Section>
 
           <Section title="Location intelligence">

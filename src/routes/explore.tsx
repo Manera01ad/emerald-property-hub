@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ResearchBrief } from "@/components/ResearchBrief";
 import { PROPERTY_TYPES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, useSettings, type Property } from "@/lib/data";
 import { purchaseCost } from "@/lib/deal";
@@ -267,6 +268,11 @@ function ExplorePage() {
                     })}
                   </ul>
                 )}
+              </div>
+
+              <div>
+                <p className="mb-2 font-medium">Check before you pay</p>
+                <ResearchBrief property={selected} rules={rules} compact />
               </div>
 
               <div className="flex gap-2">
