@@ -1,0 +1,68 @@
+name: Security
+
+# Secret scanning and dependency auditing.
+#
+# Runs on pull requests and nightly, because a vulnerability can be published
+# against a dependency long after the pull request that introduced it merged.
+#
+# Like verify.yml, this workflow never deploys and never writes to the
+# repository.
+on:
+  pull_request:
+  schedule:
+    # 02:00 UTC daily.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: Secrets and dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          # gitleaks scans history, so a shallow clone would miss older commits.
+          fetch-depth: 0
+
+      - name: Scan for committed secrets
+        # gitleaks fails the build when it finds a credential. That is intended:
+        # a committed secret must be rotated, not merely deleted, so the
+        # pull request should stop here and a human should look.
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Audit dependencies (reported)
+        # Reported rather than blocking: the current tree carries known
+        # advisories in build-time tooling that cannot be fixed by an
+        # unattended agent without risking the build. The output is captured in
+        # the job summary so the debt stays visible.
+        continue-on-error: true
+        run: |
+          {
+            echo "## Dependency audit"
+            echo ""
+            echo '```'
+            bun audit || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "--- production dependencies ---"
+          bun audit --prod || true

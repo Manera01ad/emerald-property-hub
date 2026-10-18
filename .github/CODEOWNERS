@@ -1,0 +1,39 @@
+# Files that require the repository owner's review before merging.
+#
+# These paths control production data, credentials, or the deployment path.
+# A change here can affect the live site or the database, so automated checks
+# alone are not sufficient evidence to merge.
+
+# Everything defaults to the owner.
+*                                   @Manera01ad
+
+# Database schema and migrations. Merging these files does not change the
+# database, but applying them does. They are never applied automatically.
+/drizzle/                           @Manera01ad
+
+# Supabase clients and the authentication boundary. client.server.ts holds the
+# service-role client, which bypasses every row-level security rule.
+/src/integrations/supabase/         @Manera01ad
+
+# Server functions that run with elevated database access.
+/src/lib/research/                  @Manera01ad
+/src/lib/research.functions.ts      @Manera01ad
+/src/lib/places.functions.ts        @Manera01ad
+/src/lib/maps.functions.ts          @Manera01ad
+/src/lib/public-client.server.ts    @Manera01ad
+
+# The scheduler endpoint. It authenticates the hourly research pipeline.
+/src/routes/api/                    @Manera01ad
+
+# Row-level security and the public-visibility rule. A mistake here can expose
+# drafts or private buyer data.
+/src/lib/visibility.ts              @Manera01ad
+/src/lib/sitemap-properties.server.ts @Manera01ad
+
+# The gate itself. A change here could weaken every other control.
+/.github/                           @Manera01ad
+
+# Secret-bearing and deployment configuration.
+/.env                               @Manera01ad
+/drizzle.config.ts                  @Manera01ad
+/vite.config.ts                     @Manera01ad

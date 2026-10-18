@@ -23,3 +23,71 @@
 - Agent integrations (MCP) live in src/lib/mcp (one tool per file) and require OAuth sign-in; tools act as the caller under RLS and listing tools re-apply the public-visibility filter so admin callers never leak drafts.
 - Public property head metadata and sitemap data use a session-free publishable client with explicit public-visibility filters; this keeps private drafts out of crawler responses while preserving browser-based admin previews.
 - The sitemap derives static URLs from required route-level sitemap decisions and paginates public property IDs; private subtrees are excluded and failures return no partial XML.
+
+## AI development system
+
+This section governs how an AI agent contributes code. It is the contract; read it before opening a pull request.
+
+### The two-key rule
+
+No change reaches `main` without both keys:
+
+1. **Machine key** — the `Verify` workflow passes (tests and build).
+2. **Human key** — the repository owner approves the pull request.
+
+`main` is production: Lovable builds the live site from it, and commits sync back into the Lovable editor. There is no separate deploy step and no staging environment, so a merge is a release.
+
+### Never, under any circumstances
+
+- Push directly to `main`. Every change goes through a pull request.
+- Force push, rebase, amend, or squash commits that are already pushed. This rewrites history on Lovable's side and the owner loses project history.
+- Apply database migrations. Write the migration file if asked; the owner runs it.
+- Deploy. Lovable deploys.
+- Access production data, or any secret listed under "Secrets" below.
+- Approve or merge your own pull request.
+
+### Change tiers
+
+Pick the tier from what the change touches, and follow it. When in doubt, use the higher tier.
+
+| Tier | Scope | What an agent may do |
+| --- | --- | --- |
+| 0 | Reading, reports, audits | Do it freely |
+| 1 | Tests, docs, pure logic in `src/lib/` | Open a pull request |
+| 2 | Pages, components, public content, migrations | Open a pull request **with the evidence below** |
+| 3 | Auth, payments, scheduler, service-role code, `main` | Nothing — the owner does it |
+
+Tier 3 paths are listed in `.github/CODEOWNERS`.
+
+### Evidence required on a Tier 2 pull request
+
+State plainly, in the description:
+
+1. What problem this solves.
+2. What exactly changed.
+3. How it was tested.
+4. **What was not tested, and what remains uncertain.**
+5. Whether it can affect security, data, or the public site.
+
+Point 4 matters most. "I did not exercise the photo-upload path because it needs a live database" is more useful than a confident claim that turns out to be wrong.
+
+### Secrets
+
+Never request, read, or embed these. They are absent from the agent environment on purpose:
+
+- `SUPABASE_SERVICE_ROLE_KEY` — bypasses every row-level security rule.
+- `LOVABLE_DB_MIGRATION_URL` — can alter the production schema.
+- `LOVABLE_CRON_SECRET` and the `private.scheduler_token` value — can trigger the research pipeline.
+
+Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `VITE_*` values. They are publishable by design. Local values go in `.env`, which is git-ignored; `.env.example` is the committed template.
+
+### Checks
+
+`bun run test` and `bun run build` must pass — they gate the pull request.
+
+`bun run type-check` and `bun run lint` are reported but do not block. Both currently fail on pre-existing debt: two type errors in plugin-generated files under `src/routes/`, and roughly 2,300 unformatted spots. Do not fix this debt opportunistically inside an unrelated pull request; it makes the diff unreviewable. Clear it in a dedicated pull request, and flip `continue-on-error` to `false` in `.github/workflows/verify.yml` once both are clean.
+
+### Keep pull requests small
+
+One change per pull request. Three fixes are three pull requests. A large diff cannot be reviewed properly, and review is the only control that catches what the tests miss.
+

@@ -1,0 +1,75 @@
+name: Verify
+
+# Runs on every pull request and on pushes to main.
+#
+# IMPORTANT: this workflow never deploys and never writes to the repository.
+# Lovable deploys from `main`; this workflow only decides whether a change is
+# safe enough to be reviewed. `permissions: contents: read` makes that
+# guarantee enforceable rather than merely intended.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+
+      - name: Install dependencies
+        # --frozen-lockfile fails if package.json and bun.lock disagree, so a
+        # dependency cannot be added silently.
+        run: bun install --frozen-lockfile
+
+      # --- Blocking checks: these decide whether the pull request may merge ---
+
+      - name: Test
+        run: bun run test
+
+      - name: Build
+        # The build does not read `.env`, which is git-ignored, so it runs with
+        # no configuration present.
+        run: bun run build
+
+      # --- Reported checks: these never fail the build ---
+      #
+      # The repository has pre-existing type errors in plugin-generated files
+      # and roughly 2,300 unformatted spots. Blocking on them today would fail
+      # every pull request and make this gate worthless, so they are reported
+      # for visibility until the debt is cleared. Flip `continue-on-error` to
+      # false once the counts reach zero.
+
+      - name: Type-check (reported)
+        continue-on-error: true
+        run: bun run type-check
+
+      - name: Lint (reported)
+        continue-on-error: true
+        run: bun run lint
+
+      - name: Summarise outcome
+        if: always()
+        run: |
+          {
+            echo "## Verify"
+            echo ""
+            echo "Blocking checks: tests and build."
+            echo "Reported only: type-check and lint (see logs above for counts)."
+          } >> "$GITHUB_STEP_SUMMARY"
