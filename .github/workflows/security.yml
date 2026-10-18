@@ -16,6 +16,9 @@ on:
 
 permissions:
   contents: read
+  # gitleaks-action lists the pull request's commits to scan only what changed.
+  # That call needs pull-requests: read. Read-only: it cannot comment or merge.
+  pull-requests: read
 
 concurrency:
   group: security-${{ github.ref }}
