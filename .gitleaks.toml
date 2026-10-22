@@ -1,0 +1,34 @@
+# gitleaks configuration for PropWise AI.
+#
+# Purpose: keep failing the build on NEW secrets, while recording — not hiding —
+# the three findings that already exist in the repository's first commit.
+#
+# Those three findings are in `.env` in commit 1f83fc8. That file has since been
+# untracked, so the values are historical, but they remain readable to anyone
+# with access to the repository history. Removing them requires rewriting
+# history, which would destroy the Lovable project history, so they are
+# acknowledged here instead.
+#
+# The three findings, and why each is listed:
+#
+#   1. .env:gcp-api-key:4          — Google Maps browser key (VITE_LOVABLE_
+#                                    CONNECTOR_GOOGLE_MAPS_BROWSER_KEY). This is
+#                                    a REAL credential. It should be rotated in
+#                                    Google Cloud Console and restricted to the
+#                                    PropWise domains.
+#   2. .env:generic-api-key:2      — VITE_SUPABASE_PUBLISHABLE_KEY. Publishable
+#                                    by design; it is sent to browsers and
+#                                    protection comes from row-level security.
+#   3. .env:generic-api-key:7      — SUPABASE_PUBLISHABLE_KEY. Same as above.
+#
+# ACTION REQUIRED: once the Maps key is rotated, delete the matching entry below
+# and delete this whole file if no findings remain. The allowlist exists to stop
+# the nightly scan reporting the same three known items forever, not to make them
+# acceptable.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known historical findings in .env, from commit 1f83fc8 (that file has since been untracked). Scoped to that single commit, so any secret committed from now on still fails the scan. Delete this entry once the Maps key is rotated."
+commits = ["1f83fc8cbe15a150ad77b748d6bce20a393cde73"]
