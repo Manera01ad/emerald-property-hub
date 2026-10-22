@@ -6,15 +6,11 @@ import { useCompare } from "@/lib/compare";
 import { useSession } from "@/lib/auth";
 
 const NAV = [
-  { to: "/properties", label: "Properties" },
+  { to: "/explore", label: "Explore locations" },
+  { to: "/location-intelligence", label: "Location intelligence" },
+  { to: "/valuation", label: "Property value" },
   { to: "/compare", label: "Compare" },
-  { to: "/explore", label: "Explore" },
-  { to: "/map", label: "Map" },
-  { to: "/valuation", label: "Valuation" },
-  { to: "/research-services", label: "Research" },
-  { to: "/infrastructure", label: "Infrastructure" },
-  { to: "/consult", label: "Consult" },
-  { to: "/contact", label: "Contact" },
+  { to: "/advisor", label: "AI advisor" },
 ] as const;
 
 export function SiteHeader() {
@@ -47,11 +43,6 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm">
             <Link to={session ? "/my" : "/auth"}>{session ? "My research" : "Sign in"}</Link>
           </Button>
-          {session && (
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/assistant">Ask PropWise</Link>
-            </Button>
-          )}
           <Button asChild variant="gold" size="sm">
             <Link to="/consult">Book a consultation</Link>
           </Button>
@@ -70,9 +61,6 @@ export function SiteHeader() {
           <Link to={session ? "/my" : "/auth"} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
             {session ? "My research" : "Sign in"}
           </Link>
-          {session && (
-            <Link to="/assistant" onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">Ask PropWise</Link>
-          )}
         </nav>
       )}
       {ids.length > 0 && (
@@ -102,7 +90,8 @@ export function SiteFooter() {
         </div>
         <div className="space-y-2 text-sm">
           <p className="font-semibold text-gold">Explore</p>
-          <Link to="/properties" className="block opacity-80 hover:opacity-100">Properties</Link>
+          <Link to="/properties" className="block opacity-80 hover:opacity-100">All listings</Link>
+          <Link to="/map" className="block opacity-80 hover:opacity-100">Map lookup</Link>
           <Link to="/compare" className="block opacity-80 hover:opacity-100">Compare</Link>
           <Link to="/infrastructure" className="block opacity-80 hover:opacity-100">Infrastructure</Link>
           <Link to="/consult" className="block opacity-80 hover:opacity-100">Consultation</Link>
