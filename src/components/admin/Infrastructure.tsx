@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { MARKETS, humanize } from "@/lib/constants";
+import { areaOptions } from "@/lib/infrastructure";
 import { Panel, selectCls, useAdminTable, useInvalidateAdmin } from "./shared";
 
 const STATUSES = ["announced", "approved", "under_construction", "completed", "stalled"];
@@ -26,6 +27,7 @@ export function Infrastructure() {
     const { error } = await supabase.from("infrastructure_projects").insert({
       name: String(f.get("name")),
       location: String(f.get("location")),
+      area: String(f.get("area") || "") || null,
       description: String(f.get("description") || "") || null,
       progress_status: String(f.get("status")),
       source_url: String(f.get("source") || "") || null,
@@ -38,19 +40,23 @@ export function Infrastructure() {
 
   return (
     <Panel>
-      <form onSubmit={add} className="grid gap-2 md:grid-cols-6">
+      <form onSubmit={add} className="grid gap-2 md:grid-cols-7">
         <Input name="name" placeholder="Project name *" required className="md:col-span-2" />
         <select name="location" className={selectCls}>{MARKETS.map((m) => <option key={m}>{m}</option>)}</select>
+        <select name="area" className={selectCls} defaultValue="">
+          <option value="">Area (optional)</option>
+          {areaOptions().map((a) => <option key={a}>{a}</option>)}
+        </select>
         <select name="status" className={selectCls}>{STATUSES.map((s) => <option key={s} value={s}>{humanize(s)}</option>)}</select>
         <Input name="source" placeholder="Source URL" type="url" />
         <Button type="submit">Add</Button>
-        <Input name="description" placeholder="Short description" className="md:col-span-6" />
+        <Input name="description" placeholder="Short description" className="md:col-span-7" />
       </form>
-      <p className="mt-2 text-xs text-muted-foreground">New projects start unpublished and unverified. Mark verified only after confirming with an official source.</p>
+      <p className="mt-2 text-xs text-muted-foreground">New projects start unpublished and unverified. Mark verified only after confirming with an official source. Link an area so the project appears under that area on the public page.</p>
       <div className="mt-4 space-y-2">
         {data.map((x) => (
           <div key={x.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm">
-            <div><p className="font-medium">{x.name}</p><p className="text-xs text-muted-foreground">{x.location} · {humanize(x.progress_status)} {x.source_url ? "· sourced" : "· no source"}</p></div>
+            <div><p className="font-medium">{x.name}</p><p className="text-xs text-muted-foreground">{x.location} · {x.area ? x.area : "no area linked"} · {humanize(x.progress_status)} {x.source_url ? "· sourced" : "· no source"}</p></div>
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 text-xs">Verified <Switch checked={x.verified} onCheckedChange={(v) => up(x.id, { verified: v, last_checked: new Date().toISOString().slice(0, 10) })} /></label>
               <label className="flex items-center gap-2 text-xs">Published <Switch checked={x.is_published} onCheckedChange={(v) => up(x.id, { is_published: v })} /></label>

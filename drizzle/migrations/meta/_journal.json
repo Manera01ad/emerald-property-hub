@@ -64,6 +64,13 @@
       "when": 1792656516178,
       "tag": "0008_limit_public_settings_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792658000000,
+      "tag": "0009_infrastructure_area",
+      "breakpoints": true
     }
   ]
 }
