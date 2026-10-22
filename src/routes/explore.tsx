@@ -10,7 +10,7 @@ import { PROPERTY_TYPES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, useSettings, type Property } from "@/lib/data";
 import { purchaseCost } from "@/lib/deal";
 import { formatINR } from "@/lib/format";
-import { LAYERS, LAYER_KEYS, distanceKm, livability, overpassQuery, parseOverpass, walkMinutes, type LayerKey, type PoiWithDistance } from "@/lib/livability";
+import { LAYERS, LAYER_KEYS, bboxKey, distanceKm, livability, overpassBboxQuery, overpassQuery, parseOverpass, snapBbox, walkMinutes, type LayerKey, type PoiWithDistance } from "@/lib/livability";
 import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 
@@ -36,6 +36,7 @@ const ML_VERSION = "4.7.1";
 const CHENNAI: LatLng = { lat: 12.9, lng: 80.1 };
 const RADIUS_M = 2000;
 const OVERPASS = "https://overpass-api.de/api/interpreter";
+const MIN_PLACES_ZOOM = 13;
 
 declare global { interface Window { maplibregl?: any } }
 
@@ -115,6 +116,9 @@ function ExplorePage() {
   const poiMarkers = useRef<any[]>([]);
   const officeMarker = useRef<any>(null);
   const [ready, setReady] = useState(false);
+  const [viewPois, setViewPois] = useState<PoiWithDistance[]>([]);
+  const [placesState, setPlacesState] = useState<"zoom" | "loading" | "ok" | "error">("zoom");
+  const placeCache = useRef(new Map<string, PoiWithDistance[]>());
 
   useEffect(() => {
     let dead = false;
@@ -158,22 +162,58 @@ function ExplorePage() {
     if (ready && selected) map.current.flyTo({ center: [selected.lng, selected.lat], zoom: 14.5, duration: 600 });
   }, [ready, selected?.id]);
 
+  // Places in the current map view, like a normal map: loads whenever the map stops moving at street level.
+  useEffect(() => {
+    if (!ready) return;
+    const m = map.current;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let ctl: AbortController | undefined;
+    async function load() {
+      if (m.getZoom() < MIN_PLACES_ZOOM) { setViewPois([]); setPlacesState("zoom"); return; }
+      const bounds = m.getBounds();
+      const box = snapBbox({ south: bounds.getSouth(), west: bounds.getWest(), north: bounds.getNorth(), east: bounds.getEast() });
+      const key = bboxKey(box);
+      const hit = placeCache.current.get(key);
+      if (hit) { setViewPois(hit); setPlacesState("ok"); return; }
+      ctl?.abort();
+      ctl = new AbortController();
+      setPlacesState("loading");
+      try {
+        const res = await fetch(OVERPASS, { method: "POST", body: new URLSearchParams({ data: overpassBboxQuery(box) }), signal: ctl.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const json = (await res.json()) as { elements?: any[] };
+        const c = m.getCenter();
+        const pois = parseOverpass(json.elements ?? [], c.lat, c.lng);
+        placeCache.current.set(key, pois);
+        setViewPois(pois);
+        setPlacesState("ok");
+      } catch (e) {
+        if ((e as Error).name !== "AbortError") setPlacesState("error");
+      }
+    }
+    const onMove = () => { clearTimeout(timer); timer = setTimeout(load, 600); };
+    m.on("moveend", onMove);
+    onMove();
+    return () => { clearTimeout(timer); ctl?.abort(); m.off("moveend", onMove); };
+  }, [ready]);
+
   // Neighbourhood markers
   useEffect(() => {
     if (!ready) return;
     const ml = window.maplibregl;
     poiMarkers.current.forEach((m) => m.remove());
-    poiMarkers.current = (nearby.data ?? []).filter((p) => layers[p.layer]).slice(0, 150).map((p) => {
+    const source = selected ? nearby.data ?? [] : viewPois;
+    poiMarkers.current = source.filter((p) => layers[p.layer]).slice(0, 300).map((p) => {
       const el = document.createElement("div");
-      el.style.cssText = `width:12px;height:12px;border-radius:9999px;background:${LAYERS[p.layer].color};border:2px solid #fff;box-shadow:0 0 2px #0006`;
-      el.title = `${p.name} · ${LAYERS[p.layer].label} · ${p.km.toFixed(1)} km`;
-      return new ml.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(map.current);
+      el.style.cssText = `width:12px;height:12px;border-radius:9999px;background:${LAYERS[p.layer].color};border:2px solid #fff;box-shadow:0 0 2px #0006;cursor:pointer`;
+      const popup = new ml.Popup({ offset: 10, closeButton: false }).setText(`${p.name} · ${LAYERS[p.layer].label}${selected ? ` · ${p.km.toFixed(1)} km` : ""}`);
+      return new ml.Marker({ element: el }).setLngLat([p.lng, p.lat]).setPopup(popup).addTo(map.current);
     });
-  }, [ready, nearby.data, layers]);
+  }, [ready, nearby.data, viewPois, layers, selected?.id]);
 
   // Move the map to the chosen area
   useEffect(() => {
-    if (ready && office) map.current.flyTo({ center: [office.lng, office.lat], zoom: 11.5 });
+    if (ready && office) map.current.flyTo({ center: [office.lng, office.lat], zoom: 13 });
   }, [ready, office?.lat, office?.lng]);
 
   // Area marker
@@ -230,9 +270,14 @@ function ExplorePage() {
           <div ref={mapEl} className="h-[70vh] min-h-[420px] w-full overflow-hidden rounded-xl border" />
           {mapErr && <p role="alert" className="absolute inset-x-3 top-3 rounded bg-destructive px-3 py-2 text-sm text-destructive-foreground">{mapErr}</p>}
           {!isLoading && !located.length && (
-            <div className="absolute inset-0 grid place-items-center rounded-xl bg-background/80 p-6 text-center text-sm">
-              <p>No listings with map locations yet. <Link to="/consult" className="underline">Tell us what you need</Link> and we will find homes for you.</p>
-            </div>
+            <p className="pointer-events-none absolute inset-x-3 bottom-8 mx-auto w-fit max-w-full rounded-lg bg-background/95 px-3 py-2 text-center text-xs shadow">
+              No homes with map locations yet. <Link to="/consult" className="pointer-events-auto underline">Tell us what you need</Link> and we will find homes for you.
+            </p>
+          )}
+          {!selected && (
+            <p className="pointer-events-none absolute bottom-8 left-3 rounded bg-background/95 px-2 py-1 text-xs shadow">
+              {placesState === "zoom" ? "Zoom in to see schools, hospitals, shops and transit" : placesState === "loading" ? "Loading places…" : placesState === "error" ? "Place data is busy. Move the map to try again." : `${viewPois.filter((p) => layers[p.layer]).length} places shown`}
+            </p>
           )}
           <div className="absolute left-3 top-3 flex flex-wrap gap-1.5 rounded-lg bg-background/95 p-2 shadow">
             {LAYER_KEYS.map((k) => (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { distanceKm, layerForTags, layerScore, livability, parseOverpass, walkMinutes } from "./livability";
+import { bboxKey, distanceKm, layerForTags, layerScore, livability, overpassBboxQuery, parseOverpass, snapBbox, walkMinutes } from "./livability";
 
 describe("layerForTags", () => {
   it("maps OSM tags to layers", () => {
@@ -53,5 +53,20 @@ describe("distance helpers", () => {
   it("walk time is at least a minute", () => {
     expect(walkMinutes(0.01)).toBe(1);
     expect(walkMinutes(0.48)).toBe(6);
+  });
+});
+
+describe("map-view lookups", () => {
+  it("snaps outward to a 0.01 degree grid so small pans share a key", () => {
+    const a = snapBbox({ south: 12.9234, west: 80.0912, north: 12.9561, east: 80.1288 });
+    expect(a).toEqual({ south: 12.92, west: 80.09, north: 12.96, east: 80.13 });
+    const b = snapBbox({ south: 12.9261, west: 80.0955, north: 12.9549, east: 80.1201 });
+    expect(bboxKey(b)).toBe(bboxKey(a));
+  });
+  it("builds a query for all five layers inside the box", () => {
+    const q = overpassBboxQuery({ south: 12.92, west: 80.09, north: 12.96, east: 80.13 });
+    expect(q).toContain("(12.92,80.09,12.96,80.13)");
+    for (const tag of ["school", "supermarket", "railway=station", "bus_stop"]) expect(q).toContain(tag);
+    expect(q).toContain("out center 500");
   });
 });

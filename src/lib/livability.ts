@@ -51,6 +51,21 @@ export function overpassQuery(lat: number, lng: number, radiusM: number): string
   return `[out:json][timeout:20];(nwr${a}[amenity~"^(school|hospital|clinic|restaurant|cafe|bus_station)$"];nwr${a}[shop=supermarket];nwr${a}[railway=station];nwr${a}[highway=bus_stop];);out center 400;`;
 }
 
+export type Bbox = { south: number; west: number; north: number; east: number };
+
+/** Snap a map view outward to a 0.01° grid, so small pans reuse the same lookup. */
+export function snapBbox(b: Bbox): Bbox {
+  const f = (v: number) => Math.floor(v * 100) / 100, c = (v: number) => Math.ceil(v * 100) / 100;
+  return { south: f(b.south), west: f(b.west), north: c(b.north), east: c(b.east) };
+}
+export const bboxKey = (b: Bbox) => `${b.south},${b.west},${b.north},${b.east}`;
+
+/** Everything on the five layers inside the map view. Same tags as overpassQuery. */
+export function overpassBboxQuery(b: Bbox, limit = 500): string {
+  const a = `(${b.south},${b.west},${b.north},${b.east})`;
+  return `[out:json][timeout:25];(nwr${a}[amenity~"^(school|hospital|clinic|restaurant|cafe|bus_station)$"];nwr${a}[shop=supermarket];nwr${a}[railway=station];nwr${a}[highway=bus_stop];);out center ${limit};`;
+}
+
 /** 0–1 for one layer: full marks within nearKm, fading to zero at farKm. */
 export function layerScore(nearestKm: number | undefined, layer: LayerKey): number {
   if (nearestKm == null) return 0;
