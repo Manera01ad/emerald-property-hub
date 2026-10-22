@@ -14,6 +14,7 @@ import { validLatLng, type LatLng } from "@/lib/mapurl";
 
 export const Route = createFileRoute("/explore")({
   staticData: { sitemap: true },
+  staticData: { sitemap: true },
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/explore" }],
     meta: [
