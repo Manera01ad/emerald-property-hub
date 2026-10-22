@@ -47,6 +47,11 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm">
             <Link to={session ? "/my" : "/auth"}>{session ? "My research" : "Sign in"}</Link>
           </Button>
+          {session && (
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/assistant">Ask PropWise</Link>
+            </Button>
+          )}
           <Button asChild variant="gold" size="sm">
             <Link to="/consult">Book a consultation</Link>
           </Button>
@@ -65,6 +70,9 @@ export function SiteHeader() {
           <Link to={session ? "/my" : "/auth"} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
             {session ? "My research" : "Sign in"}
           </Link>
+          {session && (
+            <Link to="/assistant" onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">Ask PropWise</Link>
+          )}
         </nav>
       )}
       {ids.length > 0 && (

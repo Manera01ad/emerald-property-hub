@@ -119,14 +119,11 @@ function ChatWindow({ initial, loadError }: { initial: UIMessage[]; loadError: b
       <Conversation className="flex-1 rounded-lg border bg-card">
         <ConversationContent>
           {messages.length === 0 ? (
-            <ConversationEmptyState
-              icon={<img src={mark} alt="" width={64} height={64} className="size-16" />}
-              title="What would you like to know?"
-              description="Ask how any PropWise tool works, or where to find something."
-            >
+            <ConversationEmptyState>
               <div className="mt-4 flex flex-col items-center gap-3">
                 <img src={mark} alt="" width={64} height={64} className="size-16" />
                 <p className="font-medium">What would you like to know?</p>
+                <p className="text-sm text-muted-foreground">Ask how any PropWise tool works, or where to find something.</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {SUGGESTIONS.map((s) => (
                     <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>{s}</Button>

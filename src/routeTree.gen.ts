@@ -27,6 +27,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ValuationRouteImport } from './routes/valuation'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
@@ -124,6 +125,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMyRoute = AuthenticatedMyRouteImport.update({
   id: '/my',
   path: '/my',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/valuation': typeof ValuationRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/properties/$id': typeof PropertiesIdRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/valuation': typeof ValuationRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/properties/$id': typeof PropertiesIdRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/valuation': typeof ValuationRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/properties/$id': typeof PropertiesIdRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/valuation'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
+    | '/assistant'
     | '/my'
     | '/api/assistant'
     | '/properties/$id'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/valuation'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
+    | '/assistant'
     | '/my'
     | '/api/assistant'
     | '/properties/$id'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/valuation'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
+    | '/_authenticated/assistant'
     | '/_authenticated/my'
     | '/api/assistant'
     | '/properties/$id'
@@ -464,6 +476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assistant': {
+      id: '/_authenticated/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/my': {
       id: '/_authenticated/my'
       path: '/my'
@@ -511,11 +530,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedMyRoute: typeof AuthenticatedMyRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedMyRoute: AuthenticatedMyRoute,
 }
 
