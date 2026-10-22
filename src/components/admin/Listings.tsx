@@ -17,6 +17,7 @@ import { VerificationBadge } from "@/components/Badges";
 import { APPROVALS, AVAILABILITY, DOCS, MARKETS, PLACE_CATEGORIES, PROPERTY_TYPES, VERIFICATION, typeLabel } from "@/lib/constants";
 import { formatINR } from "@/lib/format";
 import { usePhotoUrls, type Property } from "@/lib/data";
+import { ListingImport } from "./ListingImport";
 import { Panel, selectCls, useAdminTable, useInvalidateAdmin } from "./shared";
 
 export function Listings() {
@@ -40,7 +41,10 @@ export function Listings() {
         <select className={selectCls + " max-w-48"} value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="">All listings</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option><option value="demo">Demo records</option>
         </select>
-        <Button onClick={() => setEditing("new")}><Plus /> New listing</Button>
+        <div className="flex gap-2">
+          <ListingImport existing={data} onDone={() => inv("properties")} />
+          <Button onClick={() => setEditing("new")}><Plus /> New listing</Button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] text-sm">
