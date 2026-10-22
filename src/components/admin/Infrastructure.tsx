@@ -24,10 +24,12 @@ export function Infrastructure() {
     e.preventDefault();
     const form = e.currentTarget;
     const f = new FormData(form);
+    // `area` comes from a pending migration (0009); only send it when chosen so adding still works before it is applied.
+    const area = String(f.get("area") || "") || null;
     const { error } = await supabase.from("infrastructure_projects").insert({
       name: String(f.get("name")),
       location: String(f.get("location")),
-      area: String(f.get("area") || "") || null,
+      ...(area ? ({ area } as Record<string, string>) : {}),
       description: String(f.get("description") || "") || null,
       progress_status: String(f.get("status")),
       source_url: String(f.get("source") || "") || null,
@@ -54,7 +56,7 @@ export function Infrastructure() {
       </form>
       <p className="mt-2 text-xs text-muted-foreground">New projects start unpublished and unverified. Mark verified only after confirming with an official source. Link an area so the project appears under that area on the public page.</p>
       <div className="mt-4 space-y-2">
-        {data.map((x) => (
+        {(data as Array<(typeof data)[number] & { area?: string | null }>).map((x) => (
           <div key={x.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm">
             <div><p className="font-medium">{x.name}</p><p className="text-xs text-muted-foreground">{x.location} · {x.area ? x.area : "no area linked"} · {humanize(x.progress_status)} {x.source_url ? "· sourced" : "· no source"}</p></div>
             <div className="flex items-center gap-4">
