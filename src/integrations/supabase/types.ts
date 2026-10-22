@@ -35,6 +35,33 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: Json
+          message_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: Json
+          message_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: Json
+          message_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       buyer_profiles: {
         Row: {
           bedrooms: number | null
@@ -280,6 +307,7 @@ export type Database = {
       }
       infrastructure_projects: {
         Row: {
+          area: string | null
           authority: string | null
           created_at: string
           description: string | null
@@ -299,6 +327,7 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          area?: string | null
           authority?: string | null
           created_at?: string
           description?: string | null
@@ -318,6 +347,7 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          area?: string | null
           authority?: string | null
           created_at?: string
           description?: string | null
