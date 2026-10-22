@@ -5,8 +5,34 @@ import type { Json } from "@/integrations/supabase/types";
 import { AREAS } from "@/lib/areas";
 import { overpassAreaQuery, summariseArea, type OsmElement } from "@/lib/area-intel";
 
-const OVERPASS = "https://overpass-api.de/api/interpreter";
-const UA = "PropWise/1.0 (https://emerald-property-hub.lovable.app)";
+const OVERPASS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
+const UA = "PropWise/1.0";
+
+/** Public Overpass servers are often busy; try each mirror once. */
+async function fetchOsm(query: string): Promise<OsmElement[]> {
+  let last = "";
+  for (const url of OVERPASS) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "User-Agent": UA, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ data: query }),
+      });
+      if (res.ok && (res.headers.get("content-type") ?? "").includes("json")) {
+        return ((await res.json()) as { elements?: OsmElement[] }).elements ?? [];
+      }
+      last = String(res.status);
+    } catch (e) {
+      last = (e as Error).message;
+    }
+  }
+  console.error("area intelligence: all map servers failed", last);
+  throw new Error("The open map servers are busy right now. Try again in a few minutes.");
+}
 
 /** Admin-only: fetch fresh open data for one area and save it as a hidden draft. */
 export const refreshAreaIntelligence = createServerFn({ method: "POST" })
@@ -18,13 +44,7 @@ export const refreshAreaIntelligence = createServerFn({ method: "POST" })
     const pt = AREAS[data.city]?.[data.area];
     if (!pt) throw new Error("Unknown area");
 
-    const osm = await fetch(OVERPASS, {
-      method: "POST",
-      headers: { "User-Agent": UA, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ data: overpassAreaQuery(pt.lat, pt.lng) }),
-    });
-    if (!osm.ok) throw new Error(osm.status === 429 || osm.status === 504 ? "OpenStreetMap is busy. Try again in a minute." : `OpenStreetMap error (${osm.status})`);
-    const elements = ((await osm.json()) as { elements?: OsmElement[] }).elements ?? [];
+    const elements = await fetchOsm(overpassAreaQuery(pt.lat, pt.lng));
 
     let elevation: number | null = null;
     const el = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${pt.lat}&longitude=${pt.lng}`, { headers: { "User-Agent": UA } });
