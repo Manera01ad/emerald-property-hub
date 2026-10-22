@@ -26,7 +26,6 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResearchServicesRouteImport } from './routes/research-services'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as ValuationRouteImport } from './routes/valuation'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
@@ -121,11 +120,6 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ValuationRoute = ValuationRouteImport.update({
-  id: '/valuation',
-  path: '/valuation',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -190,7 +184,6 @@ export interface FileRoutesByFullPath {
   '/research-services': typeof ResearchServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/valuation': typeof ValuationRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
@@ -218,7 +211,6 @@ export interface FileRoutesByTo {
   '/research-services': typeof ResearchServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/valuation': typeof ValuationRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
@@ -248,7 +240,6 @@ export interface FileRoutesById {
   '/research-services': typeof ResearchServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/valuation': typeof ValuationRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
@@ -278,7 +269,6 @@ export interface FileRouteTypes {
     | '/research-services'
     | '/sitemap.xml'
     | '/terms'
-    | '/valuation'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/assistant'
@@ -306,7 +296,6 @@ export interface FileRouteTypes {
     | '/research-services'
     | '/sitemap.xml'
     | '/terms'
-    | '/valuation'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/assistant'
@@ -335,7 +324,6 @@ export interface FileRouteTypes {
     | '/research-services'
     | '/sitemap.xml'
     | '/terms'
-    | '/valuation'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/assistant'
@@ -365,7 +353,6 @@ export interface RootRouteChildren {
   ResearchServicesRoute: typeof ResearchServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
-  ValuationRoute: typeof ValuationRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
@@ -495,13 +482,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/valuation': {
-      id: '/valuation'
-      path: '/valuation'
-      fullPath: '/valuation'
-      preLoaderRoute: typeof ValuationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -601,7 +581,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResearchServicesRoute: ResearchServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
-  ValuationRoute: ValuationRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiAssistantRoute: ApiAssistantRoute,

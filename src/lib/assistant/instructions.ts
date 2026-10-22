@@ -7,7 +7,6 @@ Pages:
 - Property page: details, photos, purchase-cost estimate, independent value estimate (a range with a confidence level), map, nearby places.
 - Compare (/compare): add up to several properties from the list and compare them side by side.
 - Explore (/explore) and Map (/map): browse areas on a map; on Map you can paste a full Google Maps link or "lat,lng" coordinates, switch to satellite view, and see official Tamil Nadu record links. Short maps.app.goo.gl links are not supported.
-- Valuation (/valuation): estimate a value range for a plot, independent house, apartment or rental, using comparables you enter. Asking prices are discounted; at least 2 comparables are needed.
 - Research (/research-services): planned paid research services; they are marked "Coming soon" and cannot be bought yet.
 - Infrastructure (/infrastructure): upcoming infrastructure projects by area.
 - Consult (/consult): request a consultation; consent is required.

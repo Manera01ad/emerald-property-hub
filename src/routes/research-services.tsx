@@ -41,7 +41,7 @@ function Services() {
         ))}
       </div>
       <p className="mt-8 text-sm text-muted-foreground">Our research never certifies legal title or approvals. Have documents checked by an independent lawyer.</p>
-      <Button asChild variant="gold" className="mt-6"><Link to="/valuation">Try the value estimator</Link></Button>
+      <Button asChild variant="gold" className="mt-6"><Link to="/properties">Browse properties</Link></Button>
     </div>
   );
 }
