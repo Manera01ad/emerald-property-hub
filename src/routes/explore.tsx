@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AreaBrief } from "@/components/AreaBrief";
+import { useMyLocation, useNearMeAccess } from "@/lib/my-location";
 import { ResearchBrief } from "@/components/ResearchBrief";
 import { PROPERTY_TYPES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, useSettings, type Property } from "@/lib/data";
@@ -91,8 +92,13 @@ function ExplorePage() {
   const [maxLakh, setMaxLakh] = useState("");
   const [city, setCity] = useState(CITIES[0]!);
   const search = Route.useSearch();
-  const [area, setArea] = useState(search.area && areaPoint(CITIES[0]!, search.area) ? search.area : "");
-  const [officeKm, setOfficeKm] = useState("10");
+  const nearAccess = useNearMeAccess();
+  const mine = useMyLocation();
+  const [area, setAreaState] = useState(search.area && areaPoint(CITIES[0]!, search.area) ? search.area : nearAccess && mine.area ? mine.area : "");
+  const [officeKm, setOfficeKmState] = useState(String(nearAccess ? mine.radiusKm : 10));
+  // Keep the shared "near me" setting in step with what is chosen here (administrators only for now).
+  const setArea = (a: string) => { setAreaState(a); if (nearAccess) mine.setArea(a || null); };
+  const setOfficeKm = (km: string) => { setOfficeKmState(km); if (nearAccess && Number(km)) mine.setRadius(Number(km)); };
   const office: LatLng | null = area ? areaPoint(city, area) : null;
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ school: true, hospital: true, food: false, grocery: true, transit: true });
   const [selectedId, setSelectedId] = useState<string | null>(null);

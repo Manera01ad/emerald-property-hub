@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { z } from "zod";
 import { PropertyCard } from "@/components/PropertyCard";
+import { MyLocationBar } from "@/components/MyLocationBar";
+import { useMyLocation, useNearMeAccess } from "@/lib/my-location";
+import { listingDistance } from "@/lib/nearme";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -52,9 +55,14 @@ function PropertiesPage() {
   const rules = costRulesFrom(settings);
   const set = (patch: Partial<Search>) => navigate({ search: (prev) => ({ ...prev, ...patch }) });
   const num = (v: string) => (v ? Number(v) : undefined);
+  const nearAccess = useNearMeAccess();
+  const me = useMyLocation();
+  const origin = nearAccess ? me.origin : null;
+
+  const distances = useMemo(() => new Map((data ?? []).flatMap((p) => { const d = origin ? listingDistance(p, origin) : null; return d ? [[p.id, d] as const] : []; })), [data, origin]);
 
   const results = useMemo(() => {
-    return (data ?? []).filter((p) => {
+    const list = (data ?? []).filter((p) => {
       const price = s.allInclusive ? purchaseCost(p, rules).total : Number(p.asking_price);
       if (s.location && p.location !== s.location) return false;
       if (s.type && p.property_type !== s.type) return false;
@@ -64,9 +72,11 @@ function PropertiesPage() {
       if (s.minLand && (Number(p.land_area_sqft) || 0) < s.minLand) return false;
       if (s.approval && !p.approvals.includes(s.approval)) return false;
       if (s.availability && p.availability !== s.availability) return false;
+      if (origin && (distances.get(p.id)?.km ?? Infinity) > me.radiusKm) return false;
       return true;
     });
-  }, [data, s, rules]);
+    return origin ? list.sort((a, b) => (distances.get(a.id)?.km ?? 0) - (distances.get(b.id)?.km ?? 0)) : list;
+  }, [data, s, rules, origin, me.radiusKm, distances]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
@@ -107,7 +117,8 @@ function PropertiesPage() {
           <Button variant="outline" className="w-full" onClick={() => navigate({ search: {} })}>Reset filters</Button>
         </aside>
         <div>
-          <p className="mb-4 text-sm text-muted-foreground">{isLoading ? "Loading…" : `${results.length} properties`}</p>
+          <MyLocationBar className="mb-3" />
+          <p className="mb-4 text-sm text-muted-foreground">{isLoading ? "Loading…" : `${results.length} properties${origin ? `, nearest first` : ""}`}</p>
           {isError ? (
             <div className="rounded-xl border border-dashed p-12 text-center text-destructive">Couldn't load listings. Please refresh to try again.</div>
           ) : !isLoading && (data ?? []).length === 0 ? (
@@ -119,7 +130,10 @@ function PropertiesPage() {
           ) : !isLoading && results.length === 0 ? (
             <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">No listings match these filters yet.</div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{results.map((p) => <PropertyCard key={p.id} p={p} />)}</div>
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{results.map((p) => {
+              const d = distances.get(p.id);
+              return <div key={p.id}><PropertyCard p={p} />{d && <p className="mt-1 text-xs text-muted-foreground">{d.exact ? "" : "~"}{d.km.toFixed(1)} km from you</p>}</div>;
+            })}</div>
           )}
         </div>
       </div>

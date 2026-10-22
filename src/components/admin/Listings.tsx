@@ -18,6 +18,10 @@ import { APPROVALS, AVAILABILITY, DOCS, MARKETS, PLACE_CATEGORIES, PROPERTY_TYPE
 import { formatINR } from "@/lib/format";
 import { usePhotoUrls, type Property } from "@/lib/data";
 import { ListingImport } from "./ListingImport";
+import { NearbyFromSources } from "./NearbyFromSources";
+import { MyLocationBar } from "@/components/MyLocationBar";
+import { useMyLocation } from "@/lib/my-location";
+import { listingDistance } from "@/lib/nearme";
 import { Panel, selectCls, useAdminTable, useInvalidateAdmin } from "./shared";
 
 export function Listings() {
@@ -25,6 +29,7 @@ export function Listings() {
   const inv = useInvalidateAdmin();
   const [editing, setEditing] = useState<Property | "new" | null>(null);
   const [filter, setFilter] = useState("");
+  const me = useMyLocation();
 
   async function setStatus(p: Property, status: string) {
     if (status === "published" && !p.listing_permission) return void toast.error("Record the owner/developer listing permission before publishing.");
@@ -34,9 +39,15 @@ export function Listings() {
     toast.success(`Listing ${status}`);
   }
 
-  const rows = data.filter((p) => !filter || p.status === filter || (filter === "demo" && p.is_demo));
+  const dist = new Map(data.flatMap((p) => { const d = me.origin ? listingDistance(p, me.origin) : null; return d ? [[p.id, d] as const] : []; }));
+  const rows = data
+    .filter((p) => !filter || p.status === filter || (filter === "demo" && p.is_demo))
+    .filter((p) => !me.origin || (dist.get(p.id)?.km ?? Infinity) <= me.radiusKm)
+    .sort((a, b) => (me.origin ? (dist.get(a.id)?.km ?? 0) - (dist.get(b.id)?.km ?? 0) : 0));
   return (
+    <>
     <Panel>
+      <MyLocationBar className="mb-3" />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <select className={selectCls + " max-w-48"} value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="">All listings</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option><option value="demo">Demo records</option>
@@ -55,6 +66,7 @@ export function Listings() {
                 <td className="py-2">
                   <Link to="/properties/$id" params={{ id: p.id }} className="font-medium hover:text-primary">{p.title}</Link>
                   {p.is_demo && <span className="ml-2 rounded bg-warning px-1.5 text-xs text-primary-foreground">DEMO</span>}
+                  {dist.get(p.id) && <span className="ml-2 text-xs text-muted-foreground">{dist.get(p.id)!.exact ? "" : "~"}{dist.get(p.id)!.km.toFixed(1)} km</span>}
                   <div className="text-xs text-muted-foreground">{typeLabel(p.property_type)} · {p.location}</div>
                 </td>
                 <td>{formatINR(p.asking_price)}</td>
@@ -89,6 +101,8 @@ export function Listings() {
         </DialogContent>
       </Dialog>
     </Panel>
+    <NearbyFromSources />
+    </>
   );
 }
 
