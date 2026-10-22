@@ -78,6 +78,13 @@
       "when": 1792694741246,
       "tag": "0010_assistant_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792695317689,
+      "tag": "0011_area_intelligence",
+      "breakpoints": true
     }
   ]
 }

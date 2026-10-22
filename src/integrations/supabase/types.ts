@@ -35,6 +35,48 @@ export type Database = {
         }
         Relationships: []
       }
+      area_intelligence: {
+        Row: {
+          area: string
+          city: string
+          created_at: string
+          elevation_m: number | null
+          fetched_at: string
+          id: string
+          is_published: boolean
+          latitude: number
+          longitude: number
+          sources: Json
+          summary: Json
+        }
+        Insert: {
+          area: string
+          city: string
+          created_at?: string
+          elevation_m?: number | null
+          fetched_at?: string
+          id?: string
+          is_published?: boolean
+          latitude: number
+          longitude: number
+          sources?: Json
+          summary?: Json
+        }
+        Update: {
+          area?: string
+          city?: string
+          created_at?: string
+          elevation_m?: number | null
+          fetched_at?: string
+          id?: string
+          is_published?: boolean
+          latitude?: number
+          longitude?: number
+          sources?: Json
+          summary?: Json
+        }
+        Relationships: []
+      }
       assistant_messages: {
         Row: {
           created_at: string
