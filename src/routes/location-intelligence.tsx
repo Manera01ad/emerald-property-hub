@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AreaIntelCard } from "@/components/AreaIntelCard";
 import type { AreaSummary } from "@/lib/area-intel";
+import { areaPoint } from "@/lib/areas";
 
 const URL = "https://emerald-property-hub.lovable.app/location-intelligence";
 const TITLE = "Location intelligence for Chennai areas — PropWise AI";
@@ -12,6 +14,7 @@ const DESC = "Water bodies, parks, bus and train access and height above sea lev
 
 export const Route = createFileRoute("/location-intelligence")({
   staticData: { sitemap: true },
+  validateSearch: z.object({ area: z.string().optional() }),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -36,7 +39,8 @@ function LocationIntelPage() {
       return data ?? [];
     },
   });
-  const [area, setArea] = useState("");
+  const search = Route.useSearch();
+  const [area, setArea] = useState(search.area ?? "");
   const rows = q.data ?? [];
   const current = rows.find((r) => r.area === area) ?? rows[0];
 
@@ -66,7 +70,10 @@ function LocationIntelPage() {
                 {rows.map((r) => <option key={r.area} value={r.area}>{r.area}</option>)}
               </select>
             </label>
-            <h2 className="mt-4 text-xl">{current.area}, {current.city}</h2>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xl">{current.area}, {current.city}</h2>
+              <Button asChild size="sm"><Link to="/explore" search={areaPoint("Chennai", current.area) ? { area: current.area } : {}}>See homes in {current.area}</Link></Button>
+            </div>
             <div className="mt-3"><AreaIntelCard s={current.summary as unknown as AreaSummary} fetchedAt={current.fetched_at} /></div>
           </>
         ) : null}

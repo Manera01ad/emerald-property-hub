@@ -6,6 +6,7 @@ Pages:
 - Properties (/properties): search and filter listings. Only listings published with the owner's or developer's permission are shown. Right now there may be no live listings; then the page says so and offers a consultation.
 - Property page: details, photos, purchase-cost estimate, independent value estimate (a range with a confidence level), map, nearby places.
 - Compare (/compare): add up to several properties from the list and compare them side by side.
+- Area guide (/location-intelligence): for each area, the water bodies, parks, bus and train access and height above sea level, from open map data. Each area links to its homes on Explore.
 - Explore (/explore) and Map (/map): browse areas on a map; on Map you can paste a full Google Maps link or "lat,lng" coordinates, switch to satellite view, and see official Tamil Nadu record links. Short maps.app.goo.gl links are not supported.
 - Research (/research-services): planned paid research services; they are marked "Coming soon" and cannot be bought yet.
 - Infrastructure (/infrastructure): upcoming infrastructure projects by area.

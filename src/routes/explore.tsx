@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AreaBrief } from "@/components/AreaBrief";
 import { ResearchBrief } from "@/components/ResearchBrief";
 import { PROPERTY_TYPES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, useSettings, type Property } from "@/lib/data";
@@ -14,6 +16,7 @@ import { validLatLng, type LatLng } from "@/lib/mapurl";
 
 export const Route = createFileRoute("/explore")({
   staticData: { sitemap: true },
+  validateSearch: z.object({ area: z.string().optional() }),
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/explore" }],
     meta: [
@@ -86,7 +89,8 @@ function ExplorePage() {
   const [type, setType] = useState("");
   const [maxLakh, setMaxLakh] = useState("");
   const [city, setCity] = useState(CITIES[0]!);
-  const [area, setArea] = useState("");
+  const search = Route.useSearch();
+  const [area, setArea] = useState(search.area && areaPoint(CITIES[0]!, search.area) ? search.area : "");
   const [officeKm, setOfficeKm] = useState("10");
   const office: LatLng | null = area ? areaPoint(city, area) : null;
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ school: true, hospital: true, food: false, grocery: true, transit: true });
@@ -245,6 +249,7 @@ function ExplorePage() {
             <div className="text-sm text-muted-foreground">
               <p className="font-medium text-foreground">{visible.length} home{visible.length === 1 ? "" : "s"} on the map</p>
               <p className="mt-2">Select a price pin to see its livability score, the nearest school, hospital, shop and transit stop, and the all-in cost.</p>
+              {area && <AreaBrief area={area} />}
             </div>
           ) : (
             <div className="space-y-4 text-sm">

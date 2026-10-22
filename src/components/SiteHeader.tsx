@@ -6,8 +6,8 @@ import { useCompare } from "@/lib/compare";
 import { useSession } from "@/lib/auth";
 
 const NAV = [
-  { to: "/explore", label: "Explore locations" },
-  { to: "/location-intelligence", label: "Location intelligence" },
+  { to: "/explore", label: "Explore homes" },
+  { to: "/location-intelligence", label: "Area guide" },
   { to: "/compare", label: "Compare" },
   { to: "/advisor", label: "AI advisor" },
 ] as const;
