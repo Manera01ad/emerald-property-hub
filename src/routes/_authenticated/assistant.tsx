@@ -93,7 +93,7 @@ function ChatWindow({ initial, loadError }: { initial: UIMessage[]; loadError: b
     const { data } = await supabase.auth.getUser();
     if (!data.user) return;
     const { error: delError } = await supabase.from("assistant_messages").delete().eq("user_id", data.user.id);
-    if (delError) return toast.error("Couldn't clear the conversation.");
+    if (delError) { toast.error("Couldn't clear the conversation."); return; }
     setMessages([]);
     setCleared((c) => c + 1);
   };
