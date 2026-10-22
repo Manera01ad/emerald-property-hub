@@ -14,6 +14,7 @@ import { Infrastructure } from "@/components/admin/Infrastructure";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { ResearchAgents } from "@/components/admin/ResearchAgents";
 import { Buyers } from "@/components/admin/Buyers";
+import { AreaIntel } from "@/components/admin/AreaIntel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   staticData: { sitemap: false },
@@ -70,6 +71,7 @@ function AdminPage() {
           <TabsTrigger value="partners">Partners</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="infra">Infrastructure</TabsTrigger>
+          <TabsTrigger value="areas">Area intelligence</TabsTrigger>
           <TabsTrigger value="research">AI Research Agents</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -81,6 +83,7 @@ function AdminPage() {
         <TabsContent value="partners"><Partners /></TabsContent>
         <TabsContent value="commissions"><Commissions /></TabsContent>
         <TabsContent value="infra"><Infrastructure /></TabsContent>
+        <TabsContent value="areas"><AreaIntel /></TabsContent>
         <TabsContent value="research"><ResearchAgents /></TabsContent>
         <TabsContent value="settings"><SettingsPanel /></TabsContent>
       </Tabs>

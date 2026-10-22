@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConsultRouteImport } from './routes/consult'
@@ -18,6 +19,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
+import { Route as LocationIntelligenceRouteImport } from './routes/location-intelligence'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -42,6 +44,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvisorRoute = AdvisorRouteImport.update({
+  id: '/advisor',
+  path: '/advisor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -77,6 +84,11 @@ const ExploreRoute = ExploreRouteImport.update({
 const InfrastructureRoute = InfrastructureRouteImport.update({
   id: '/infrastructure',
   path: '/infrastructure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocationIntelligenceRoute = LocationIntelligenceRouteImport.update({
+  id: '/location-intelligence',
+  path: '/location-intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -163,6 +175,7 @@ const ApiPublicResearchTickRoute = ApiPublicResearchTickRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/advisor': typeof AdvisorRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
@@ -170,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
+  '/location-intelligence': typeof LocationIntelligenceRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
@@ -189,6 +203,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/advisor': typeof AdvisorRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
@@ -196,6 +211,7 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
+  '/location-intelligence': typeof LocationIntelligenceRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
@@ -217,6 +233,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/advisor': typeof AdvisorRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
@@ -224,6 +241,7 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
+  '/location-intelligence': typeof LocationIntelligenceRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
@@ -245,6 +263,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/advisor'
     | '/auth'
     | '/compare'
     | '/consult'
@@ -252,6 +271,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
+    | '/location-intelligence'
     | '/map'
     | '/mcp'
     | '/privacy'
@@ -271,6 +291,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/advisor'
     | '/auth'
     | '/compare'
     | '/consult'
@@ -278,6 +299,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
+    | '/location-intelligence'
     | '/map'
     | '/mcp'
     | '/privacy'
@@ -298,6 +320,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/advisor'
     | '/auth'
     | '/compare'
     | '/consult'
@@ -305,6 +328,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
+    | '/location-intelligence'
     | '/map'
     | '/mcp'
     | '/privacy'
@@ -326,6 +350,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AdvisorRoute: typeof AdvisorRoute
   AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
   ConsultRoute: typeof ConsultRoute
@@ -333,6 +358,7 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   ExploreRoute: typeof ExploreRoute
   InfrastructureRoute: typeof InfrastructureRoute
+  LocationIntelligenceRoute: typeof LocationIntelligenceRoute
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -362,6 +388,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advisor': {
+      id: '/advisor'
+      path: '/advisor'
+      fullPath: '/advisor'
+      preLoaderRoute: typeof AdvisorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -411,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/infrastructure'
       fullPath: '/infrastructure'
       preLoaderRoute: typeof InfrastructureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/location-intelligence': {
+      id: '/location-intelligence'
+      path: '/location-intelligence'
+      fullPath: '/location-intelligence'
+      preLoaderRoute: typeof LocationIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -546,6 +586,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AdvisorRoute: AdvisorRoute,
   AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
   ConsultRoute: ConsultRoute,
@@ -553,6 +594,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   ExploreRoute: ExploreRoute,
   InfrastructureRoute: InfrastructureRoute,
+  LocationIntelligenceRoute: LocationIntelligenceRoute,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,

@@ -184,7 +184,13 @@ function ExplorePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-3xl">Explore by neighbourhood</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-3xl">Explore locations</h1>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm"><Link to="/properties">List view</Link></Button>
+          <Button asChild variant="outline" size="sm"><Link to="/map">Look up an exact location</Link></Button>
+        </div>
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">Tap a price pin to see what is around the home. Neighbourhood data is from OpenStreetMap and may be incomplete — treat scores as estimates.</p>
 
       <div className="mt-5 grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_1fr_2.2fr]">
