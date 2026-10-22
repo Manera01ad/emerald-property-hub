@@ -7,8 +7,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment files — never commit these. See .env.example for the template.
-.env
+# .env holds only publishable keys and is required by the published build.
+# Never put private keys in it. Other env files stay private.
 .env.*
 !.env.example
 
