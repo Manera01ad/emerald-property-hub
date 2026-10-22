@@ -1,0 +1,39 @@
+# gitleaks configuration for PropWise AI.
+#
+# Purpose: keep failing the build on NEW secrets, while recording — not hiding —
+# the three findings that already exist in this repository's history.
+#
+# Those three findings are all in `.env`, in two commits from October 2026:
+#
+#   c076bce  .env line 2  generic-api-key  VITE_SUPABASE_PUBLISHABLE_KEY
+#   c076bce  .env line 5  generic-api-key  SUPABASE_PUBLISHABLE_KEY
+#   aa15b43  .env line 4  gcp-api-key      Google Maps browser key
+#
+# `.env` has since been untracked, so no current commit contains these values.
+# They remain readable to anyone with repository access, and cannot be removed
+# without rewriting history, which would destroy the Lovable project history.
+# They are therefore acknowledged here rather than removed.
+#
+# What each finding actually is:
+#
+#   - The two Supabase values are PUBLISHABLE keys. They are sent to browsers by
+#     design; protection comes from row-level security, not from secrecy.
+#   - The Google Maps browser key is a REAL credential. It should be rotated in
+#     Google Cloud Console and restricted to the PropWise domains. This entry is
+#     an acknowledgement, not a decision that the key is acceptable.
+#
+# ACTION REQUIRED: after the Maps key is rotated, delete this file.
+#
+# NOTE: the allowlist must use the singular [allowlist] form. The plural
+# [[allowlists]] form parses without error but is silently not applied, which
+# leaves the scheduled scan failing.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known historical .env findings (October 2026 commits, file since untracked). Scoped to those commits only, so any secret committed from now on still fails the scan. Delete this file once the Maps key is rotated."
+commits = [
+  "c076bceb1c13c4147fd697780437ea90dbc2b777",
+  "aa15b4316f9873656aa0e4c3ab68b28974bf8b17",
+]
