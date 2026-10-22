@@ -8,6 +8,7 @@ import {
   withLovableAiGatewayRunIdHeader,
 } from "./run-id";
 import { ASSISTANT_INSTRUCTIONS } from "./instructions";
+import { DAILY_MESSAGE_LIMIT, LIMIT_REACHED_MESSAGE, MAX_HISTORY_MESSAGES, UNAVAILABLE_MESSAGE, checkMessage, windowStart } from "./limits";
 
 const MODEL = "openai/gpt-6-astra";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
@@ -49,13 +50,26 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as { messages?: unknown };
     if (!Array.isArray(body.messages) || body.messages.length === 0) throw new Error();
-    messages = (body.messages as UIMessage[]).slice(-40);
+    messages = (body.messages as UIMessage[]).slice(-MAX_HISTORY_MESSAGES);
   } catch {
     return json(400, "Invalid request.");
   }
 
   const last = messages[messages.length - 1];
   if (!last || last.role !== "user") return json(400, "Invalid request.");
+  const problem = checkMessage(last);
+  if (problem) return json(400, problem);
+
+  // Daily allowance per user. A retry of the same message does not count twice.
+  const { data: already } = await db.from("assistant_messages").select("id").eq("user_id", userId).eq("message_id", last.id).limit(1);
+  if (!already?.length) {
+    const { count, error: countError } = await db.from("assistant_messages").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("role", "user").gte("created_at", windowStart());
+    if (countError) {
+      console.error("assistant: counting messages failed", countError);
+      return json(500, UNAVAILABLE_MESSAGE);
+    }
+    if ((count ?? 0) >= DAILY_MESSAGE_LIMIT) return json(429, LIMIT_REACHED_MESSAGE);
+  }
   const { error: saveError } = await db.from("assistant_messages").upsert(
     { user_id: userId, message_id: last.id, role: "user", message: last as unknown as Json },
     { onConflict: "user_id,message_id", ignoreDuplicates: true },
@@ -84,16 +98,14 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
       openai: {
         forceReasoning: true,
         reasoningEffort: "low",
-        reasoningSummary: "auto",
         store: false,
-        include: ["reasoning.encrypted_content"],
       },
     },
   });
 
   const response = result.toUIMessageStreamResponse({
     originalMessages: messages,
-    sendReasoning: true,
+    sendReasoning: false,
     onFinish: async ({ responseMessage, isAborted }) => {
       if (!responseMessage.parts.length) return;
       const { error } = await db.from("assistant_messages").upsert(
@@ -109,7 +121,7 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
     },
     onError: (error) => {
       const status = (error as { statusCode?: number })?.statusCode;
-      if (status === 402) return "Lovable AI credits have run out. The site owner needs to top up in Settings → Plans & credits.";
+      if (status === 402) { console.error("assistant: Lovable AI credits exhausted"); return UNAVAILABLE_MESSAGE; }
       if (status === 429) return "The assistant is busy right now. Please wait a moment and try again.";
       if (status === 403) return "The assistant isn't allowed to answer this request.";
       return "The assistant couldn't answer just now. Please try again.";
