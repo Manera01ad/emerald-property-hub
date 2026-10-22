@@ -45,7 +45,7 @@ export function distanceKm(lat1: number, lng1: number, lat2: number, lng2: numbe
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-function group(items: { name?: string; km: number }[]): Group {
+function group(items: { name?: string | undefined; km: number }[]): Group {
   const sorted = [...items].sort((a, b) => a.km - b.km);
   const named: Feature[] = [];
   const seen = new Set<string>();
@@ -70,7 +70,7 @@ export function elevationNote(m: number | null): string {
 }
 
 export function summariseArea(elements: OsmElement[], lat: number, lng: number, elevation: number | null): AreaSummary {
-  const water: { name?: string; km: number }[] = [];
+  const water: { name?: string | undefined; km: number }[] = [];
   let waterways = 0;
   const parks: typeof water = [], rail: typeof water = [], metro: typeof water = [], bus: number[] = [];
   const seenIds = new Set<string>();
