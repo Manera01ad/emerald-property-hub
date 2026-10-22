@@ -28,7 +28,7 @@ function InfraPage() {
     // rows, so the query does not need its own visibility filter.
     queryFn: async () => (await supabase.from("infrastructure_projects").select("*").order("name")).data ?? [],
   });
-  const groups = groupByArea(data);
+  const groups = groupByArea(data.map((r) => ({ ...r, area: (r as { area?: string | null }).area ?? null })));
   return (
     <div className="mx-auto max-w-5xl px-4 py-14">
       <h1 className="text-4xl">Infrastructure</h1>
