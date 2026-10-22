@@ -280,7 +280,6 @@ export type Database = {
       }
       infrastructure_projects: {
         Row: {
-          area: string | null
           authority: string | null
           created_at: string
           description: string | null
@@ -300,7 +299,6 @@ export type Database = {
           verified: boolean
         }
         Insert: {
-          area?: string | null
           authority?: string | null
           created_at?: string
           description?: string | null
@@ -320,7 +318,6 @@ export type Database = {
           verified?: boolean
         }
         Update: {
-          area?: string | null
           authority?: string | null
           created_at?: string
           description?: string | null
