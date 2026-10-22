@@ -91,3 +91,4 @@ Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `VITE_*` values. Th
 
 One change per pull request. Three fixes are three pull requests. A large diff cannot be reviewed properly, and review is the only control that catches what the tests miss.
 
+- The help assistant streams from /api/assistant (src/lib/assistant), verifies the caller's token and saves messages as that user under RLS, so chats stay private and AI keys stay server-side.
