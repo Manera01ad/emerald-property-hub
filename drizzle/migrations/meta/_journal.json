@@ -57,6 +57,13 @@
       "when": 1792656383317,
       "tag": "0007_restrict_property_photo_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792656516178,
+      "tag": "0008_limit_public_settings_keys",
+      "breakpoints": true
     }
   ]
 }
