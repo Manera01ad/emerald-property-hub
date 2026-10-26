@@ -1,7 +1,8 @@
 # Roadmap (Super Intelligence expansion)
 - [x] Area rollout: current pages load; bulk fetching continues past failures with progress; all 45 areas covered in tests; publish controls and 375/768/1440 layouts verified; 96 tests pass
 - [ ] Fetch remaining area data (blocked: free Overpass providers intermittently fail/time out; 7 of 45 saved with height, 1 public; new rows hidden)
-- [ ] Publish site (waiting: owner decision on reviewed public-photo scan warning before deployment)
+- [ ] Fix photo-access finding before publication (owner rejected dismissal; preserve public photos and private drafts; privileged signing changes are owner-only under project rules)
+- [ ] Publish site (blocked: photo-access finding must be genuinely fixed first)
 - [ ] Real Chennai listings (blocked: authorised listing details/photos and permission evidence not supplied)
 - [x] PR #3/#4: merged code present; search-history schema applied once; 95 tests pass; live assistant search, persisted/cleared history, hidden listing refusal and cross-owner isolation verified
 - [ ] PR #3/#4 publication checks (blocked: Maps browser environment binding missing; positive listing-opening flow needs an authorised public listing; hosted post-publish environment not verified)
