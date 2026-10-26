@@ -104,6 +104,39 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_search_log: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          message_id: string
+          query: Json
+          result_count: number
+          sources: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          message_id: string
+          query?: Json
+          result_count?: number
+          sources?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          message_id?: string
+          query?: Json
+          result_count?: number
+          sources?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       buyer_profiles: {
         Row: {
           bedrooms: number | null

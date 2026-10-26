@@ -79,7 +79,7 @@ Never request, read, or embed these. They are absent from the agent environment 
 - `LOVABLE_DB_MIGRATION_URL` — can alter the production schema.
 - `LOVABLE_CRON_SECRET` and the `private.scheduler_token` value — can trigger the research pipeline.
 
-Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `VITE_*` values. They are publishable by design. `.env` is committed because the published build needs these publishable values; never add private keys to it. Other `.env.*` files stay git-ignored.
+Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and public `VITE_*` values. Keep `.env` and `.env.*` ignored except `.env.example`; hosted runtime and build bindings must supply configuration so credentials are not tracked in Git.
 
 ### Checks
 
