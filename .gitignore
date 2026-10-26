@@ -7,8 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# .env holds only publishable keys and is required by the published build.
-# Never put private keys in it. Other env files stay private.
+# Env files are never committed. A Google Maps browser key in .env tripped the
+# Security scan; .env.example documents the variables instead.
+# If Lovable re-adds .env, untrack it again (git rm --cached .env).
+.env
 .env.*
 !.env.example
 
