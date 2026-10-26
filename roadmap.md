@@ -1,4 +1,5 @@
 # Roadmap (Super Intelligence expansion)
+- [ ] PR #3/#4 validation: verify synced code, apply missing assistant search history migration once, check environment settings and test assistant/privacy flows before publishing
 - [x] SEO: unique public property metadata, self-referencing page addresses, privacy-safe sitemap, verification
 - [x] Release 1: buyer/renter profile, buy & rent calculators, rent-vs-buy, matching, saved + downloadable reports, admin Buyers view
 - [ ] Release 2: rider marketplace, assignment, evidence (blocked: decisions on rider terms/consent wording)
