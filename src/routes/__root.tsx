@@ -13,6 +13,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
 
+import { getPublicBackendConfig, setBrowserBackendConfig } from "@/lib/public-backend-config";
+
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -46,6 +48,11 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   staticData: { sitemap: false },
+  beforeLoad: async () => {
+    if (!import.meta.env["VITE_SUPABASE_URL"] || !import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]) {
+      setBrowserBackendConfig(await getPublicBackendConfig());
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
