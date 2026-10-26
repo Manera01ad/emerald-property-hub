@@ -19,10 +19,10 @@ export default defineConfig({
     // which blanked the live site. URL and publishable key are safe to ship.
     define: {
       "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
-        process.env.VITE_SUPABASE_URL || "https://dashpanandamjickoytj.supabase.co",
+        process.env['VITE_SUPABASE_URL'] || "https://dashpanandamjickoytj.supabase.co",
       ),
       "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
-        process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_srom6OnzGr3MGJL_X3GySQ_RLwfGu7K",
+        process.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || "sb_publishable_srom6OnzGr3MGJL_X3GySQ_RLwfGu7K",
       ),
     },
   },
