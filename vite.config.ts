@@ -13,5 +13,17 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  vite: { plugins: [mcpPlugin()] },
+  vite: {
+    plugins: [mcpPlugin()],
+    // Public-only fallback: hosted builds may run without .env (it is git-ignored),
+    // which blanked the live site. URL and publishable key are safe to ship.
+    define: {
+      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
+        process.env.VITE_SUPABASE_URL || "https://dashpanandamjickoytj.supabase.co",
+      ),
+      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
+        process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_srom6OnzGr3MGJL_X3GySQ_RLwfGu7K",
+      ),
+    },
+  },
 });
