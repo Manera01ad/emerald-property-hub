@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
 import {
@@ -8,6 +8,7 @@ import {
   withLovableAiGatewayRunIdHeader,
 } from "./run-id";
 import { ASSISTANT_INSTRUCTIONS } from "./instructions";
+import { createAssistantTools, recordWebSearches, webSearchEnabled } from "./tools";
 import { DAILY_MESSAGE_LIMIT, LIMIT_REACHED_MESSAGE, MAX_HISTORY_MESSAGES, UNAVAILABLE_MESSAGE, checkMessage, windowStart } from "./limits";
 
 const MODEL = "openai/gpt-6-astra";
@@ -89,10 +90,19 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
     fetch: runIdFetch.fetch,
   });
 
+  // Every lookup is logged against the user's question, so they can review it under "Search history".
+  const toolCtx = { db, userId, messageId: last.id };
+  const webSearch = webSearchEnabled();
   const result = streamText({
     model: provider.responses(MODEL),
     system: ASSISTANT_INSTRUCTIONS,
     messages: await convertToModelMessages(messages),
+    tools: {
+      ...createAssistantTools(toolCtx),
+      ...(webSearch ? { web_search: provider.tools.webSearch({}) } : {}),
+    },
+    stopWhen: stepCountIs(4),
+    onStepFinish: (step) => recordWebSearches(toolCtx, step),
     abortSignal: request.signal,
     providerOptions: {
       openai: {
