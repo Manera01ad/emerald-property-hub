@@ -21,9 +21,15 @@ async function fetchOsm(query: string): Promise<OsmElement[]> {
         method: "POST",
         headers: { "User-Agent": UA, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ data: query }),
+        signal: AbortSignal.timeout(35000),
       });
       if (res.ok && (res.headers.get("content-type") ?? "").includes("json")) {
-        return ((await res.json()) as { elements?: OsmElement[] }).elements ?? [];
+        const payload = (await res.json()) as { elements?: OsmElement[]; remark?: string };
+        if (!Array.isArray(payload.elements) || payload.remark) {
+          last = "Incomplete map response";
+          continue;
+        }
+        return payload.elements;
       }
       last = String(res.status);
     } catch (e) {
@@ -47,11 +53,12 @@ export const refreshAreaIntelligence = createServerFn({ method: "POST" })
     const elements = await fetchOsm(overpassAreaQuery(pt.lat, pt.lng));
 
     let elevation: number | null = null;
-    const el = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${pt.lat}&longitude=${pt.lng}`, { headers: { "User-Agent": UA } });
+    const el = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${pt.lat}&longitude=${pt.lng}`, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) });
     if (el.ok) {
       const v = ((await el.json()) as { elevation?: number[] }).elevation?.[0];
       if (typeof v === "number" && Number.isFinite(v)) elevation = v;
     }
+    if (elevation === null) throw new Error("Height data is unavailable. No incomplete area was saved; try again later.");
 
     const summary = summariseArea(elements, pt.lat, pt.lng, elevation);
     const now = new Date().toISOString();

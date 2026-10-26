@@ -1,4 +1,6 @@
 # Roadmap (Super Intelligence expansion)
+- [ ] Area rollout: diagnose page failure, fetch all 45 areas as reviewable drafts, verify publish controls and request site publication
+- [ ] Real Chennai listings (blocked: authorised listing details/photos and permission evidence not supplied)
 - [x] PR #3/#4: merged code present; search-history schema applied once; 95 tests pass; live assistant search, persisted/cleared history, hidden listing refusal and cross-owner isolation verified
 - [ ] PR #3/#4 publication checks (blocked: Maps browser environment binding missing; positive listing-opening flow needs an authorised public listing; hosted post-publish environment not verified)
 - [x] SEO: unique public property metadata, self-referencing page addresses, privacy-safe sitemap, verification
