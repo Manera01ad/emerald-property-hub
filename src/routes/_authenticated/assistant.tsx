@@ -11,6 +11,7 @@ import { PromptInput, PromptInputFooter, PromptInputSubmit, PromptInputTextarea 
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import mark from "@/assets/assistant-mark.png";
+import { describeSearch, type SearchKind } from "@/lib/assistant/search-log";
 
 export const Route = createFileRoute("/_authenticated/assistant")({
   head: () => ({
@@ -166,7 +167,75 @@ function ChatWindow({ initial, loadError }: { initial: UIMessage[]; loadError: b
           <PromptInputSubmit status={status} onStop={stop} disabled={!busy && !input.trim()} />
         </PromptInputFooter>
       </PromptInput>
+
+      <SearchHistory busy={busy} />
     </div>
+  );
+}
+
+type HistoryRow = {
+  id: string;
+  kind: SearchKind;
+  query: Record<string, unknown>;
+  result_count: number;
+  sources: { title?: string; url?: string; id?: string }[];
+  created_at: string;
+};
+
+/** Everything the assistant looked up for this user. The table is created by migration 0012. */
+function SearchHistory({ busy }: { busy: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<HistoryRow[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!open || busy) return;
+    // Not in the generated types until the migration is applied and types are regenerated.
+    const table = (supabase as unknown as { from: (t: string) => { select: (c: string) => { order: (c: string, o: { ascending: boolean }) => { limit: (n: number) => PromiseLike<{ data: HistoryRow[] | null; error: unknown }> } } } }).from("assistant_search_log");
+    table
+      .select("id,kind,query,result_count,sources,created_at")
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data, error }) => {
+        setFailed(!!error);
+        setRows(data ?? []);
+      });
+  }, [open, busy]);
+
+  const clear = async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return;
+    const table = (supabase as unknown as { from: (t: string) => { delete: () => { eq: (c: string, v: string) => PromiseLike<{ error: unknown }> } } }).from("assistant_search_log");
+    const { error } = await table.delete().eq("user_id", data.user.id);
+    if (error) { toast.error("Couldn't clear your search history."); return; }
+    setRows([]);
+  };
+
+  return (
+    <details className="mt-3 rounded-lg border bg-card text-sm" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="cursor-pointer px-3 py-2 font-medium">Search history</summary>
+      <div className="max-h-48 space-y-2 overflow-y-auto border-t px-3 py-2">
+        {rows === null && !failed && <Shimmer>Loading…</Shimmer>}
+        {failed && <p className="text-muted-foreground">Search history isn't available yet.</p>}
+        {rows?.length === 0 && !failed && <p className="text-muted-foreground">Nothing yet. When the assistant looks something up for you, it appears here.</p>}
+        {rows?.map((r) => (
+          <div key={r.id} className="border-b pb-2 last:border-b-0">
+            <p>{describeSearch(r)}</p>
+            <p className="text-xs text-muted-foreground">
+              {new Date(r.created_at).toLocaleString("en-IN")} · {r.result_count} {r.result_count === 1 ? "result" : "results"}
+            </p>
+            {r.kind === "web" && r.sources.some((s) => s.url) && (
+              <ul className="mt-1 space-y-0.5 text-xs">
+                {r.sources.filter((s) => s.url).map((s, i) => (
+                  <li key={i}><a className="text-primary underline" href={s.url} target="_blank" rel="noopener noreferrer">{s.title || s.url}</a></li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+        {!!rows?.length && <Button variant="outline" size="sm" onClick={clear}>Clear history</Button>}
+      </div>
+    </details>
   );
 }
 
