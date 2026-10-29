@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { PROPERTY_TYPES } from "@/lib/constants";
 import { useLocalities } from "@/lib/data";
 import { useSession } from "@/lib/auth";
+import { budgetLabel, type TransactionType } from "@/lib/transaction";
 
 export type Requirements = {
   budgetLakh?: number | undefined;
@@ -22,11 +23,22 @@ export type Requirements = {
 const sel = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm";
 
 /**
- * Buyer requirements, at the top of the results. Anonymous visitors keep everything in the
- * address bar so a search can be shared. Signed-in visitors can save the same answers to
- * their own profile; nothing is written anywhere else.
+ * Buyer, tenant and lessee requirements, at the top of the results. Anonymous visitors keep
+ * everything in the address bar so a search can be shared. Signed-in visitors can save the
+ * same answers to their own profile; nothing is written anywhere else.
+ *
+ * The budget field means different things per transaction type — lakhs for a sale, rupees a
+ * month for rent and lease — so the label follows the type and the saved value is converted.
  */
-export function RequirementsForm({ value, onChange }: { value: Requirements; onChange: (patch: Requirements) => void }) {
+export function RequirementsForm({
+  value,
+  onChange,
+  transaction = "buy",
+}: {
+  value: Requirements;
+  onChange: (patch: Requirements) => void;
+  transaction?: TransactionType;
+}) {
   const { session } = useSession();
   const { data: localities = [] } = useLocalities();
   const [saving, setSaving] = useState(false);
@@ -38,9 +50,11 @@ export function RequirementsForm({ value, onChange }: { value: Requirements; onC
     const { error } = await supabase.from("buyer_profiles").upsert(
       {
         user_id: uid,
-        intent: "buy",
+        intent: transaction,
         property_types: value.type ? [value.type] : [],
-        budget: value.budgetLakh ? value.budgetLakh * 1e5 : null,
+        // A sale budget is saved in rupees; a monthly budget in the same column for rent/lease.
+        budget: transaction === "buy" && value.budgetLakh ? value.budgetLakh * 1e5 : null,
+        monthly_rent_budget: transaction !== "buy" && value.budgetLakh ? value.budgetLakh : null,
         preferred_locations: value.location ? [value.location] : [],
         bedrooms: value.bedrooms ?? null,
         min_area_sqft: value.minArea ?? null,
@@ -64,8 +78,8 @@ export function RequirementsForm({ value, onChange }: { value: Requirements; onC
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-3 lg:grid-cols-5">
         <div className="space-y-1.5">
-          <Label htmlFor="req-budget">Budget (₹ lakhs)</Label>
-          <Input id="req-budget" type="number" min={0} defaultValue={value.budgetLakh} placeholder="e.g. 60" onBlur={(e) => onChange({ budgetLakh: num(e.target.value) })} />
+          <Label htmlFor="req-budget">{budgetLabel(transaction)}</Label>
+          <Input id="req-budget" type="number" min={0} defaultValue={value.budgetLakh} placeholder={transaction === "buy" ? "e.g. 60" : "e.g. 25000"} onBlur={(e) => onChange({ budgetLakh: num(e.target.value) })} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="req-locality">Locality</Label>

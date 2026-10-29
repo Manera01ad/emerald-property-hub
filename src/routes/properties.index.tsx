@@ -5,6 +5,7 @@ import { z } from "zod";
 import { PropertyCard } from "@/components/PropertyCard";
 import { MyLocationBar } from "@/components/MyLocationBar";
 import { RequirementsForm } from "@/components/RequirementsForm";
+import { TransactionSelector } from "@/components/TransactionSelector";
 import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { useMyLocation, useNearMeAccess } from "@/lib/my-location";
 import { listingDistance } from "@/lib/nearme";
@@ -16,8 +17,10 @@ import { APPROVALS, AVAILABILITY, PROPERTY_TYPES } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, useLocalities, useSettings } from "@/lib/data";
 import { matchProperty } from "@/lib/buyer";
 import { purchaseCost } from "@/lib/deal";
+import { transactionTypeOf, type TransactionType } from "@/lib/transaction";
 
 const searchSchema = z.object({
+  transaction: z.enum(["buy", "rent", "lease"]).optional(),
   location: z.string().optional(),
   locality: z.string().optional(),
   type: z.string().optional(),
@@ -76,13 +79,19 @@ function PropertiesPage() {
   const distances = useMemo(() => new Map((data ?? []).flatMap((p) => { const d = origin ? listingDistance(p, origin) : null; return d ? [[p.id, d] as const] : []; })), [data, origin]);
 
   const results = useMemo(() => {
+    const type = s.transaction ?? "buy";
+    const monthly = type !== "buy";
     const list = (data ?? []).filter((p) => {
-      const price = s.allInclusive ? purchaseCost(p, rules).total : Number(p.asking_price);
+      // One listing list, filtered by the transaction type the visitor is shopping in.
+      if (transactionTypeOf(p) !== type) return false;
+      const price = s.allInclusive && !monthly ? purchaseCost(p, rules).total : Number(p.asking_price);
       if (s.location && p.location !== s.location) return false;
       if (s.locality && p.location !== s.locality) return false;
       if (s.type && p.property_type !== s.type) return false;
-      if (s.minPrice && price < s.minPrice * 1e5) return false;
-      if (s.maxPrice && price > s.maxPrice * 1e5) return false;
+      // A monthly budget is stated in rupees, a sale budget in lakhs.
+      const budgetFactor = monthly ? 1 : 1e5;
+      if (s.minPrice && price < s.minPrice * budgetFactor) return false;
+      if (s.maxPrice && price > s.maxPrice * budgetFactor) return false;
       if (s.bedrooms && (p.bedrooms ?? 0) < s.bedrooms) return false;
       if (s.minLand && (Number(p.land_area_sqft) || 0) < s.minLand) return false;
       if (s.approval && !p.approvals.includes(s.approval)) return false;
@@ -98,10 +107,11 @@ function PropertiesPage() {
   const hasRequirements = !!(s.maxPrice || s.locality || s.location || s.type || s.bedrooms || s.minLand);
   const matches = useMemo(() => {
     if (!hasRequirements) return new Map<string, ReturnType<typeof matchProperty>>();
+    const transaction = s.transaction ?? "buy";
     const pref = {
-      intent: "buy",
+      intent: transaction,
       property_types: s.type ? [s.type] : [],
-      budget: s.maxPrice ? s.maxPrice * 1e5 : null,
+      budget: s.maxPrice ? s.maxPrice * (transaction === "buy" ? 1e5 : 1) : null,
       preferred_locations: s.locality ? [s.locality] : s.location ? [s.location] : [],
       bedrooms: s.bedrooms ?? null,
       min_area_sqft: s.minLand ?? null,
@@ -114,8 +124,16 @@ function PropertiesPage() {
       <h1 className="text-4xl">Find a property</h1>
       <p className="mt-2 text-muted-foreground">Only listings with owner or developer permission are shown.</p>
 
+      <div className="mt-4">
+        <TransactionSelector
+          value={s.transaction ?? "buy"}
+          onChange={(transaction) => set({ transaction, maxPrice: undefined, minPrice: undefined, allInclusive: undefined })}
+        />
+      </div>
+
       <div className="mt-6">
         <RequirementsForm
+          transaction={s.transaction ?? "buy"}
           value={{ budgetLakh: s.maxPrice, location: s.locality, type: s.type, bedrooms: s.bedrooms, minArea: s.minLand, verifiedOnly: s.verifiedOnly }}
           onChange={(patch) => set({
             maxPrice: patch.budgetLakh, locality: patch.location, type: patch.type,

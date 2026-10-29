@@ -11,12 +11,16 @@ import { useLocalities } from "@/lib/data";
 import { useSession } from "@/lib/auth";
 import { createSubmission } from "@/lib/submissions-data";
 import { DECLARATION_TEXT, DECLARATION_VERSION, validateSubmission, type SubmitInput } from "@/lib/submissions";
+import { TransactionSelector } from "@/components/TransactionSelector";
+import { TRANSACTION_LABELS, asTransactionType, type TransactionType } from "@/lib/transaction";
 
 const sel = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm";
 
 const EMPTY: SubmitInput = {
   submitterKind: "owner", name: "", phone: "", email: "", reraNumber: "", localitySlug: "",
-  propertyType: "villa", bedrooms: "", builtArea: "", landArea: "", askingPrice: "",
+  propertyType: "villa", transactionType: "buy", bedrooms: "", builtArea: "", landArea: "", askingPrice: "",
+  deposit: "", maintenanceMonthly: "", furnishing: "", availableFrom: "",
+  leaseMonths: "", escalationPct: "", permittedUse: "", renewalTerms: "",
   description: "", declared: false, honeypot: "",
 };
 
@@ -35,6 +39,9 @@ export function OwnerSubmissionForm() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const set = (patch: Partial<SubmitInput>) => setF((s) => ({ ...s, ...patch }));
+  const type: TransactionType = asTransactionType(f.transactionType);
+  const isMonthly = type !== "buy";
+  const isLease = type === "lease";
 
   if (!session) {
     return (
@@ -62,10 +69,20 @@ export function OwnerSubmissionForm() {
         rera_number: f.submitterKind === "developer" ? f.reraNumber.trim() : null,
         locality_slug: f.localitySlug,
         property_type: f.propertyType,
+        transaction_type: f.transactionType,
         bedrooms: f.bedrooms.trim() ? Number(f.bedrooms) : null,
         built_area_sqft: num(f.builtArea),
         land_area_sqft: num(f.landArea),
         asking_price: num(f.askingPrice),
+        // Terms are sent only for the type that uses them, so a sale never carries a deposit.
+        deposit: isMonthly ? num(f.deposit) : null,
+        maintenance_monthly: isMonthly ? num(f.maintenanceMonthly) : null,
+        furnishing: isMonthly ? f.furnishing || null : null,
+        available_from: isMonthly ? f.availableFrom || null : null,
+        lease_months: isLease ? num(f.leaseMonths) : null,
+        escalation_pct: isLease ? num(f.escalationPct) : null,
+        permitted_use: isLease ? f.permittedUse || null : null,
+        renewal_terms: isLease ? f.renewalTerms || null : null,
         description: f.description.trim() || null,
         declaration_version: DECLARATION_VERSION,
         declaration_text: DECLARATION_TEXT,
@@ -93,6 +110,17 @@ export function OwnerSubmissionForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4 rounded-xl border bg-card p-5 shadow-card">
+      <div className="space-y-2">
+        <Label>What are you listing it for?</Label>
+        <TransactionSelector
+          value={type}
+          onChange={(t) => set({ transactionType: t, ...(t !== "buy" && f.propertyType === "plot" ? { propertyType: "villa" } : {}) })}
+        />
+        <p className="text-xs text-muted-foreground">
+          One listing, three ways to offer it. A sale states a price; {TRANSACTION_LABELS.rent.toLowerCase()} and{" "}
+          {TRANSACTION_LABELS.lease.toLowerCase()} state a monthly figure and their own terms.
+        </p>
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="sub-kind">I am the</Label>
@@ -134,7 +162,7 @@ export function OwnerSubmissionForm() {
         <div className="space-y-1.5">
           <Label htmlFor="sub-type">Property type</Label>
           <select id="sub-type" className={sel} value={f.propertyType} onChange={(e) => set({ propertyType: e.target.value })}>
-            {PROPERTY_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            {PROPERTY_TYPES.filter((t) => !isMonthly || t.value !== "plot").map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
@@ -153,14 +181,78 @@ export function OwnerSubmissionForm() {
           {errors["landArea"] && <p className="text-xs text-destructive">{errors["landArea"]}</p>}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="sub-price">Asking price (₹)</Label>
+          <Label htmlFor="sub-price">{isMonthly ? "Monthly rent (₹)" : "Asking price (₹)"}</Label>
           <Input id="sub-price" inputMode="numeric" value={f.askingPrice} onChange={(e) => set({ askingPrice: e.target.value.replace(/[^\d]/g, "") })} />
           {errors["askingPrice"] && <p className="text-xs text-destructive">{errors["askingPrice"]}</p>}
         </div>
+        {isMonthly && (
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-deposit">Deposit (₹)</Label>
+              <Input id="sub-deposit" inputMode="numeric" value={f.deposit} onChange={(e) => set({ deposit: e.target.value.replace(/[^\d]/g, "") })} />
+              {errors["deposit"] && <p className="text-xs text-destructive">{errors["deposit"]}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-maint">Monthly maintenance (₹)</Label>
+              <Input id="sub-maint" inputMode="numeric" value={f.maintenanceMonthly} onChange={(e) => set({ maintenanceMonthly: e.target.value.replace(/[^\d]/g, "") })} />
+              {errors["maintenanceMonthly"] && <p className="text-xs text-destructive">{errors["maintenanceMonthly"]}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-furnishing">Furnishing</Label>
+              <select id="sub-furnishing" className={sel} value={f.furnishing} onChange={(e) => set({ furnishing: e.target.value })}>
+                <option value="">Not stated</option>
+                <option value="unfurnished">Unfurnished</option>
+                <option value="semi_furnished">Semi-furnished</option>
+                <option value="fully_furnished">Fully furnished</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-available">Available from</Label>
+              <Input id="sub-available" type="date" value={f.availableFrom} onChange={(e) => set({ availableFrom: e.target.value })} />
+            </div>
+          </>
+        )}
+        {isLease && (
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-lease-months">Lease duration (months)</Label>
+              <Input id="sub-lease-months" inputMode="numeric" value={f.leaseMonths} onChange={(e) => set({ leaseMonths: e.target.value.replace(/[^\d]/g, "") })} />
+              {errors["leaseMonths"] && <p className="text-xs text-destructive">{errors["leaseMonths"]}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-escalation">Annual escalation (%)</Label>
+              <Input id="sub-escalation" inputMode="numeric" value={f.escalationPct} onChange={(e) => set({ escalationPct: e.target.value.replace(/[^\d.]/g, "") })} />
+              {errors["escalationPct"] && <p className="text-xs text-destructive">{errors["escalationPct"]}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-use">Permitted use</Label>
+              <select id="sub-use" className={sel} value={f.permittedUse} onChange={(e) => set({ permittedUse: e.target.value })}>
+                <option value="">Not stated</option>
+                <option value="residential">Residential</option>
+                <option value="commercial">Commercial</option>
+                <option value="office">Office</option>
+                <option value="retail">Retail</option>
+                <option value="industrial">Industrial</option>
+                <option value="mixed">Mixed use</option>
+              </select>
+              {errors["permittedUse"] && <p className="text-xs text-destructive">{errors["permittedUse"]}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-renewal">Renewal</Label>
+              <select id="sub-renewal" className={sel} value={f.renewalTerms} onChange={(e) => set({ renewalTerms: e.target.value })}>
+                <option value="">Not stated</option>
+                <option value="renewable">Renewable</option>
+                <option value="not_renewable">Not renewable</option>
+                <option value="by_agreement">By fresh agreement at the end of the term</option>
+              </select>
+              {errors["renewalTerms"] && <p className="text-xs text-destructive">{errors["renewalTerms"]}</p>}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="sub-desc">Anything a buyer should know</Label>
+        <Label htmlFor="sub-desc">Anything a {isMonthly ? "tenant or lessee" : "buyer"} should know</Label>
         <Textarea id="sub-desc" rows={4} value={f.description} onChange={(e) => set({ description: e.target.value })} />
         {errors["description"] && <p className="text-xs text-destructive">{errors["description"]}</p>}
       </div>

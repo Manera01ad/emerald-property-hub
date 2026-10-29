@@ -22,7 +22,13 @@ const PUBLIC_PAGES = [
   "src/components/SiteHeader.tsx",
   "src/components/EnquiryForm.tsx",
   "src/components/PropertyCard.tsx",
+  "src/components/TransactionSelector.tsx",
+  "src/components/TransactionTerms.tsx",
+  "src/components/RequirementsForm.tsx",
   "src/lib/deal.ts",
+  "src/lib/rental.ts",
+  "src/lib/lease.ts",
+  "src/lib/transaction.ts",
 ];
 
 const FORBIDDEN = /\b(negotiat\w*|brokerage|broker\b)/i;

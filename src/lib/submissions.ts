@@ -31,10 +31,21 @@ export type SubmitInput = {
   reraNumber: string;
   localitySlug: string;
   propertyType: string;
+  transactionType: string;
   bedrooms: string;
   builtArea: string;
   landArea: string;
   askingPrice: string;
+  // Rent terms. Only meaningful when transactionType is 'rent'.
+  deposit: string;
+  maintenanceMonthly: string;
+  furnishing: string;
+  availableFrom: string;
+  // Lease terms. Only meaningful when transactionType is 'lease'.
+  leaseMonths: string;
+  escalationPct: string;
+  permittedUse: string;
+  renewalTerms: string;
   description: string;
   declared: boolean;
   honeypot: string;
@@ -45,11 +56,22 @@ export type ValidationResult = { ok: true } | { ok: false; errors: Record<string
 const PHONE = /^[+0-9 ()-]{6,20}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PROPERTY_TYPES = ["villa", "independent_house", "resale_home", "apartment", "plot"];
+const TRANSACTION_TYPES = ["buy", "rent", "lease"];
+const FURNISHING = ["unfurnished", "semi_furnished", "fully_furnished"];
+const PERMITTED_USES = ["residential", "commercial", "office", "retail", "industrial", "mixed"];
+const RENEWAL = ["renewable", "not_renewable", "by_agreement"];
 
 function positiveNumber(value: string): number | null {
   if (!value.trim()) return null;
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** Zero is a valid deposit or escalation; a blank is not the same as zero. */
+function nonNegativeNumber(value: string): number | null {
+  if (!value.trim()) return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
 /** Every rule the form enforces, in one place, so the form and its tests agree. */
@@ -64,12 +86,36 @@ export function validateSubmission(input: SubmitInput): ValidationResult {
   }
   if (!input.localitySlug.trim()) errors["localitySlug"] = "Choose the locality from the list.";
   if (!PROPERTY_TYPES.includes(input.propertyType)) errors["propertyType"] = "Choose a property type.";
+  if (!TRANSACTION_TYPES.includes(input.transactionType)) errors["transactionType"] = "Choose buy, rent or lease.";
+  // A plot is land for sale; it is not rented or leased as a home.
+  if (input.transactionType !== "buy" && input.propertyType === "plot") {
+    errors["transactionType"] = "A plot can only be listed for sale.";
+  }
   const bedrooms = input.bedrooms.trim() === "" ? null : Number(input.bedrooms);
   if (bedrooms != null && (!Number.isInteger(bedrooms) || bedrooms < 0)) errors["bedrooms"] = "Bedrooms must be a whole number.";
-  for (const [key, label] of [["builtArea", "Built area"], ["landArea", "Land area"], ["askingPrice", "Asking price"]] as const) {
+  for (const [key, label] of [["builtArea", "Built area"], ["landArea", "Land area"], ["askingPrice", "Monthly rent"]] as const) {
     const raw = input[key];
     if (raw.trim() && positiveNumber(raw) == null) errors[key] = `${label} must be a positive number.`;
   }
+
+  if (input.transactionType === "rent" || input.transactionType === "lease") {
+    // The monthly figure is the one number a tenant or lessee cannot do without.
+    if (!input.askingPrice.trim()) errors["askingPrice"] = "State the monthly rent.";
+    if (input.deposit.trim() && nonNegativeNumber(input.deposit) == null) errors["deposit"] = "Deposit must be zero or more.";
+    if (input.maintenanceMonthly.trim() && nonNegativeNumber(input.maintenanceMonthly) == null) {
+      errors["maintenanceMonthly"] = "Maintenance must be zero or more.";
+    }
+    if (input.furnishing.trim() && !FURNISHING.includes(input.furnishing)) errors["furnishing"] = "Choose a furnishing state.";
+  }
+
+  if (input.transactionType === "lease") {
+    const months = input.leaseMonths.trim() === "" ? null : Number(input.leaseMonths);
+    if (months == null || !Number.isInteger(months) || months <= 0) errors["leaseMonths"] = "State the lease duration in whole months.";
+    if (input.escalationPct.trim() && nonNegativeNumber(input.escalationPct) == null) errors["escalationPct"] = "Escalation must be zero or more.";
+    if (input.permittedUse.trim() && !PERMITTED_USES.includes(input.permittedUse)) errors["permittedUse"] = "Choose the permitted use.";
+    if (input.renewalTerms.trim() && !RENEWAL.includes(input.renewalTerms)) errors["renewalTerms"] = "Choose the renewal position.";
+  }
+
   if (input.description.length > 2000) errors["description"] = "Keep the description under 2000 characters.";
   if (!input.declared) errors["declared"] = "Please accept the declaration.";
   return Object.keys(errors).length ? { ok: false, errors } : { ok: true };

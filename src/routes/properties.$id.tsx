@@ -17,6 +17,8 @@ import type { Evidence } from "@/lib/evidence";
 import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { InterestRequestButton } from "@/components/InterestRequestButton";
+import { TransactionTerms } from "@/components/TransactionTerms";
+import { priceLabel, priceUnit, transactionTypeOf, termsSummary, TRANSACTION_LABELS } from "@/lib/transaction";
 import { hiddenReasons } from "@/lib/visibility";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
@@ -88,10 +90,13 @@ function PropertyPage() {
   );
 
   const rules = costRulesFrom(settings);
+  // Rent and lease are recurring payments, so purchase duty, EMI and guideline value do not apply.
+  const type = transactionTypeOf(p);
+  const monthly = priceUnit(type) === "per_month";
   const cost = purchaseCost(p, rules);
   const score = dealScore(p, pool, places);
   const hints = priceQuestions(p, pool);
-  const ppsf = pricePerSqft(p);
+  const ppsf = monthly ? null : pricePerSqft(p);
   const wa = whatsappLink(settings?.whatsapp_number, `Hi PropWise, I'm interested in: ${p.title} (${p.location})`);
   const hidden = hiddenReasons(p);
 
@@ -137,22 +142,26 @@ function PropertyPage() {
 
           <Section title="Specifications">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-              <Spec k="Asking price" v={formatINRFull(p.asking_price)} />
-              <Spec k="Price / sq ft" v={ppsf ? formatINRFull(ppsf) : "—"} />
+              <Spec k={priceLabel(type)} v={monthly ? `${formatINRFull(p.asking_price)} a month` : formatINRFull(p.asking_price)} />
+              {!monthly && <Spec k="Price / sq ft" v={ppsf ? formatINRFull(ppsf) : "—"} />}
+              <Spec k="Transaction" v={TRANSACTION_LABELS[type]} />
               <Spec k="Bedrooms" v={p.bedrooms ?? "—"} />
               <Spec k="Built-up area" v={p.built_area_sqft ? `${p.built_area_sqft} sq ft` : "—"} />
               <Spec k="Land area" v={p.land_area_sqft ? `${p.land_area_sqft} sq ft` : "—"} />
               <Spec k="Approvals" v={p.approvals.join(", ") || "Not recorded"} />
               <Spec k="RERA no." v={p.rera_number || "Not provided"} />
               <Spec k="Source" v={p.source || "Not recorded"} />
-              <Spec k="Guideline value" v={p.guideline_value ? formatINRFull(p.guideline_value) : "Not recorded"} />
+              {!monthly && <Spec k="Guideline value" v={p.guideline_value ? formatINRFull(p.guideline_value) : "Not recorded"} />}
             </dl>
             {p.amenities.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{p.amenities.map((a) => <span key={a} className="rounded-full border px-3 py-1 text-xs">{a}</span>)}</div>}
           </Section>
 
-          <Section title="Legal documentation">
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {DOCS.map((d) => {
+          <TransactionTerms listing={p} type={type} />
+
+          {!monthly && (
+            <Section title="Legal documentation">
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {DOCS.map((d) => {
                 const ok = p[d.key as keyof typeof p];
                 return (
                   <li key={d.key} className="flex items-center gap-2 text-sm">
@@ -161,9 +170,10 @@ function PropertyPage() {
                   </li>
                 );
               })}
-            </ul>
-            <p className="mt-3 text-xs text-muted-foreground">Recorded by PropWise from documents shared with us. Always have a lawyer review originals.</p>
-          </Section>
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">Recorded by PropWise from documents shared with us. Always have a lawyer review originals.</p>
+            </Section>
+          )}
 
           <Section title="Deal analysis">
             <div className="flex items-center gap-4">
@@ -273,18 +283,35 @@ function PropertyPage() {
 
         <aside className="h-fit space-y-4 lg:sticky lg:top-20">
           <div className="rounded-xl border bg-card p-6 shadow-card">
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">Asking price <EvidenceBadge evidence={ASKING_PRICE_EVIDENCE} /></p>
-            <p className="font-display text-4xl text-primary">{formatINR(p.asking_price)}</p>
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">{priceLabel(type)} <EvidenceBadge evidence={ASKING_PRICE_EVIDENCE} /></p>
+            <p className="font-display text-4xl text-primary">
+              {formatINR(p.asking_price)}{monthly && <span className="text-lg text-muted-foreground">/month</span>}
+            </p>
             <div className="gold-rule my-4" />
-            <p className="text-sm font-semibold">Estimated total purchase cost</p>
-            <dl className="mt-2 space-y-1.5 text-sm">
-              <Row k="Property price" v={formatINRFull(p.asking_price)} />
-              <Row k={`Stamp duty (${rules.stampDutyPct}%)`} v={formatINRFull(cost.stampDuty)} />
-              <Row k={`Registration (${rules.registrationPct}%)`} v={formatINRFull(cost.registration)} />
-              <Row k="Legal & documentation" v={formatINRFull(cost.legal)} />
-              <div className="border-t pt-2"><Row k={<b>Total</b>} v={<b>{formatINRFull(cost.total)}</b>} /></div>
-            </dl>
-            <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><EvidenceBadge evidence="ESTIMATE" /> Duties calculated on {cost.base > Number(p.asking_price) ? "guideline value" : "asking price"} using the rates in PropWise settings.</p>
+            {monthly ? (
+              <>
+                <p className="text-sm font-semibold">{type === "lease" ? "What the lease commits you to" : "What renting costs up front"}</p>
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  <Row k="Monthly rent" v={formatINRFull(p.asking_price)} />
+                  {termsSummary(p, type) && <Row k="Recorded terms" v={<span className="text-right">{termsSummary(p, type)}</span>} />}
+                </dl>
+                <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <EvidenceBadge evidence="CLAIM" /> Figures stated by the owner or developer. The full terms are in the panel above; anything not stated reads as Unknown.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold">Estimated total purchase cost</p>
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  <Row k="Property price" v={formatINRFull(p.asking_price)} />
+                  <Row k={`Stamp duty (${rules.stampDutyPct}%)`} v={formatINRFull(cost.stampDuty)} />
+                  <Row k={`Registration (${rules.registrationPct}%)`} v={formatINRFull(cost.registration)} />
+                  <Row k="Legal & documentation" v={formatINRFull(cost.legal)} />
+                  <div className="border-t pt-2"><Row k={<b>Total</b>} v={<b>{formatINRFull(cost.total)}</b>} /></div>
+                </dl>
+                <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><EvidenceBadge evidence="ESTIMATE" /> Duties calculated on {cost.base > Number(p.asking_price) ? "guideline value" : "asking price"} using the rates in PropWise settings.</p>
+              </>
+            )}
             <div className="mt-5 space-y-2">
               <Button variant="gold" className="w-full" onClick={() => setForm("site_visit")}>Book a site visit</Button>
               <Button variant="default" className="w-full" onClick={() => setForm("consultation")}>Ask a consultant</Button>

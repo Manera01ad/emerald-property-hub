@@ -7,12 +7,18 @@ import { typeLabel, AVAILABILITY } from "@/lib/constants";
 import { pricePerSqft } from "@/lib/deal";
 import { useCompare } from "@/lib/compare";
 import { usePhotoUrls, usePropertyPhotoUrls, type Property } from "@/lib/data";
+import { TRANSACTION_LABELS, priceUnit, transactionTypeOf } from "@/lib/transaction";
+import { termsSummary } from "@/lib/transaction";
 import { VerificationBadge } from "./Badges";
 
 export function PropertyCard({ p }: { p: Property }) {
   const { has, toggle } = useCompare();
   const { data: urls, withheld } = usePropertyPhotoUrls({ ...p, photos: (p.photos ?? []).slice(0, 1) });
-  const ppsf = pricePerSqft(p);
+  const type = transactionTypeOf(p);
+  const monthly = priceUnit(type) === "per_month";
+  // A price per sq ft only means something for a sale.
+  const ppsf = monthly ? null : pricePerSqft(p);
+  const terms = termsSummary(p, type);
   const inCompare = has(p.id);
   return (
     <article className="group overflow-hidden rounded-xl border bg-card shadow-card transition-transform hover:-translate-y-0.5">
@@ -28,6 +34,7 @@ export function PropertyCard({ p }: { p: Property }) {
           )}
           <div className="absolute left-3 top-3 flex gap-1.5">
             <span className="rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium">{typeLabel(p.property_type)}</span>
+            <span className="rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium">{TRANSACTION_LABELS[type]}</span>
             {p.is_demo && <span className="rounded-full bg-warning px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">DEMO</span>}
           </div>
         </div>
@@ -52,8 +59,11 @@ export function PropertyCard({ p }: { p: Property }) {
         </div>
         <div className="flex items-end justify-between">
           <div>
-            <p className="font-display text-2xl text-primary">{formatINR(p.asking_price)}</p>
+            <p className="font-display text-2xl text-primary">
+              {formatINR(p.asking_price)}{monthly && <span className="text-base text-muted-foreground">/month</span>}
+            </p>
             {ppsf && <p className="text-xs text-muted-foreground">{formatINR(ppsf)}/sq ft · asking</p>}
+            {terms && <p className="mt-0.5 text-xs text-muted-foreground">{terms}</p>}
           </div>
           <Button
             size="sm"

@@ -6,9 +6,24 @@ import {
 
 const base: SubmitInput = {
   submitterKind: "owner", name: "Lakshmi", phone: "+91 98765 43210", email: "lakshmi@example.com",
-  reraNumber: "", localitySlug: "tambaram", propertyType: "villa", bedrooms: "3",
-  builtArea: "1800", landArea: "2400", askingPrice: "9500000", description: "Corner plot.",
-  declared: true, honeypot: "",
+  reraNumber: "", localitySlug: "tambaram", propertyType: "villa", transactionType: "buy", bedrooms: "3",
+  builtArea: "1800", landArea: "2400", askingPrice: "9500000",
+  deposit: "", maintenanceMonthly: "", furnishing: "", availableFrom: "",
+  leaseMonths: "", escalationPct: "", permittedUse: "", renewalTerms: "",
+  description: "Corner plot.", declared: true, honeypot: "",
+};
+
+/** A complete rental submission: a monthly figure and the terms a tenant needs. */
+const rental: SubmitInput = {
+  ...base, transactionType: "rent", askingPrice: "25000",
+  deposit: "250000", maintenanceMonthly: "2000", furnishing: "semi_furnished", availableFrom: "2026-05-01",
+};
+
+/** A complete lease submission, which additionally needs a term and an escalation clause. */
+const lease: SubmitInput = {
+  ...base, transactionType: "lease", askingPrice: "40000", propertyType: "apartment",
+  deposit: "400000", maintenanceMonthly: "3000", furnishing: "unfurnished", availableFrom: "2026-06-01",
+  leaseMonths: "36", escalationPct: "5", permittedUse: "office", renewalTerms: "renewable",
 };
 
 describe("submission validation", () => {
@@ -51,6 +66,61 @@ describe("submission validation", () => {
   it("pins the declaration version so stored text can be matched later", () => {
     expect(DECLARATION_VERSION).toMatch(/^owner-declaration-/);
     expect(DECLARATION_TEXT).toContain("permission to publish");
+  });
+});
+
+describe("rental and lease submissions", () => {
+  it("accepts a complete rental and a complete lease", () => {
+    expect(validateSubmission(rental)).toEqual({ ok: true });
+    expect(validateSubmission(lease)).toEqual({ ok: true });
+  });
+
+  it("rejects a transaction type outside buy, rent and lease", () => {
+    const r = validateSubmission({ ...base, transactionType: "sublet" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors["transactionType"]).toBeDefined();
+  });
+
+  it("refuses to rent or lease a plot", () => {
+    const r = validateSubmission({ ...base, transactionType: "rent", propertyType: "plot", askingPrice: "20000" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors["transactionType"]).toContain("only be listed for sale");
+    expect(validateSubmission({ ...base, propertyType: "plot" })).toEqual({ ok: true });
+  });
+
+  it("requires a monthly figure for rent and lease", () => {
+    const rent = validateSubmission({ ...rental, askingPrice: "" });
+    expect(rent.ok).toBe(false);
+    if (!rent.ok) expect(rent.errors["askingPrice"]).toContain("monthly rent");
+    const leaseNoRent = validateSubmission({ ...lease, askingPrice: "" });
+    expect(leaseNoRent.ok).toBe(false);
+  });
+
+  it("requires a lease duration but not a rental one", () => {
+    const r = validateSubmission({ ...lease, leaseMonths: "" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors["leaseMonths"]).toContain("whole months");
+    expect(validateSubmission({ ...rental, leaseMonths: "" })).toEqual({ ok: true });
+  });
+
+  it("treats a zero deposit and zero escalation as valid, but a negative one as invalid", () => {
+    expect(validateSubmission({ ...lease, deposit: "0", escalationPct: "0" })).toEqual({ ok: true });
+    const r = validateSubmission({ ...lease, deposit: "-1" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors["deposit"]).toBeDefined();
+  });
+
+  it("rejects a furnishing or permitted use outside the controlled lists", () => {
+    const f = validateSubmission({ ...rental, furnishing: "partly" });
+    expect(f.ok).toBe(false);
+    if (!f.ok) expect(f.errors["furnishing"]).toBeDefined();
+    const u = validateSubmission({ ...lease, permittedUse: "car_park" });
+    expect(u.ok).toBe(false);
+    if (!u.ok) expect(u.errors["permittedUse"]).toBeDefined();
+  });
+
+  it("allows a rental with no deposit stated, which is read as UNKNOWN rather than zero", () => {
+    expect(validateSubmission({ ...rental, deposit: "" })).toEqual({ ok: true });
   });
 });
 

@@ -6,12 +6,14 @@ export const POSTS_PER_DAY_LIMIT = 10;
 export const NEW_ACCOUNT_DAYS = 7;
 export const AUTO_HIDE_REPORTS = 3;
 
-export const COMMUNITY_CATEGORIES = ["localities", "buying", "documents", "construction", "general"] as const;
+export const COMMUNITY_CATEGORIES = ["localities", "buying", "renting", "leasing", "documents", "construction", "general"] as const;
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<CommunityCategory, string> = {
   localities: "Localities",
   buying: "Buying process",
+  renting: "Renting",
+  leasing: "Leasing",
   documents: "Documents and approvals",
   construction: "Construction and upkeep",
   general: "General",
