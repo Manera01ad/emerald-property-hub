@@ -120,6 +120,13 @@
       "when": 1793281837977,
       "tag": "0016_property_videos",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793281860490,
+      "tag": "0017_assistant_locality_search",
+      "breakpoints": true
     }
   ]
 }
