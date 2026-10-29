@@ -12,7 +12,7 @@ const URL = "https://emerald-property-hub.lovable.app/location-intelligence";
 const TITLE = "Location intelligence for Chennai areas — PropWise AI";
 const DESC = "Water bodies, parks, bus and train access and height above sea level for Chennai localities, from open map data.";
 
-export const Route = createFileRoute("/location-intelligence")({
+export const Route = createFileRoute("/location-intelligence/")({
   staticData: { sitemap: true },
   validateSearch: z.object({ area: z.string().optional() }),
   head: () => ({

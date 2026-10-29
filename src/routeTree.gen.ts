@@ -20,7 +20,6 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
-import { Route as LocationIntelligenceRouteImport } from './routes/location-intelligence'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OwnersRouteImport } from './routes/owners'
@@ -34,6 +33,7 @@ import { Route as AuthenticatedAssistantRouteImport } from './routes/_authentica
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as CommunityThreadIdRouteImport } from './routes/community_.$threadId'
+import { Route as LocationIntelligenceIndexRouteImport } from './routes/location-intelligence.index'
 import { Route as LocationIntelligenceAreaRouteImport } from './routes/location-intelligence.$area'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesIdRouteImport } from './routes/properties.$id'
@@ -92,11 +92,6 @@ const ExploreRoute = ExploreRouteImport.update({
 const InfrastructureRoute = InfrastructureRouteImport.update({
   id: '/infrastructure',
   path: '/infrastructure',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LocationIntelligenceRoute = LocationIntelligenceRouteImport.update({
-  id: '/location-intelligence',
-  path: '/location-intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -165,11 +160,17 @@ const CommunityThreadIdRoute = CommunityThreadIdRouteImport.update({
   path: '/community/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocationIntelligenceIndexRoute =
+  LocationIntelligenceIndexRouteImport.update({
+    id: '/location-intelligence/',
+    path: '/location-intelligence/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LocationIntelligenceAreaRoute =
   LocationIntelligenceAreaRouteImport.update({
-    id: '/$area',
-    path: '/$area',
-    getParentRoute: () => LocationIntelligenceRoute,
+    id: '/location-intelligence/$area',
+    path: '/location-intelligence/$area',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const PropertiesIndexRoute = PropertiesIndexRouteImport.update({
   id: '/properties/',
@@ -203,7 +204,6 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
-  '/location-intelligence': typeof LocationIntelligenceRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/owners': typeof OwnersRoute
@@ -219,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/community/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
+  '/location-intelligence/': typeof LocationIntelligenceIndexRoute
   '/properties/': typeof PropertiesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/research/tick': typeof ApiPublicResearchTickRoute
@@ -234,7 +235,6 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
-  '/location-intelligence': typeof LocationIntelligenceRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/owners': typeof OwnersRoute
@@ -250,6 +250,7 @@ export interface FileRoutesByTo {
   '/community/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
+  '/location-intelligence': typeof LocationIntelligenceIndexRoute
   '/properties': typeof PropertiesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/research/tick': typeof ApiPublicResearchTickRoute
@@ -267,7 +268,6 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
-  '/location-intelligence': typeof LocationIntelligenceRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/owners': typeof OwnersRoute
@@ -283,6 +283,7 @@ export interface FileRoutesById {
   '/community_/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
+  '/location-intelligence/': typeof LocationIntelligenceIndexRoute
   '/properties/': typeof PropertiesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/research/tick': typeof ApiPublicResearchTickRoute
@@ -300,7 +301,6 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
-    | '/location-intelligence'
     | '/map'
     | '/mcp'
     | '/owners'
@@ -316,6 +316,7 @@ export interface FileRouteTypes {
     | '/community/$threadId'
     | '/location-intelligence/$area'
     | '/properties/$id'
+    | '/location-intelligence/'
     | '/properties/'
     | '/.lovable/oauth/consent'
     | '/api/public/research/tick'
@@ -331,7 +332,6 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
-    | '/location-intelligence'
     | '/map'
     | '/mcp'
     | '/owners'
@@ -347,6 +347,7 @@ export interface FileRouteTypes {
     | '/community/$threadId'
     | '/location-intelligence/$area'
     | '/properties/$id'
+    | '/location-intelligence'
     | '/properties'
     | '/.lovable/oauth/consent'
     | '/api/public/research/tick'
@@ -363,7 +364,6 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
-    | '/location-intelligence'
     | '/map'
     | '/mcp'
     | '/owners'
@@ -379,6 +379,7 @@ export interface FileRouteTypes {
     | '/community_/$threadId'
     | '/location-intelligence/$area'
     | '/properties/$id'
+    | '/location-intelligence/'
     | '/properties/'
     | '/.lovable/oauth/consent'
     | '/api/public/research/tick'
@@ -396,7 +397,6 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   ExploreRoute: typeof ExploreRoute
   InfrastructureRoute: typeof InfrastructureRoute
-  LocationIntelligenceRoute: typeof LocationIntelligenceRouteWithChildren
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
   OwnersRoute: typeof OwnersRoute
@@ -407,7 +407,9 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   CommunityThreadIdRoute: typeof CommunityThreadIdRoute
+  LocationIntelligenceAreaRoute: typeof LocationIntelligenceAreaRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
+  LocationIntelligenceIndexRoute: typeof LocationIntelligenceIndexRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicResearchTickRoute: typeof ApiPublicResearchTickRoute
@@ -490,13 +492,6 @@ declare module '@tanstack/react-router' {
       path: '/infrastructure'
       fullPath: '/infrastructure'
       preLoaderRoute: typeof InfrastructureRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/location-intelligence': {
-      id: '/location-intelligence'
-      path: '/location-intelligence'
-      fullPath: '/location-intelligence'
-      preLoaderRoute: typeof LocationIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -590,12 +585,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/location-intelligence/': {
+      id: '/location-intelligence/'
+      path: '/location-intelligence'
+      fullPath: '/location-intelligence/'
+      preLoaderRoute: typeof LocationIntelligenceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/location-intelligence/$area': {
       id: '/location-intelligence/$area'
-      path: '/$area'
+      path: '/location-intelligence/$area'
       fullPath: '/location-intelligence/$area'
       preLoaderRoute: typeof LocationIntelligenceAreaRouteImport
-      parentRoute: typeof LocationIntelligenceRoute
+      parentRoute: typeof rootRouteImport
     }
     '/properties/': {
       id: '/properties/'
@@ -643,17 +645,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface LocationIntelligenceRouteChildren {
-  LocationIntelligenceAreaRoute: typeof LocationIntelligenceAreaRoute
-}
-
-const LocationIntelligenceRouteChildren: LocationIntelligenceRouteChildren = {
-  LocationIntelligenceAreaRoute: LocationIntelligenceAreaRoute,
-}
-
-const LocationIntelligenceRouteWithChildren =
-  LocationIntelligenceRoute._addFileChildren(LocationIntelligenceRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -666,7 +657,6 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   ExploreRoute: ExploreRoute,
   InfrastructureRoute: InfrastructureRoute,
-  LocationIntelligenceRoute: LocationIntelligenceRouteWithChildren,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
   OwnersRoute: OwnersRoute,
@@ -678,7 +668,9 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   CommunityThreadIdRoute: CommunityThreadIdRoute,
+  LocationIntelligenceAreaRoute: LocationIntelligenceAreaRoute,
   PropertiesIdRoute: PropertiesIdRoute,
+  LocationIntelligenceIndexRoute: LocationIntelligenceIndexRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicResearchTickRoute: ApiPublicResearchTickRoute,
