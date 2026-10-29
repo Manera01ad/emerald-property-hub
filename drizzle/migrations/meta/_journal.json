@@ -92,6 +92,48 @@
       "when": 1793043409270,
       "tag": "0012_assistant_search_log_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793281747870,
+      "tag": "0013_phase1_flags",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793281787572,
+      "tag": "0014_city_state_model",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793281815146,
+      "tag": "0015_localities",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793281837977,
+      "tag": "0016_property_videos",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793281860490,
+      "tag": "0017_assistant_locality_search",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793281900918,
+      "tag": "0018_owner_submissions",
+      "breakpoints": true
     }
   ]
 }

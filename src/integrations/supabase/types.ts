@@ -77,6 +77,41 @@ export type Database = {
         }
         Relationships: []
       }
+      areas: {
+        Row: {
+          city_slug: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+        }
+        Insert: {
+          city_slug: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+        }
+        Update: {
+          city_slug?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "areas_city_slug_fkey"
+            columns: ["city_slug"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       assistant_messages: {
         Row: {
           created_at: string
@@ -221,6 +256,33 @@ export type Database = {
           result?: Json
           title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      cities: {
+        Row: {
+          created_at: string
+          is_active: boolean
+          launched_at: string | null
+          name: string
+          slug: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          is_active?: boolean
+          launched_at?: string | null
+          name: string
+          slug: string
+          state: string
+        }
+        Update: {
+          created_at?: string
+          is_active?: boolean
+          launched_at?: string | null
+          name?: string
+          slug?: string
+          state?: string
         }
         Relationships: []
       }
@@ -451,6 +513,188 @@ export type Database = {
           },
         ]
       }
+      listing_moderation_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          reason: string | null
+          submission_id: string
+          to_status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id: string
+          to_status: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_moderation_log_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "listing_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_submissions: {
+        Row: {
+          asking_price: number | null
+          bedrooms: number | null
+          built_area_sqft: number | null
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          created_property_id: string | null
+          declaration_text: string
+          declaration_version: string
+          declared_at: string
+          description: string | null
+          id: string
+          land_area_sqft: number | null
+          locality_slug: string
+          property_type: string
+          rera_number: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitter_id: string
+          submitter_kind: string
+          submitter_name: string
+          updated_at: string
+        }
+        Insert: {
+          asking_price?: number | null
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          contact_email: string
+          contact_phone: string
+          created_at?: string
+          created_property_id?: string | null
+          declaration_text: string
+          declaration_version: string
+          declared_at?: string
+          description?: string | null
+          id?: string
+          land_area_sqft?: number | null
+          locality_slug: string
+          property_type: string
+          rera_number?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_id: string
+          submitter_kind: string
+          submitter_name: string
+          updated_at?: string
+        }
+        Update: {
+          asking_price?: number | null
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          contact_email?: string
+          contact_phone?: string
+          created_at?: string
+          created_property_id?: string | null
+          declaration_text?: string
+          declaration_version?: string
+          declared_at?: string
+          description?: string | null
+          id?: string
+          land_area_sqft?: number | null
+          locality_slug?: string
+          property_type?: string
+          rera_number?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_id?: string
+          submitter_kind?: string
+          submitter_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_submissions_created_property_id_fkey"
+            columns: ["created_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_submissions_locality_slug_fkey"
+            columns: ["locality_slug"]
+            isOneToOne: false
+            referencedRelation: "localities"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      localities: {
+        Row: {
+          city: string
+          corridor: string
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          slug: string
+          state: string
+          status: string
+          tier: number
+          updated_at: string
+        }
+        Insert: {
+          city?: string
+          corridor: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          slug: string
+          state?: string
+          status?: string
+          tier: number
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          corridor?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          slug?: string
+          state?: string
+          status?: string
+          tier?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nearby_places: {
         Row: {
           category: string
@@ -585,10 +829,12 @@ export type Database = {
           amenities: string[]
           approval_details: string | null
           approvals: string[]
+          area: string | null
           asking_price: number
           availability: string
           bedrooms: number | null
           built_area_sqft: number | null
+          city: string | null
           created_at: string
           description: string | null
           doc_approved_plan: boolean
@@ -610,6 +856,7 @@ export type Database = {
           property_type: string
           rera_number: string | null
           source: string | null
+          state: string | null
           status: string
           survey_number: string | null
           title: string
@@ -618,16 +865,19 @@ export type Database = {
           verification_evidence: string | null
           verification_expiry: string | null
           verification_status: string
+          video_urls: string[]
         }
         Insert: {
           address?: string | null
           amenities?: string[]
           approval_details?: string | null
           approvals?: string[]
+          area?: string | null
           asking_price: number
           availability?: string
           bedrooms?: number | null
           built_area_sqft?: number | null
+          city?: string | null
           created_at?: string
           description?: string | null
           doc_approved_plan?: boolean
@@ -649,6 +899,7 @@ export type Database = {
           property_type: string
           rera_number?: string | null
           source?: string | null
+          state?: string | null
           status?: string
           survey_number?: string | null
           title: string
@@ -657,16 +908,19 @@ export type Database = {
           verification_evidence?: string | null
           verification_expiry?: string | null
           verification_status?: string
+          video_urls?: string[]
         }
         Update: {
           address?: string | null
           amenities?: string[]
           approval_details?: string | null
           approvals?: string[]
+          area?: string | null
           asking_price?: number
           availability?: string
           bedrooms?: number | null
           built_area_sqft?: number | null
+          city?: string | null
           created_at?: string
           description?: string | null
           doc_approved_plan?: boolean
@@ -688,6 +942,7 @@ export type Database = {
           property_type?: string
           rera_number?: string | null
           source?: string | null
+          state?: string | null
           status?: string
           survey_number?: string | null
           title?: string
@@ -696,6 +951,7 @@ export type Database = {
           verification_evidence?: string | null
           verification_expiry?: string | null
           verification_status?: string
+          video_urls?: string[]
         }
         Relationships: [
           {
@@ -835,6 +1091,7 @@ export type Database = {
           access_method: string
           api_docs_url: string | null
           can_publish: boolean
+          city_slug: string | null
           created_at: string
           enabled: boolean
           field_mapping: Json
@@ -856,6 +1113,7 @@ export type Database = {
           access_method: string
           api_docs_url?: string | null
           can_publish?: boolean
+          city_slug?: string | null
           created_at?: string
           enabled?: boolean
           field_mapping?: Json
@@ -877,6 +1135,7 @@ export type Database = {
           access_method?: string
           api_docs_url?: string | null
           can_publish?: boolean
+          city_slug?: string | null
           created_at?: string
           enabled?: boolean
           field_mapping?: Json
@@ -894,7 +1153,15 @@ export type Database = {
           source_identity?: string | null
           url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "research_sources_city_slug_fkey"
+            columns: ["city_slug"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       research_ticks: {
         Row: {
@@ -1128,6 +1395,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_listing_submission: {
+        Args: { _reason?: string; _submission_id: string; _title: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
