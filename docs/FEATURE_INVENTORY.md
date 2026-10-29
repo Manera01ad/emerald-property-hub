@@ -170,7 +170,7 @@ the **user journey** it serves. Status is one of:
 | Enquiries | `components/admin/Enquiries.tsx`, `components/EnquiryForm.tsx` | `enquiries` | working |
 | Site visits | `components/admin/SiteVisits.tsx` | `site_visits` (`0002`) | working |
 | Partners | `components/admin/Partners.tsx` | `partners` | working |
-| Commissions | `components/admin/Commissions.tsx`, `src/lib/commission.ts` | `commissions` | **broken** — component not rendered (dead tab, PRODUCT_MAP §3) |
+| Commissions | `components/admin/Commissions.tsx`, `src/lib/commission.ts` | `commissions` | **broken** — panel had no trigger on `main` (unreachable); fixed in this branch (PRODUCT_MAP §3) |
 | Buyers view | `components/admin/Buyers.tsx` | `buyer_profiles`, `buyer_reports` | working |
 
 These are **CRM and admin functionality** that the assignment says to preserve

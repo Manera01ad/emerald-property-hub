@@ -55,25 +55,25 @@ This is a navigation gap, not a missing feature.
 ## 3. Admin navigation (target vs current)
 
 The assignment asks for five admin groups. The dashboard
-(`src/routes/_authenticated/admin.tsx`, verified) currently renders **14 tab
-triggers but only 13 tab panels**.
+(`src/routes/_authenticated/admin.tsx`, verified) rendered **14 tab triggers but
+15 tab panels** on `main` @ `3cd435a`.
 
-| Target group (assignment) | Current tabs | Component |
+| Target group (assignment) | Tabs (after this change) | Component |
 | --- | --- | --- |
 | Properties | Listings | `admin/Listings.tsx` |
 | People | Enquiries, Buyers & renters, Site visits, Partners | `Enquiries`, `Buyers`, `SiteVisits`, `Partners` |
-| Intelligence | Area intelligence, Localities, Ranking, AI Research Agents | `AreaIntel`, `Localities`, `Ranking`, `ResearchAgents` |
+| Intelligence | AI Research Agents, Area intelligence, Localities, Infrastructure, Ranking | `ResearchAgents`, `AreaIntel`, `Localities`, `Infrastructure`, `Ranking` |
 | Community & Work | Submissions, Community | `Submissions`, `CommunityQueue` |
-| Operations | Overview, Settings, **Commissions** | `Overview`, `SettingsPanel`, `Commissions` |
+| Operations | Overview, Commissions, Settings | `Overview`, `Commissions`, `SettingsPanel` |
 
-Two concrete wiring defects (**verified by reading the JSX**):
+Concrete wiring defect (**verified by extracting the trigger and panel sets**):
 
-1. **`Commissions` is a dead tab.** `<TabsTrigger value="commissions">` exists,
-   but there is **no** `<TabsContent value="commissions">`. The imported
-   `Commissions` component is therefore never rendered. Selecting the tab shows
-   an empty panel.
-2. **`Commissions` is not listed in the target group table above as reachable** —
-   it belongs under Operations and must be restored.
+- **`Commissions` was unreachable.** A `<TabsContent value="commissions">` panel
+  existed and the component was imported, but there was **no**
+  `<TabsTrigger value="commissions">`. With 15 panels and 14 triggers, the
+  Commissions panel could never be selected. This change adds the missing
+  trigger under Operations; the trigger and panel sets are now 15 and 15, with
+  no trigger lacking a panel and no panel lacking a trigger.
 
 Everything else in the admin dashboard is reachable. `FeedWizard`,
 `ListingImport` and `NearbyFromSources` are **not orphaned**: they are imported
@@ -184,7 +184,7 @@ service-role (`client.server.ts`, server only) and session-free
 | --- | --- | --- | --- |
 | 1 | **Migration numbering collision.** Two files share the `0012` prefix: `0012_assistant_search_log.sql` (a 53-byte empty stub) and `0012_assistant_search_log_schema.sql` (the real DDL). Drizzle keys migrations by prefix. | Medium | `wc -c`, `_journal.json` |
 | 2 | **Four feature migrations are parked in `drizzle/pending/`** instead of `drizzle/migrations/`: community, buy/rent/lease, local research network, interest requests. The journal stops at `0018_owner_submissions`. | High for completeness | directory listing, `_journal.json` |
-| 3 | **`Commissions` tab is dead.** Trigger present, no content panel. | Medium | `admin.tsx` JSX |
+| 3 | **`Commissions` tab unreachable.** Trigger set (14) and panel set (15) disagreed: the `commissions` panel existed with no trigger. | Medium | `admin.tsx` trigger/panel extraction |
 | 4 | **No explicit Buy/Rent/Lease entry in public nav.** | Low | `SiteHeader.tsx` |
 | 5 | **Three Phase-1 flags default to `off`**, so `/community` and `/owners` render "Not open yet". | Informational | `0013_phase1_flags.sql` |
 | 6 | **Three code modules have no applied migration**: `community`, `interest_requests` and the local research network tables exist only in `pending/`. Code reaches them through hand-written narrow shapes (`community-data.ts`, `submissions-data.ts`) because `types.ts` (owner-only) does not contain them. | High | `types.ts` grep returns 0 for `community_threads` |
