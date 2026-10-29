@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { localityDb } from "./localities-data";
 import { sortLocalities, visibleLocalities, type Locality } from "./localities";
+import { canSignPhotos } from "./photo-access";
+import { useIsAdmin, useSession } from "./auth";
+import type { VisibilityInput } from "./visibility";
 import type { CostRules } from "./deal";
 
 export type Property = Tables<"properties">;
@@ -114,4 +117,17 @@ export function usePhotoUrls(photos: string[] | null | undefined) {
       return list.map((p) => (/^https?:\/\//.test(p) ? p : signed[p])).filter(Boolean) as string[];
     },
   });
+}
+
+/**
+ * Photo URLs for one row, gated on its visibility. Draft, demo and unpermitted rows get no
+ * signed links unless an admin is previewing, so the app stops asking for photos it has no
+ * right to show. See src/lib/photo-access.ts for what this does and does not guarantee.
+ */
+export function usePropertyPhotoUrls(row: (VisibilityInput & { photos: string[] | null }) | null | undefined) {
+  const { session } = useSession();
+  const { data: isAdmin } = useIsAdmin(session?.user.id);
+  const allowed = row ? canSignPhotos(row, !!isAdmin) : false;
+  const urls = usePhotoUrls(allowed ? row?.photos : []);
+  return { ...urls, withheld: !!row && !allowed };
 }

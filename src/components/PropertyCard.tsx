@@ -6,12 +6,12 @@ import { formatINR } from "@/lib/format";
 import { typeLabel, AVAILABILITY } from "@/lib/constants";
 import { pricePerSqft } from "@/lib/deal";
 import { useCompare } from "@/lib/compare";
-import { usePhotoUrls, type Property } from "@/lib/data";
+import { usePhotoUrls, usePropertyPhotoUrls, type Property } from "@/lib/data";
 import { VerificationBadge } from "./Badges";
 
 export function PropertyCard({ p }: { p: Property }) {
   const { has, toggle } = useCompare();
-  const { data: urls } = usePhotoUrls(p.photos.slice(0, 1));
+  const { data: urls, withheld } = usePropertyPhotoUrls({ ...p, photos: (p.photos ?? []).slice(0, 1) });
   const ppsf = pricePerSqft(p);
   const inCompare = has(p.id);
   return (
@@ -21,8 +21,9 @@ export function PropertyCard({ p }: { p: Property }) {
           {urls?.[0] ? (
             <img src={urls[0]} alt={p.title} loading="lazy" className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
+            <div className="flex h-full flex-col items-center justify-center gap-1 text-center text-xs text-muted-foreground">
               <ImageOff className="size-8" />
+              {withheld && <span className="px-4">Photos withheld until this listing is public</span>}
             </div>
           )}
           <div className="absolute left-3 top-3 flex gap-1.5">
