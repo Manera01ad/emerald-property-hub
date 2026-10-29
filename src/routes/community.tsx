@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { NotOpenYet } from "@/components/NotOpenYet";
+import { NewThreadForm, ThreadList } from "@/components/Community";
 import { useFlag } from "@/lib/use-flag";
 
 const URL = "https://emerald-property-hub.lovable.app/community";
@@ -33,9 +34,17 @@ function CommunityPage() {
     );
   }
   return (
-    <div className="mx-auto max-w-4xl px-4 py-14">
+    <div className="mx-auto max-w-3xl px-4 py-14">
       <h1 className="text-4xl">Community</h1>
-      <p className="mt-2 text-muted-foreground">Threads and posts arrive in a later step of Phase 1.</p>
+      <p className="mt-2 text-muted-foreground">
+        Ask other buyers about a locality. Posts are moderated before they appear, phone numbers and email addresses are not allowed, and
+        three reports hide a post until a person reviews it.
+      </p>
+      <div className="mt-8"><NewThreadForm /></div>
+      <section className="mt-10">
+        <h2 className="text-2xl">Threads</h2>
+        <div className="mt-3"><ThreadList /></div>
+      </section>
     </div>
   );
 }

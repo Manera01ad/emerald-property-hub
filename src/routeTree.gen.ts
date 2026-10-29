@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as CommunityThreadIdRouteImport } from './routes/community_.$threadId'
 import { Route as LocationIntelligenceAreaRouteImport } from './routes/location-intelligence.$area'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesIdRouteImport } from './routes/properties.$id'
@@ -159,6 +160,11 @@ const ApiAssistantRoute = ApiAssistantRouteImport.update({
   path: '/api/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityThreadIdRoute = CommunityThreadIdRouteImport.update({
+  id: '/community_/$threadId',
+  path: '/community/$threadId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LocationIntelligenceAreaRoute =
   LocationIntelligenceAreaRouteImport.update({
     id: '/$area',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/community/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/community/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties': typeof PropertiesIndexRoute
@@ -272,6 +280,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/community_/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/my'
     | '/api/assistant'
+    | '/community/$threadId'
     | '/location-intelligence/$area'
     | '/properties/$id'
     | '/properties/'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/my'
     | '/api/assistant'
+    | '/community/$threadId'
     | '/location-intelligence/$area'
     | '/properties/$id'
     | '/properties'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant'
     | '/_authenticated/my'
     | '/api/assistant'
+    | '/community_/$threadId'
     | '/location-intelligence/$area'
     | '/properties/$id'
     | '/properties/'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
+  CommunityThreadIdRoute: typeof CommunityThreadIdRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -570,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community_/$threadId': {
+      id: '/community_/$threadId'
+      path: '/community/$threadId'
+      fullPath: '/community/$threadId'
+      preLoaderRoute: typeof CommunityThreadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/location-intelligence/$area': {
       id: '/location-intelligence/$area'
       path: '/$area'
@@ -657,6 +677,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiAssistantRoute: ApiAssistantRoute,
+  CommunityThreadIdRoute: CommunityThreadIdRoute,
   PropertiesIdRoute: PropertiesIdRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,

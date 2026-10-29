@@ -16,6 +16,9 @@ import { ResearchAgents } from "@/components/admin/ResearchAgents";
 import { Buyers } from "@/components/admin/Buyers";
 import { AreaIntel } from "@/components/admin/AreaIntel";
 import { Localities } from "@/components/admin/Localities";
+import { Submissions } from "@/components/admin/Submissions";
+import { Ranking } from "@/components/admin/Ranking";
+import { CommunityQueue } from "@/components/admin/CommunityQueue";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   staticData: { sitemap: false },
@@ -73,6 +76,9 @@ function AdminPage() {
           <TabsTrigger value="infra">Infrastructure</TabsTrigger>
           <TabsTrigger value="areas">Area intelligence</TabsTrigger>
           <TabsTrigger value="localities">Localities</TabsTrigger>
+          <TabsTrigger value="submissions">Submissions</TabsTrigger>
+          <TabsTrigger value="ranking">Ranking</TabsTrigger>
+          <TabsTrigger value="community">Community</TabsTrigger>
           <TabsTrigger value="research">AI Research Agents</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -86,6 +92,9 @@ function AdminPage() {
         <TabsContent value="infra"><Infrastructure /></TabsContent>
         <TabsContent value="areas"><AreaIntel /></TabsContent>
         <TabsContent value="localities"><Localities /></TabsContent>
+        <TabsContent value="submissions"><Submissions /></TabsContent>
+        <TabsContent value="ranking"><Ranking /></TabsContent>
+        <TabsContent value="community"><CommunityQueue /></TabsContent>
         <TabsContent value="research"><ResearchAgents /></TabsContent>
         <TabsContent value="settings"><SettingsPanel /></TabsContent>
       </Tabs>
