@@ -32,23 +32,28 @@ There are no parallel stacks to merge. The consolidation work is therefore about
 
 ## 2. Public navigation (target vs current)
 
-The assignment asks for four public entries. The current header
-(`src/components/SiteHeader.tsx`, verified) exposes:
+The assignment asks for four public entries. The header
+(`src/components/SiteHeader.tsx`, verified) exposed **Find**, **Localities**,
+**Community**, **For owners**, **Compare** and **Sign in / My research** on
+`main` @ `3cd435a`. After this change it exposes the four required entries:
 
-| Target (assignment) | Current nav item | Where it leads today |
+| Target (assignment) | Nav item | Where it leads |
 | --- | --- | --- |
-| Discover: Buy / Rent / Lease | **Find** → `/properties` | Search page with a Buy/Rent/Lease selector (`?transaction=buy\|rent\|lease`). **Verified** |
+| Discover: Buy / Rent / Lease | **Discover: Buy, Rent, Lease** → `/properties?transaction=buy\|rent\|lease` | The same search page, scoped to one transaction type. **Verified** |
 | Locality Intelligence | **Localities** → `/location-intelligence` | Index + `/location-intelligence/:area`. **Verified** |
 | Community | **Community** → `/community` | Behind `feature_community` (default **off** → "Not open yet"). **Verified** |
-| My Activity | **Sign in / My research** → `/auth` or `/my` | Buyer/renter workspace. **Verified** |
+| My Activity | **Sign in / My activity** → `/auth` or `/my` | Buyer/renter workspace. **Verified** |
 
 Extra public nav that must be preserved: `/compare` (with a live count badge),
-`/consult` ("Ask us"), and the footer links `/properties`, `/location-intelligence`,
-`/community`, `/owners`, `/privacy`, `/terms`, `/disclaimer`, `/contact`.
+`/consult` ("Ask us"), `/owners` ("For owners") and the footer links
+`/properties`, `/location-intelligence`, `/community`, `/owners`, `/privacy`,
+`/terms`, `/disclaimer`, `/contact`.
 
-Gap: the public nav has **no explicit Buy / Rent / Lease entry**. Buy, rent and
-lease exist but are reached only through the selector *inside* `/properties`.
-This is a navigation gap, not a missing feature.
+Gap closed: the public nav previously had **no explicit Buy / Rent / Lease
+entry**; buy, rent and lease were reached only through the selector *inside*
+`/properties`. This was a navigation gap, not a missing feature. The three links
+are three entries into the one search page, so they are not three new pages and
+no listing logic is duplicated.
 
 ---
 

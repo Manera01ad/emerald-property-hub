@@ -5,8 +5,18 @@ import { Button } from "@/components/ui/button";
 import { useCompare } from "@/lib/compare";
 import { useSession } from "@/lib/auth";
 
+/**
+ * Discover is one product with three transaction types, so it is three links into
+ * the same search page rather than three pages. `/properties` already reads
+ * `?transaction=` and switches the terms and labels accordingly.
+ */
+const DISCOVER = [
+  { transaction: "buy", label: "Buy" },
+  { transaction: "rent", label: "Rent" },
+  { transaction: "lease", label: "Lease" },
+] as const;
+
 const NAV = [
-  { to: "/properties", label: "Find" },
   { to: "/location-intelligence", label: "Localities" },
   { to: "/community", label: "Community" },
   { to: "/owners", label: "For owners" },
@@ -16,6 +26,8 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { ids } = useCompare();
   const { session } = useSession();
+  const activityLabel = session ? "My activity" : "Sign in";
+  const activityTo = session ? "/my" : "/auth";
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
@@ -24,6 +36,21 @@ export function SiteHeader() {
           <span className="font-display text-2xl font-semibold text-gold">AI</span>
         </Link>
         <nav className="hidden items-center gap-6 lg:flex">
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground/60">Discover</span>
+            {DISCOVER.map((d) => (
+              <Link
+                key={d.transaction}
+                to="/properties"
+                search={{ transaction: d.transaction }}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                activeOptions={{ includeSearch: true }}
+                activeProps={{ className: "text-primary" }}
+              >
+                {d.label}
+              </Link>
+            ))}
+          </div>
           {NAV.map((n) => (
             <Link
               key={n.to}
@@ -47,7 +74,7 @@ export function SiteHeader() {
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
-            <Link to={session ? "/my" : "/auth"}>{session ? "My research" : "Sign in"}</Link>
+            <Link to={activityTo}>{activityLabel}</Link>
           </Button>
           <Button asChild variant="gold" size="sm">
             <Link to="/consult">Ask us</Link>
@@ -59,6 +86,18 @@ export function SiteHeader() {
       </div>
       {open && (
         <nav className="border-t bg-background px-4 py-3 lg:hidden">
+          <p className="pt-1 text-xs font-medium uppercase tracking-wide text-muted-foreground/60">Discover</p>
+          {DISCOVER.map((d) => (
+            <Link
+              key={d.transaction}
+              to="/properties"
+              search={{ transaction: d.transaction }}
+              onClick={() => setOpen(false)}
+              className="block py-2 text-sm font-medium"
+            >
+              {d.label}
+            </Link>
+          ))}
           {NAV.map((n) => (
             <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="block py-2 text-sm font-medium">
               {n.label}
@@ -67,8 +106,8 @@ export function SiteHeader() {
           <Link to="/compare" onClick={() => setOpen(false)} className="block py-2 text-sm font-medium">
             Compare {ids.length > 0 && `(${ids.length})`}
           </Link>
-          <Link to={session ? "/my" : "/auth"} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
-            {session ? "My research" : "Sign in"}
+          <Link to={activityTo} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
+            {activityLabel}
           </Link>
           <Link to="/consult" onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
             Ask us
