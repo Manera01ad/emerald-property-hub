@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MARKETS } from "@/lib/constants";
 import { publicPropertiesQuery } from "@/lib/data";
 import { PropertyCard } from "@/components/PropertyCard";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -55,6 +56,7 @@ function Home() {
             </select>
             <Button type="submit" variant="gold" size="lg" className="h-11"><Search /> Search properties</Button>
           </form>
+          <InstallAppButton className="mt-4 h-11 border-hero-foreground/40 bg-transparent text-hero-foreground hover:bg-hero-foreground/10 hover:text-hero-foreground" />
         </div>
       </section>
 
