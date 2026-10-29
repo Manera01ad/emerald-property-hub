@@ -153,6 +153,35 @@ CREATE TRIGGER research_submissions_no_self_review
   BEFORE INSERT OR UPDATE ON public.research_submissions
   FOR EACH ROW EXECUTE FUNCTION public.research_no_self_review();
 
+-- ---------------------------------------------------------------- contributor self-edit guard
+
+-- The "edit own contributor record" policy lets a person update their own row, which is
+-- needed for display name, locality and note. It must not let them approve themselves or
+-- award themselves points, so for non-admins the moderation and reward columns are forced
+-- to their defaults on insert and kept unchanged on update. Only admins and the
+-- SECURITY DEFINER accept/reject functions (run by an admin) change them.
+CREATE OR REPLACE FUNCTION public.research_contributor_guard()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF public.has_role(auth.uid(), 'admin') THEN RETURN NEW; END IF;
+  IF TG_OP = 'INSERT' THEN
+    NEW.status := 'pending';
+    NEW.points_total := 0;
+    NEW.approved_count := 0;
+    NEW.rejected_count := 0;
+  ELSE
+    NEW.user_id := OLD.user_id;
+    NEW.status := OLD.status;
+    NEW.points_total := OLD.points_total;
+    NEW.approved_count := OLD.approved_count;
+    NEW.rejected_count := OLD.rejected_count;
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER research_contributors_guard
+  BEFORE INSERT OR UPDATE ON public.research_contributors
+  FOR EACH ROW EXECUTE FUNCTION public.research_contributor_guard();
+
 -- ---------------------------------------------------------------- updated_at
 
 CREATE TRIGGER research_contributors_touch BEFORE UPDATE ON public.research_contributors
@@ -286,9 +315,16 @@ CREATE POLICY "own submissions" ON public.research_submissions
   FOR SELECT TO authenticated USING (
     contributor_id IN (SELECT id FROM public.research_contributors WHERE user_id = auth.uid())
   );
+-- A new submission always starts unreviewed with no points. Without these checks a
+-- contributor could insert a row that is already 'accepted' with points awarded.
 CREATE POLICY "create own submission" ON public.research_submissions
   FOR INSERT TO authenticated WITH CHECK (
     contributor_id IN (SELECT id FROM public.research_contributors WHERE user_id = auth.uid())
+    AND status = 'submitted'
+    AND points_awarded = 0
+    AND reviewed_by IS NULL
+    AND reviewed_at IS NULL
+    AND review_reason IS NULL
   );
 CREATE POLICY "admins read submissions" ON public.research_submissions
   FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin'))
