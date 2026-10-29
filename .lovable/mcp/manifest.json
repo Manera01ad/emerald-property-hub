@@ -19,7 +19,7 @@
       {
         "name": "search_listings",
         "title": "Search public listings",
-        "description": "Search publicly visible PropWise property listings by location, type and maximum price.",
+        "description": "Search publicly visible PropWise property listings by location, type, transaction type and maximum price. A listing is for sale, for rent or for lease.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -37,8 +37,17 @@
               "description": "Property type, e.g. apartment, plot, house.",
               "type": "string"
             },
+            "transaction_type": {
+              "description": "What the caller wants: buy, rent or lease. Defaults to buy.",
+              "type": "string",
+              "enum": [
+                "buy",
+                "rent",
+                "lease"
+              ]
+            },
             "max_price": {
-              "description": "Maximum asking price in rupees.",
+              "description": "Maximum price in rupees. For rent or lease this is the monthly figure.",
               "type": "number",
               "exclusiveMinimum": 0
             },
@@ -56,7 +65,7 @@
       {
         "name": "get_listing",
         "title": "Get listing details",
-        "description": "Get full details of one publicly visible PropWise listing by its id.",
+        "description": "Get full details of one publicly visible PropWise listing by its id. The result says whether it is for sale, rent or lease.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
