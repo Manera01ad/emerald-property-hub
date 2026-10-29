@@ -6,7 +6,8 @@
 -- signed-in user, only with consent = true, and only against a specific listing, so
 -- it can never be used as an anonymous contact form.
 --
--- The public enquiries form keeps working exactly as before: the widened type is
+-- The public enquiries form keeps working exactly as before (same consent and
+-- consultant checks as 0002): the widened type is
 -- excluded from the anonymous insert policy, and no query returns owner contact
 -- details to a buyer at any point.
 
@@ -24,9 +25,18 @@ ALTER TABLE public.enquiries ADD CONSTRAINT enquiries_interest_needs_consent_ver
 );
 
 -- Anonymous and general inserts may not raise an interest request.
+-- The consent and consultant checks come from 0002_site_visits_and_crm_fields and
+-- must be kept: without them a visitor could submit without consent or pre-assign
+-- their enquiry to a consultant.
 DROP POLICY IF EXISTS "anyone submit enquiry" ON public.enquiries;
 CREATE POLICY "anyone submit enquiry" ON public.enquiries FOR INSERT TO anon, authenticated
-  WITH CHECK (status = 'new' AND admin_notes IS NULL AND enquiry_type <> 'interest');
+  WITH CHECK (
+    status = 'new'
+    AND admin_notes IS NULL
+    AND assigned_consultant IS NULL
+    AND consent = true
+    AND enquiry_type <> 'interest'
+  );
 
 -- Interest requests: signed in, consenting, tied to a listing, and always new.
 CREATE POLICY "signed in request interest" ON public.enquiries FOR INSERT TO authenticated
@@ -38,4 +48,5 @@ CREATE POLICY "signed in request interest" ON public.enquiries FOR INSERT TO aut
     AND consent_version IS NOT NULL
     AND status = 'new'
     AND admin_notes IS NULL
+    AND assigned_consultant IS NULL
   );
