@@ -12,10 +12,10 @@ export const Route = createFileRoute("/consult")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://emerald-property-hub.lovable.app/consult" },
-      { title: "Book a Property Consultation — PropWise AI" },
-      { name: "description", content: "Tell us your budget and preferences. Our Chennai property consultants help you shortlist, verify and negotiate." },
-      { property: "og:title", content: "Book a Property Consultation — PropWise AI" },
-      { property: "og:description", content: "Expert help shortlisting, verifying documents and negotiating in Chennai." },
+      { title: "Ask PropWise AI about a Chennai property — PropWise AI" },
+      { name: "description", content: "Tell us your budget and preferences. We help you understand an area, read the evidence on a listing and check documents." },
+      { property: "og:title", content: "Ask PropWise AI about a Chennai property" },
+      { property: "og:description", content: "Help understanding areas, listing evidence and documents in Chennai." },
     ],
   }),
   component: ConsultPage,
@@ -27,13 +27,13 @@ function ConsultPage() {
   return (
     <div className="mx-auto grid max-w-6xl gap-12 px-4 py-14 lg:grid-cols-[1fr_1.3fr]">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-widest text-gold">Buyer consulting</p>
-        <h1 className="mt-3 text-4xl">Buy with an expert on your side</h1>
+        <p className="text-sm font-semibold uppercase tracking-widest text-gold">Buyer questions</p>
+        <h1 className="mt-3 text-4xl">Understand before you commit</h1>
         <ul className="mt-6 space-y-3 text-muted-foreground">
           <li>• Shortlisting based on your all-inclusive budget</li>
           <li>• Document checklist and approval review</li>
           <li>• Accompanied site visits</li>
-          <li>• Price negotiation support</li>
+          <li>• Questions to ask the seller on price and paperwork</li>
         </ul>
         {wa && <Button asChild variant="outline" className="mt-8"><a href={wa} target="_blank" rel="noreferrer"><MessageCircle /> Chat on WhatsApp</a></Button>}
       </div>

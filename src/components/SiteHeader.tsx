@@ -6,10 +6,10 @@ import { useCompare } from "@/lib/compare";
 import { useSession } from "@/lib/auth";
 
 const NAV = [
-  { to: "/explore", label: "Explore homes" },
-  { to: "/location-intelligence", label: "Area guide" },
-  { to: "/compare", label: "Compare" },
-  { to: "/advisor", label: "AI advisor" },
+  { to: "/properties", label: "Find" },
+  { to: "/location-intelligence", label: "Localities" },
+  { to: "/community", label: "Community" },
+  { to: "/owners", label: "For owners" },
 ] as const;
 
 export function SiteHeader() {
@@ -32,18 +32,25 @@ export function SiteHeader() {
               activeProps={{ className: "text-primary" }}
             >
               {n.label}
-              {n.to === "/compare" && ids.length > 0 && (
-                <span className="ml-1 rounded-full bg-gold px-1.5 text-xs text-gold-foreground">{ids.length}</span>
-              )}
             </Link>
           ))}
+          <Link
+            to="/compare"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            activeProps={{ className: "text-primary" }}
+          >
+            Compare
+            {ids.length > 0 && (
+              <span className="ml-1 rounded-full bg-gold px-1.5 text-xs text-gold-foreground">{ids.length}</span>
+            )}
+          </Link>
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
             <Link to={session ? "/my" : "/auth"}>{session ? "My research" : "Sign in"}</Link>
           </Button>
           <Button asChild variant="gold" size="sm">
-            <Link to="/consult">Book a consultation</Link>
+            <Link to="/consult">Ask us</Link>
           </Button>
         </div>
         <button className="lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
@@ -54,11 +61,17 @@ export function SiteHeader() {
         <nav className="border-t bg-background px-4 py-3 lg:hidden">
           {NAV.map((n) => (
             <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="block py-2 text-sm font-medium">
-              {n.label} {n.to === "/compare" && ids.length > 0 && `(${ids.length})`}
+              {n.label}
             </Link>
           ))}
+          <Link to="/compare" onClick={() => setOpen(false)} className="block py-2 text-sm font-medium">
+            Compare {ids.length > 0 && `(${ids.length})`}
+          </Link>
           <Link to={session ? "/my" : "/auth"} onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
             {session ? "My research" : "Sign in"}
+          </Link>
+          <Link to="/consult" onClick={() => setOpen(false)} className="block py-2 text-sm text-muted-foreground">
+            Ask us
           </Link>
         </nav>
       )}
@@ -82,18 +95,17 @@ export function SiteFooter() {
           <p className="font-display text-2xl">
             PropWise <span className="text-gold">AI</span>
           </p>
-          <p className="mt-2 max-w-sm text-sm opacity-75">Compare Smarter. Buy with Confidence. Property guidance for Chennai and nearby Tamil Nadu.</p>
+          <p className="mt-2 max-w-sm text-sm opacity-75">Locality intelligence and community for Chennai and nearby Tamil Nadu.</p>
           <p className="mt-4 max-w-md text-xs opacity-60">
             All costs and scores are estimates. Verify documents, approvals and RERA registration independently before purchase.
           </p>
         </div>
         <div className="space-y-2 text-sm">
           <p className="font-semibold text-gold">Explore</p>
-          <Link to="/properties" className="block opacity-80 hover:opacity-100">All listings</Link>
-          <Link to="/map" className="block opacity-80 hover:opacity-100">Map lookup</Link>
-          <Link to="/compare" className="block opacity-80 hover:opacity-100">Compare</Link>
-          <Link to="/infrastructure" className="block opacity-80 hover:opacity-100">Infrastructure</Link>
-          <Link to="/consult" className="block opacity-80 hover:opacity-100">Consultation</Link>
+          <Link to="/properties" className="block opacity-80 hover:opacity-100">Find a property</Link>
+          <Link to="/location-intelligence" className="block opacity-80 hover:opacity-100">Localities</Link>
+          <Link to="/community" className="block opacity-80 hover:opacity-100">Community</Link>
+          <Link to="/owners" className="block opacity-80 hover:opacity-100">For owners</Link>
         </div>
         <div className="space-y-2 text-sm">
           <p className="font-semibold text-gold">Trust</p>

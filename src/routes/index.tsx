@@ -94,9 +94,9 @@ function Home() {
 
       <section className="mx-auto mt-20 max-w-7xl px-4">
         <div className="rounded-2xl bg-hero p-10 text-hero-foreground md:p-14">
-          <h2 className="text-3xl md:text-4xl">Talk to a property consultant</h2>
-          <p className="mt-3 max-w-xl opacity-80">Get help shortlisting, checking documents, scheduling site visits and negotiating.</p>
-          <Button asChild variant="gold" size="lg" className="mt-6"><Link to="/consult">Book a free consultation</Link></Button>
+          <h2 className="text-3xl md:text-4xl">Ask us about an area</h2>
+          <p className="mt-3 max-w-xl opacity-80">Get help understanding an area, reading the evidence on a listing and knowing which documents and approvals to check.</p>
+          <Button asChild variant="gold" size="lg" className="mt-6"><Link to="/consult">Ask us a question</Link></Button>
         </div>
       </section>
     </>

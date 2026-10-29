@@ -9,6 +9,7 @@ import { costRulesFrom, publicPropertiesQuery, useSettings, type Property } from
 import { dealScore, missingDocs, pricePerSqft, purchaseCost } from "@/lib/deal";
 import { formatINR } from "@/lib/format";
 import { AVAILABILITY, typeLabel } from "@/lib/constants";
+import { TRANSACTION_LABELS, transactionTypeOf } from "@/lib/transaction";
 
 export const Route = createFileRoute("/compare")({
   staticData: { sitemap: true },
@@ -49,18 +50,25 @@ function ComparePage() {
 
   const rows: [string, (p: Property) => React.ReactNode][] = [
     ["Type", (p) => typeLabel(p.property_type)],
+    ["Transaction", (p) => TRANSACTION_LABELS[transactionTypeOf(p)]],
     ["Location", (p) => p.location],
-    ["Asking price", (p) => formatINR(p.asking_price)],
-    ["Est. total cost", (p) => <b className="text-primary">{formatINR(purchaseCost(p, rules).total)}</b>],
-    ["Price / sq ft", (p) => formatINR(pricePerSqft(p))],
+    // A rent or lease figure is a monthly amount; calling it an asking price would mislead.
+    ["Price", (p) => {
+      const t = transactionTypeOf(p);
+      return t === "buy" ? formatINR(p.asking_price) : `${formatINR(p.asking_price)} / month`;
+    }],
+    // Purchase cost, price per sq ft and deal score are sale concepts. Stamp duty and
+    // registration do not apply to a monthly payment, so a rental shows "—" rather than a figure.
+    ["Est. total cost", (p) => (transactionTypeOf(p) === "buy" ? <b className="text-primary">{formatINR(purchaseCost(p, rules).total)}</b> : "—")],
+    ["Price / sq ft", (p) => (transactionTypeOf(p) === "buy" ? formatINR(pricePerSqft(p)) : "—")],
     ["Bedrooms", (p) => p.bedrooms ?? "—"],
     ["Built-up (sq ft)", (p) => p.built_area_sqft ?? "—"],
     ["Land (sq ft)", (p) => p.land_area_sqft ?? "—"],
-    ["Approvals", (p) => p.approvals.join(", ") || "—"],
+    ["Approvals", (p) => (transactionTypeOf(p) === "buy" ? p.approvals.join(", ") || "—" : "—")],
     ["Availability", (p) => AVAILABILITY[p.availability]],
     ["Verification", (p) => <VerificationBadge status={p.verification_status} />],
     ["Missing documents", (p) => { const m = missingDocs(p); return m.length ? <span className="text-destructive">{m.length} missing</span> : "None"; }],
-    ["Deal score", (p) => dealScore(p, pool, []).overall ?? "—"],
+    ["Deal score", (p) => (transactionTypeOf(p) === "buy" ? dealScore(p, pool, []).overall ?? "—" : "—")],
   ];
 
   return (

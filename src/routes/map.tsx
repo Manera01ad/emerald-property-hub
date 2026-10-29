@@ -8,6 +8,7 @@ import { publicPropertiesQuery, type Property } from "@/lib/data";
 import { formatINR } from "@/lib/format";
 import { parseLocationInput, validLatLng, type LatLng } from "@/lib/mapurl";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
+import { transactionTypeOf } from "@/lib/transaction";
 import { geocodeAddress, travelRoute } from "@/lib/maps.functions";
 import { useSession } from "@/lib/auth";
 
@@ -182,7 +183,9 @@ function PropertyPanel({ p, pool, signedIn }: { p: Property; pool: Property[]; s
   const [dest, setDest] = useState("");
   const [trip, setTrip] = useState("");
   const area = Number(p.property_type === "plot" ? p.land_area_sqft : p.built_area_sqft ?? p.land_area_sqft) || 0;
-  const comps = pool.filter((c) => c.id !== p.id && c.location === p.location && c.property_type === p.property_type)
+  // Comparables and the value estimate are sale concepts, so a rent or lease listing is
+  // excluded: a monthly figure would otherwise be priced as if it were a purchase.
+  const comps = pool.filter((c) => c.id !== p.id && c.location === p.location && c.property_type === p.property_type && transactionTypeOf(c) === "buy" && transactionTypeOf(p) === "buy")
     .map((c) => ({ price: Number(c.asking_price), area_sqft: Number(p.property_type === "plot" ? c.land_area_sqft : c.built_area_sqft ?? c.land_area_sqft) || 0, kind: "asking" as const }));
   const v = valueProperty({ kind: p.property_type as Kind, area_sqft: area, comparables: comps, guideline_value_per_sqft: p.guideline_value && area ? Number(p.guideline_value) / area : null });
   const flags = evidenceFlags(p);
@@ -206,9 +209,9 @@ function PropertyPanel({ p, pool, signedIn }: { p: Property; pool: Property[]; s
       <p className="font-display text-lg text-primary">{p.title}</p>
       {row("Type", p.property_type?.replace("_", " "))}
       {row("Area", area ? `${area.toLocaleString("en-IN")} sq ft` : null)}
-      {row("Asking price", p.asking_price ? formatINR(Number(p.asking_price)) : null)}
-      {row("Value estimate", v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)} (${v.confidence})` : "Not enough evidence")}
-      {row("Comparables used", String(comps.length))}
+      {row(transactionTypeOf(p) === "buy" ? "Asking price" : "Monthly figure", p.asking_price ? `${formatINR(Number(p.asking_price))}${transactionTypeOf(p) === "buy" ? "" : " a month"}` : null)}
+      {transactionTypeOf(p) === "buy" && row("Value estimate", v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)} (${v.confidence})` : "Not enough evidence")}
+      {transactionTypeOf(p) === "buy" && row("Comparables used", String(comps.length))}
       {row("Survey number", p.survey_number)}
       {row("Verification", p.verification_status)}
       {row("Last updated", p.updated_at ? new Date(p.updated_at).toLocaleDateString("en-IN") : null)}

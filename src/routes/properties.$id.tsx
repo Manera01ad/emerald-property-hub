@@ -1,22 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ExternalLink, MapPin, MessageCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, ImageOff, MapPin, MessageCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VerificationBadge, EstimateNote } from "@/components/Badges";
+import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { ResearchBrief } from "@/components/ResearchBrief";
 import { AVAILABILITY, DOCS, PLACE_CATEGORIES, typeLabel } from "@/lib/constants";
-import { costRulesFrom, publicPropertiesQuery, usePhotoUrls, useSettings, whatsappLink } from "@/lib/data";
-import { dealScore, negotiationHints, pricePerSqft, purchaseCost } from "@/lib/deal";
+import { costRulesFrom, publicPropertiesQuery, usePropertyPhotoUrls, useSettings, whatsappLink } from "@/lib/data";
+import { dealScore, MIN_COMPARABLES, priceQuestions, pricePerSqft, purchaseCost } from "@/lib/deal";
+import type { Evidence } from "@/lib/evidence";
 import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
+import { InterestRequestButton } from "@/components/InterestRequestButton";
+import { TransactionTerms } from "@/components/TransactionTerms";
+import { priceLabel, priceUnit, transactionTypeOf, termsSummary, TRANSACTION_LABELS } from "@/lib/transaction";
 import { hiddenReasons } from "@/lib/visibility";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
+
+/** The asking price is what the seller states, so it is always a CLAIM, never verified by us. */
+const ASKING_PRICE_EVIDENCE: Evidence = "CLAIM";
 
 export const Route = createFileRoute("/properties/$id")({
   staticData: { sitemap: true },
@@ -60,7 +68,7 @@ function PropertyPage() {
   });
   const { data: pool = [] } = useQuery(publicPropertiesQuery);
   const { data: settings } = useSettings();
-  const { data: photos = [] } = usePhotoUrls(p?.photos);
+  const { data: photos = [], withheld: photosWithheld } = usePropertyPhotoUrls(p);
   const [active, setActive] = useState(0);
   const [form, setForm] = useState<null | "consultation" | "site_visit">(null);
   const { has, toggle } = useCompare();
@@ -82,10 +90,13 @@ function PropertyPage() {
   );
 
   const rules = costRulesFrom(settings);
+  // Rent and lease are recurring payments, so purchase duty, EMI and guideline value do not apply.
+  const type = transactionTypeOf(p);
+  const monthly = priceUnit(type) === "per_month";
   const cost = purchaseCost(p, rules);
   const score = dealScore(p, pool, places);
-  const hints = negotiationHints(p, pool);
-  const ppsf = pricePerSqft(p);
+  const hints = priceQuestions(p, pool);
+  const ppsf = monthly ? null : pricePerSqft(p);
   const wa = whatsappLink(settings?.whatsapp_number, `Hi PropWise, I'm interested in: ${p.title} (${p.location})`);
   const hidden = hiddenReasons(p);
 
@@ -102,7 +113,10 @@ function PropertyPage() {
           <div>
             <div className="aspect-[16/10] overflow-hidden rounded-xl bg-muted">
               {photos[active] ? <img src={photos[active]} alt={p.title} className="h-full w-full object-cover" /> :
-                <div className="flex h-full items-center justify-center text-muted-foreground">No photos uploaded yet</div>}
+                <div className="flex h-full flex-col items-center justify-center gap-1 text-center text-sm text-muted-foreground">
+                  <ImageOff className="size-6" />
+                  {photosWithheld ? "Photos are withheld until this listing is publicly visible" : "No photos uploaded yet"}
+                </div>}
             </div>
             {photos.length > 1 && (
               <div className="mt-3 flex gap-2 overflow-x-auto">
@@ -128,22 +142,26 @@ function PropertyPage() {
 
           <Section title="Specifications">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-              <Spec k="Asking price" v={formatINRFull(p.asking_price)} />
-              <Spec k="Price / sq ft" v={ppsf ? formatINRFull(ppsf) : "—"} />
+              <Spec k={priceLabel(type)} v={monthly ? `${formatINRFull(p.asking_price)} a month` : formatINRFull(p.asking_price)} />
+              {!monthly && <Spec k="Price / sq ft" v={ppsf ? formatINRFull(ppsf) : "—"} />}
+              <Spec k="Transaction" v={TRANSACTION_LABELS[type]} />
               <Spec k="Bedrooms" v={p.bedrooms ?? "—"} />
               <Spec k="Built-up area" v={p.built_area_sqft ? `${p.built_area_sqft} sq ft` : "—"} />
               <Spec k="Land area" v={p.land_area_sqft ? `${p.land_area_sqft} sq ft` : "—"} />
               <Spec k="Approvals" v={p.approvals.join(", ") || "Not recorded"} />
               <Spec k="RERA no." v={p.rera_number || "Not provided"} />
               <Spec k="Source" v={p.source || "Not recorded"} />
-              <Spec k="Guideline value" v={p.guideline_value ? formatINRFull(p.guideline_value) : "Not recorded"} />
+              {!monthly && <Spec k="Guideline value" v={p.guideline_value ? formatINRFull(p.guideline_value) : "Not recorded"} />}
             </dl>
             {p.amenities.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{p.amenities.map((a) => <span key={a} className="rounded-full border px-3 py-1 text-xs">{a}</span>)}</div>}
           </Section>
 
-          <Section title="Legal documentation">
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {DOCS.map((d) => {
+          <TransactionTerms listing={p} type={type} />
+
+          {!monthly && (
+            <Section title="Legal documentation">
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {DOCS.map((d) => {
                 const ok = p[d.key as keyof typeof p];
                 return (
                   <li key={d.key} className="flex items-center gap-2 text-sm">
@@ -152,30 +170,47 @@ function PropertyPage() {
                   </li>
                 );
               })}
-            </ul>
-            <p className="mt-3 text-xs text-muted-foreground">Recorded by PropWise from documents shared with us. Always have a lawyer review originals.</p>
-          </Section>
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">Recorded by PropWise from documents shared with us. Always have a lawyer review originals.</p>
+            </Section>
+          )}
 
           <Section title="Deal analysis">
             <div className="flex items-center gap-4">
               <div className="flex size-20 items-center justify-center rounded-full border-4 border-gold font-display text-3xl text-primary">{score.overall ?? "–"}</div>
-              <p className="text-sm text-muted-foreground">Transparent score out of 100, averaged from the parts below that have enough data.</p>
+              <div>
+                <EvidenceBadge evidence={score.overall != null ? "ESTIMATE" : "UNKNOWN"} />
+                <p className="mt-1 text-sm text-muted-foreground">Transparent score out of 100, averaged from the parts below that have enough data. Parts without enough evidence stay UNKNOWN.</p>
+              </div>
             </div>
             <div className="mt-5 space-y-3">
               {score.parts.map((s) => (
                 <div key={s.key}>
-                  <div className="flex justify-between text-sm"><span className="font-medium">{s.label}</span><span>{s.score ?? "Insufficient data"}</span></div>
+                  <div className="flex justify-between gap-2 text-sm">
+                    <span className="flex items-center gap-2 font-medium">{s.label} <EvidenceBadge evidence={s.evidence} /></span>
+                    <span>{s.score ?? "Insufficient data"}</span>
+                  </div>
                   <div className="mt-1 h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary" style={{ width: `${s.score ?? 0}%` }} /></div>
                   <p className="mt-1 text-xs text-muted-foreground">{s.reason}</p>
                 </div>
               ))}
             </div>
-            {score.comps.count > 0 && (
-              <p className="mt-4 text-sm">Comparable listings: {score.comps.count} · average {formatINR(score.comps.avgPpsf)}/sq ft</p>
+            {score.comps.evidence === "ESTIMATE" ? (
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <EvidenceBadge evidence="ESTIMATE" />
+                Comparable listings: {score.comps.count} · average {formatINR(score.comps.avgPpsf)}/sq ft
+              </p>
+            ) : (
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <EvidenceBadge evidence="UNKNOWN" />
+                {score.comps.count === 0
+                  ? "No comparable listings in PropWise, so there is no price comparison to show."
+                  : `Only ${score.comps.count} comparable listing(s) in PropWise. At least ${MIN_COMPARABLES} are needed before a comparison means anything.`}
+              </p>
             )}
             {hints.length > 0 && (
               <div className="mt-5 rounded-lg bg-gold-soft p-4">
-                <p className="text-sm font-semibold text-accent-foreground">Possible negotiation points</p>
+                <p className="text-sm font-semibold text-accent-foreground">Questions to ask on price</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{hints.map((h) => <li key={h}>{h}</li>)}</ul>
               </div>
             )}
@@ -192,7 +227,10 @@ function PropertyPage() {
               const flags = evidenceFlags(p);
               return (
                 <div className="space-y-3 text-sm">
-                  <p className="text-2xl">{v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)}` : "Not enough evidence for a range"}</p>
+                  <p className="flex flex-wrap items-center gap-2 text-2xl">
+                    <EvidenceBadge evidence={v.mid != null ? "ESTIMATE" : "UNKNOWN"} />
+                    {v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)}` : "Not enough evidence for a range"}
+                  </p>
                   <p>Confidence: <b>{v.confidence}</b> · Method: {v.method}</p>
                   {v.warnings.map((w) => <p key={w} className="text-destructive">{w}</p>)}
                   <p className="font-medium">Missing or unconfirmed information</p>
@@ -245,21 +283,39 @@ function PropertyPage() {
 
         <aside className="h-fit space-y-4 lg:sticky lg:top-20">
           <div className="rounded-xl border bg-card p-6 shadow-card">
-            <p className="text-sm text-muted-foreground">Asking price</p>
-            <p className="font-display text-4xl text-primary">{formatINR(p.asking_price)}</p>
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">{priceLabel(type)} <EvidenceBadge evidence={ASKING_PRICE_EVIDENCE} /></p>
+            <p className="font-display text-4xl text-primary">
+              {formatINR(p.asking_price)}{monthly && <span className="text-lg text-muted-foreground">/month</span>}
+            </p>
             <div className="gold-rule my-4" />
-            <p className="text-sm font-semibold">Estimated total purchase cost</p>
-            <dl className="mt-2 space-y-1.5 text-sm">
-              <Row k="Property price" v={formatINRFull(p.asking_price)} />
-              <Row k={`Stamp duty (${rules.stampDutyPct}%)`} v={formatINRFull(cost.stampDuty)} />
-              <Row k={`Registration (${rules.registrationPct}%)`} v={formatINRFull(cost.registration)} />
-              <Row k="Legal & documentation" v={formatINRFull(cost.legal)} />
-              <div className="border-t pt-2"><Row k={<b>Total</b>} v={<b>{formatINRFull(cost.total)}</b>} /></div>
-            </dl>
-            <p className="mt-2 text-xs text-muted-foreground">Duties calculated on {cost.base > Number(p.asking_price) ? "guideline value" : "asking price"}. Estimate only.</p>
+            {monthly ? (
+              <>
+                <p className="text-sm font-semibold">{type === "lease" ? "What the lease commits you to" : "What renting costs up front"}</p>
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  <Row k="Monthly rent" v={formatINRFull(p.asking_price)} />
+                  {termsSummary(p, type) && <Row k="Recorded terms" v={<span className="text-right">{termsSummary(p, type)}</span>} />}
+                </dl>
+                <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <EvidenceBadge evidence="CLAIM" /> Figures stated by the owner or developer. The full terms are in the panel above; anything not stated reads as Unknown.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold">Estimated total purchase cost</p>
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  <Row k="Property price" v={formatINRFull(p.asking_price)} />
+                  <Row k={`Stamp duty (${rules.stampDutyPct}%)`} v={formatINRFull(cost.stampDuty)} />
+                  <Row k={`Registration (${rules.registrationPct}%)`} v={formatINRFull(cost.registration)} />
+                  <Row k="Legal & documentation" v={formatINRFull(cost.legal)} />
+                  <div className="border-t pt-2"><Row k={<b>Total</b>} v={<b>{formatINRFull(cost.total)}</b>} /></div>
+                </dl>
+                <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><EvidenceBadge evidence="ESTIMATE" /> Duties calculated on {cost.base > Number(p.asking_price) ? "guideline value" : "asking price"} using the rates in PropWise settings.</p>
+              </>
+            )}
             <div className="mt-5 space-y-2">
               <Button variant="gold" className="w-full" onClick={() => setForm("site_visit")}>Book a site visit</Button>
               <Button variant="default" className="w-full" onClick={() => setForm("consultation")}>Ask a consultant</Button>
+              <InterestRequestButton propertyId={p.id} propertyTitle={p.title} />
               {wa && <Button asChild variant="outline" className="w-full"><a href={wa} target="_blank" rel="noreferrer"><MessageCircle /> WhatsApp us</a></Button>}
               <Button variant="ghost" className="w-full" onClick={() => { if (!toggle(p.id)) toast.error("You can compare up to 4 properties."); }}>
                 {has(p.id) ? "Remove from compare" : "Add to compare"}
