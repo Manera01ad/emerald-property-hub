@@ -85,7 +85,9 @@ export function parseListingCsv(text: string, existingKeys: Set<string> = new Se
     for (const [name, v] of [["bedrooms", beds], ["built_area_sqft", built], ["land_area_sqft", land]] as const) if (Number.isNaN(v)) problems.push(`${name} must be a number`);
 
     const availRaw = clean(r["availability"]).toLowerCase().replace(/[\s-]+/g, "_");
-    const availability = availRaw ? (availRaw in AVAILABILITY ? availRaw : null) : "ready";
+    // Object.hasOwn, not `in`: `in` walks the prototype chain, so words like
+    // "constructor" or "toString" would pass validation and reach the database.
+    const availability = availRaw ? (Object.hasOwn(AVAILABILITY, availRaw) ? availRaw : null) : "ready";
     if (!availability) problems.push(`availability must be one of: ${Object.keys(AVAILABILITY).join(", ")}`);
 
     const approvals = clean(r["approvals"]).split(/[;,|]/).map((a) => a.trim()).filter(Boolean)

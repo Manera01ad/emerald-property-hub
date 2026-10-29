@@ -25,6 +25,13 @@ describe("parseListingCsv", () => {
     const r = parseListingCsv(csv({ ...good, area: "Nowhere", property_type: "castle", asking_price: "500", approvals: "Magic" }));
     expect(r.errors[0]!.problems).toHaveLength(4);
   });
+  it("rejects an availability that is not in the list, including inherited Object keys", () => {
+    for (const bad of ["banana", "constructor", "toString", "hasOwnProperty"]) {
+      const r = parseListingCsv(csv({ ...good, availability: bad }));
+      expect(r.drafts).toHaveLength(0);
+      expect(r.errors[0]!.problems[0]).toContain("availability must be one of");
+    }
+  });
   it("skips example rows and flags duplicates, including against existing listings", () => {
     const r = parseListingCsv(csv({ ...good, title: "EXAMPLE - delete" }, good, good));
     expect(r.skippedExamples).toBe(1);
