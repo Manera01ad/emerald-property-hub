@@ -92,6 +92,13 @@
       "when": 1793043409270,
       "tag": "0012_assistant_search_log_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793281747870,
+      "tag": "0013_phase1_flags",
+      "breakpoints": true
     }
   ]
 }
