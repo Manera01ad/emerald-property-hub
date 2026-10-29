@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ExternalLink, MapPin, MessageCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, ImageOff, MapPin, MessageCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,12 @@ import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { ResearchBrief } from "@/components/ResearchBrief";
 import { AVAILABILITY, DOCS, PLACE_CATEGORIES, typeLabel } from "@/lib/constants";
-import { costRulesFrom, publicPropertiesQuery, usePhotoUrls, useSettings, whatsappLink } from "@/lib/data";
+import { costRulesFrom, publicPropertiesQuery, usePropertyPhotoUrls, useSettings, whatsappLink } from "@/lib/data";
 import { dealScore, MIN_COMPARABLES, priceQuestions, pricePerSqft, purchaseCost } from "@/lib/deal";
 import type { Evidence } from "@/lib/evidence";
 import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
+import { InterestRequestButton } from "@/components/InterestRequestButton";
 import { hiddenReasons } from "@/lib/visibility";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
@@ -65,7 +66,7 @@ function PropertyPage() {
   });
   const { data: pool = [] } = useQuery(publicPropertiesQuery);
   const { data: settings } = useSettings();
-  const { data: photos = [] } = usePhotoUrls(p?.photos);
+  const { data: photos = [], withheld: photosWithheld } = usePropertyPhotoUrls(p);
   const [active, setActive] = useState(0);
   const [form, setForm] = useState<null | "consultation" | "site_visit">(null);
   const { has, toggle } = useCompare();
@@ -107,7 +108,10 @@ function PropertyPage() {
           <div>
             <div className="aspect-[16/10] overflow-hidden rounded-xl bg-muted">
               {photos[active] ? <img src={photos[active]} alt={p.title} className="h-full w-full object-cover" /> :
-                <div className="flex h-full items-center justify-center text-muted-foreground">No photos uploaded yet</div>}
+                <div className="flex h-full flex-col items-center justify-center gap-1 text-center text-sm text-muted-foreground">
+                  <ImageOff className="size-6" />
+                  {photosWithheld ? "Photos are withheld until this listing is publicly visible" : "No photos uploaded yet"}
+                </div>}
             </div>
             {photos.length > 1 && (
               <div className="mt-3 flex gap-2 overflow-x-auto">
@@ -284,6 +288,7 @@ function PropertyPage() {
             <div className="mt-5 space-y-2">
               <Button variant="gold" className="w-full" onClick={() => setForm("site_visit")}>Book a site visit</Button>
               <Button variant="default" className="w-full" onClick={() => setForm("consultation")}>Ask a consultant</Button>
+              <InterestRequestButton propertyId={p.id} propertyTitle={p.title} />
               {wa && <Button asChild variant="outline" className="w-full"><a href={wa} target="_blank" rel="noreferrer"><MessageCircle /> WhatsApp us</a></Button>}
               <Button variant="ghost" className="w-full" onClick={() => { if (!toggle(p.id)) toast.error("You can compare up to 4 properties."); }}>
                 {has(p.id) ? "Remove from compare" : "Add to compare"}
