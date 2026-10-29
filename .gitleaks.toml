@@ -1,28 +1,32 @@
 # gitleaks configuration for PropWise AI.
 #
 # Purpose: keep failing the build on NEW secrets, while recording — not hiding —
-# the three findings that already exist in this repository's history.
+# the findings that already exist in this repository's history.
 #
-# Those three findings are all in `.env`, in two commits from October 2026:
+# There are two kinds of historical finding, and they are handled differently.
 #
-#   c076bce  .env line 2  generic-api-key  VITE_SUPABASE_PUBLISHABLE_KEY
-#   c076bce  .env line 5  generic-api-key  SUPABASE_PUBLISHABLE_KEY
-#   aa15b43  .env line 4  gcp-api-key      Google Maps browser key
+# 1. The Google Maps browser key is a REAL credential. It was committed in
+#    `.env` in two commits from October 2026:
 #
-# `.env` has since been untracked, so no current commit contains these values.
-# They remain readable to anyone with repository access, and cannot be removed
-# without rewriting history, which would destroy the Lovable project history.
-# They are therefore acknowledged here rather than removed.
+#      aa15b43  .env line 4  gcp-api-key  VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY
+#      9375300  .env line 4  gcp-api-key  VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY
 #
-# What each finding actually is:
+#    `.env` has since been untracked, so no current commit contains it, but it
+#    stays readable in history. Removing it would mean rewriting history, which
+#    destroys the Lovable project history, so it is acknowledged here by commit
+#    instead of removed.
 #
-#   - The two Supabase values are PUBLISHABLE keys. They are sent to browsers by
-#     design; protection comes from row-level security, not from secrecy.
-#   - The Google Maps browser key is a REAL credential. It should be rotated in
-#     Google Cloud Console and restricted to the PropWise domains. This entry is
-#     an acknowledgement, not a decision that the key is acceptable.
+#    ACTION REQUIRED: rotate this key in Google Cloud Console, restrict it to
+#    the PropWise domains, then delete its two entries below.
 #
-# ACTION REQUIRED: after the Maps key is rotated, delete this file.
+# 2. Supabase PUBLISHABLE keys are sent to browsers by design; protection comes
+#    from row-level security, not from secrecy. They appear in `.env` (several
+#    October 2026 commits) and in the public build fallback in `vite.config.ts`.
+#    They are matched by the `sb_publishable_` pattern below rather than by
+#    commit, so the same value does not need a new entry each time it moves.
+#
+# A service-role key (`sb_secret_`), the Maps key, or any other credential is
+# NOT matched by that pattern, so committing one still fails the scan.
 #
 # NOTE: the allowlist must use the singular [allowlist] form. The plural
 # [[allowlists]] form parses without error but is silently not applied, which
@@ -32,8 +36,11 @@
 useDefault = true
 
 [allowlist]
-description = "Known historical .env findings (October 2026 commits, file since untracked). Scoped to those commits only, so any secret committed from now on still fails the scan. Delete this file once the Maps key is rotated."
+description = "Historical Maps browser key (a real credential — rotate it) plus Supabase publishable keys, which are public by design. A newly committed credential still fails the scan."
 commits = [
-  "c076bceb1c13c4147fd697780437ea90dbc2b777",
   "aa15b4316f9873656aa0e4c3ab68b28974bf8b17",
+  "9375300fecd46b6294b3403d5c8f9a81d8a463e1",
+]
+regexes = [
+  '''sb_publishable_[A-Za-z0-9_-]{20,}''',
 ]
