@@ -77,6 +77,41 @@ export type Database = {
         }
         Relationships: []
       }
+      areas: {
+        Row: {
+          city_slug: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+        }
+        Insert: {
+          city_slug: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+        }
+        Update: {
+          city_slug?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "areas_city_slug_fkey"
+            columns: ["city_slug"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       assistant_messages: {
         Row: {
           created_at: string
@@ -221,6 +256,33 @@ export type Database = {
           result?: Json
           title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      cities: {
+        Row: {
+          created_at: string
+          is_active: boolean
+          launched_at: string | null
+          name: string
+          slug: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          is_active?: boolean
+          launched_at?: string | null
+          name: string
+          slug: string
+          state: string
+        }
+        Update: {
+          created_at?: string
+          is_active?: boolean
+          launched_at?: string | null
+          name?: string
+          slug?: string
+          state?: string
         }
         Relationships: []
       }
@@ -585,10 +647,12 @@ export type Database = {
           amenities: string[]
           approval_details: string | null
           approvals: string[]
+          area: string | null
           asking_price: number
           availability: string
           bedrooms: number | null
           built_area_sqft: number | null
+          city: string | null
           created_at: string
           description: string | null
           doc_approved_plan: boolean
@@ -610,6 +674,7 @@ export type Database = {
           property_type: string
           rera_number: string | null
           source: string | null
+          state: string | null
           status: string
           survey_number: string | null
           title: string
@@ -624,10 +689,12 @@ export type Database = {
           amenities?: string[]
           approval_details?: string | null
           approvals?: string[]
+          area?: string | null
           asking_price: number
           availability?: string
           bedrooms?: number | null
           built_area_sqft?: number | null
+          city?: string | null
           created_at?: string
           description?: string | null
           doc_approved_plan?: boolean
@@ -649,6 +716,7 @@ export type Database = {
           property_type: string
           rera_number?: string | null
           source?: string | null
+          state?: string | null
           status?: string
           survey_number?: string | null
           title: string
@@ -663,10 +731,12 @@ export type Database = {
           amenities?: string[]
           approval_details?: string | null
           approvals?: string[]
+          area?: string | null
           asking_price?: number
           availability?: string
           bedrooms?: number | null
           built_area_sqft?: number | null
+          city?: string | null
           created_at?: string
           description?: string | null
           doc_approved_plan?: boolean
@@ -688,6 +758,7 @@ export type Database = {
           property_type?: string
           rera_number?: string | null
           source?: string | null
+          state?: string | null
           status?: string
           survey_number?: string | null
           title?: string
@@ -835,6 +906,7 @@ export type Database = {
           access_method: string
           api_docs_url: string | null
           can_publish: boolean
+          city_slug: string | null
           created_at: string
           enabled: boolean
           field_mapping: Json
@@ -856,6 +928,7 @@ export type Database = {
           access_method: string
           api_docs_url?: string | null
           can_publish?: boolean
+          city_slug?: string | null
           created_at?: string
           enabled?: boolean
           field_mapping?: Json
@@ -877,6 +950,7 @@ export type Database = {
           access_method?: string
           api_docs_url?: string | null
           can_publish?: boolean
+          city_slug?: string | null
           created_at?: string
           enabled?: boolean
           field_mapping?: Json
@@ -894,7 +968,15 @@ export type Database = {
           source_identity?: string | null
           url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "research_sources_city_slug_fkey"
+            columns: ["city_slug"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       research_ticks: {
         Row: {
