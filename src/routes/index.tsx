@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MARKETS } from "@/lib/constants";
 import { publicPropertiesQuery } from "@/lib/data";
 import { PropertyCard } from "@/components/PropertyCard";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
