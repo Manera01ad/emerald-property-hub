@@ -4,18 +4,22 @@ import { useMemo } from "react";
 import { z } from "zod";
 import { PropertyCard } from "@/components/PropertyCard";
 import { MyLocationBar } from "@/components/MyLocationBar";
+import { RequirementsForm } from "@/components/RequirementsForm";
+import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { useMyLocation, useNearMeAccess } from "@/lib/my-location";
 import { listingDistance } from "@/lib/nearme";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { APPROVALS, AVAILABILITY, MARKETS, PROPERTY_TYPES } from "@/lib/constants";
-import { costRulesFrom, publicPropertiesQuery, useSettings } from "@/lib/data";
+import { APPROVALS, AVAILABILITY, PROPERTY_TYPES } from "@/lib/constants";
+import { costRulesFrom, publicPropertiesQuery, useLocalities, useSettings } from "@/lib/data";
+import { matchProperty } from "@/lib/buyer";
 import { purchaseCost } from "@/lib/deal";
 
 const searchSchema = z.object({
   location: z.string().optional(),
+  locality: z.string().optional(),
   type: z.string().optional(),
   minPrice: z.number().optional(),
   maxPrice: z.number().optional(),
@@ -24,6 +28,7 @@ const searchSchema = z.object({
   approval: z.string().optional(),
   availability: z.string().optional(),
   allInclusive: z.boolean().optional(),
+  verifiedOnly: z.boolean().optional(),
 });
 type Search = z.infer<typeof searchSchema>;
 
@@ -52,6 +57,7 @@ function PropertiesPage() {
   const navigate = useNavigate({ from: "/properties/" });
   const { data, isLoading, isError } = useQuery(publicPropertiesQuery);
   const { data: settings } = useSettings();
+  const { data: localities = [] } = useLocalities();
   const rules = costRulesFrom(settings);
   const set = (patch: Partial<Search>) => navigate({ search: (prev) => ({ ...prev, ...patch }) });
   const num = (v: string) => (v ? Number(v) : undefined);
@@ -59,12 +65,21 @@ function PropertiesPage() {
   const me = useMyLocation();
   const origin = nearAccess ? me.origin : null;
 
+  // Locality first: the shortlist is chosen before individual homes are compared.
+  const localityMatches = useMemo(() => {
+    const wanted = s.locality ?? s.location;
+    return localities
+      .filter((l) => !wanted || l.name === wanted)
+      .map((l) => ({ locality: l, listings: (data ?? []).filter((p) => p.location === l.name) }));
+  }, [localities, data, s.locality, s.location]);
+
   const distances = useMemo(() => new Map((data ?? []).flatMap((p) => { const d = origin ? listingDistance(p, origin) : null; return d ? [[p.id, d] as const] : []; })), [data, origin]);
 
   const results = useMemo(() => {
     const list = (data ?? []).filter((p) => {
       const price = s.allInclusive ? purchaseCost(p, rules).total : Number(p.asking_price);
       if (s.location && p.location !== s.location) return false;
+      if (s.locality && p.location !== s.locality) return false;
       if (s.type && p.property_type !== s.type) return false;
       if (s.minPrice && price < s.minPrice * 1e5) return false;
       if (s.maxPrice && price > s.maxPrice * 1e5) return false;
@@ -72,21 +87,72 @@ function PropertiesPage() {
       if (s.minLand && (Number(p.land_area_sqft) || 0) < s.minLand) return false;
       if (s.approval && !p.approvals.includes(s.approval)) return false;
       if (s.availability && p.availability !== s.availability) return false;
+      if (s.verifiedOnly && p.verification_status !== "verified") return false;
       if (origin && (distances.get(p.id)?.km ?? Infinity) > me.radiusKm) return false;
       return true;
     });
     return origin ? list.sort((a, b) => (distances.get(a.id)?.km ?? 0) - (distances.get(b.id)?.km ?? 0)) : list;
   }, [data, s, rules, origin, me.radiusKm, distances]);
 
+  // Match explanations only when the buyer has given something to match against.
+  const hasRequirements = !!(s.maxPrice || s.locality || s.location || s.type || s.bedrooms || s.minLand);
+  const matches = useMemo(() => {
+    if (!hasRequirements) return new Map<string, ReturnType<typeof matchProperty>>();
+    const pref = {
+      intent: "buy",
+      property_types: s.type ? [s.type] : [],
+      budget: s.maxPrice ? s.maxPrice * 1e5 : null,
+      preferred_locations: s.locality ? [s.locality] : s.location ? [s.location] : [],
+      bedrooms: s.bedrooms ?? null,
+      min_area_sqft: s.minLand ?? null,
+    };
+    return new Map(results.map((p) => [p.id, matchProperty(p, pref, rules)]));
+  }, [results, hasRequirements, s, rules]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="text-4xl">Find a property</h1>
       <p className="mt-2 text-muted-foreground">Only listings with owner or developer permission are shown.</p>
-      <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
+
+      <div className="mt-6">
+        <RequirementsForm
+          value={{ budgetLakh: s.maxPrice, location: s.locality, type: s.type, bedrooms: s.bedrooms, minArea: s.minLand, verifiedOnly: s.verifiedOnly }}
+          onChange={(patch) => set({
+            maxPrice: patch.budgetLakh, locality: patch.location, type: patch.type,
+            bedrooms: patch.bedrooms, minLand: patch.minArea, verifiedOnly: patch.verifiedOnly,
+          })}
+        />
+      </div>
+
+      <section className="mt-8">
+        <h2 className="text-2xl">Start with a locality</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Pick the area first, then compare homes inside it. Each locality page lists the evidence we hold and says unknown where we have none.</p>
+        {isLoading ? (
+          <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+        ) : localityMatches.length === 0 ? (
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><EvidenceBadge evidence="UNKNOWN" /> No published locality matches that name yet.</p>
+        ) : (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {localityMatches.map(({ locality, listings }) => (
+              <div key={locality.id} className="rounded-xl border bg-card p-4 shadow-card">
+                <p className="font-medium">{locality.name}</p>
+                <p className="text-xs text-muted-foreground">{locality.corridor} · tier {locality.tier}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{listings.length} published listing{listings.length === 1 ? "" : "s"}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline"><Link to="/location-intelligence/$area" params={{ area: locality.slug }}>Locality guide</Link></Button>
+                  <Button asChild size="sm"><Link to="/properties" search={{ locality: locality.name }}>See homes</Link></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
         <aside className="h-fit space-y-4 rounded-xl border bg-card p-5 shadow-card lg:sticky lg:top-20">
-          <div className="space-y-1.5"><Label>Location</Label>
-            <select className={sel} value={s.location ?? ""} onChange={(e) => set({ location: e.target.value || undefined })}>
-              <option value="">All</option>{MARKETS.map((m) => <option key={m}>{m}</option>)}
+          <div className="space-y-1.5"><Label>Locality</Label>
+            <select className={sel} value={s.locality ?? ""} onChange={(e) => set({ locality: e.target.value || undefined, location: undefined })}>
+              <option value="">Any locality</option>{localities.map((l) => <option key={l.id} value={l.name}>{l.name}</option>)}
             </select></div>
           <div className="space-y-1.5"><Label>Type</Label>
             <select className={sel} value={s.type ?? ""} onChange={(e) => set({ type: e.target.value || undefined })}>
@@ -114,6 +180,10 @@ function PropertiesPage() {
             <select className={sel} value={s.availability ?? ""} onChange={(e) => set({ availability: e.target.value || undefined })}>
               <option value="">Any</option>{Object.entries(AVAILABILITY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select></div>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Checkbox checked={!!s.verifiedOnly} onCheckedChange={(v) => set({ verifiedOnly: v === true || undefined })} />
+            Documents verified only
+          </label>
           <Button variant="outline" className="w-full" onClick={() => navigate({ search: {} })}>Reset filters</Button>
         </aside>
         <div>
@@ -132,7 +202,19 @@ function PropertiesPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{results.map((p) => {
               const d = distances.get(p.id);
-              return <div key={p.id}><PropertyCard p={p} />{d && <p className="mt-1 text-xs text-muted-foreground">{d.exact ? "" : "~"}{d.km.toFixed(1)} km from you</p>}</div>;
+              const m = matches.get(p.id);
+              return (
+                <div key={p.id}>
+                  <PropertyCard p={p} />
+                  {d && <p className="mt-1 text-xs text-muted-foreground">{d.exact ? "" : "~"}{d.km.toFixed(1)} km from you</p>}
+                  {m && (
+                    <p className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                      <EvidenceBadge evidence={m.overall != null ? "ESTIMATE" : "UNKNOWN"} />
+                      {m.overall != null ? `${m.overall}/100 against your requirements` : "Not enough data to match against your requirements"}
+                    </p>
+                  )}
+                </div>
+              );
             })}</div>
           )}
         </div>

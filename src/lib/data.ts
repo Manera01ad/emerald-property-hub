@@ -1,6 +1,8 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { localityDb } from "./localities-data";
+import { sortLocalities, visibleLocalities, type Locality } from "./localities";
 import type { CostRules } from "./deal";
 
 export type Property = Tables<"properties">;
@@ -49,6 +51,35 @@ export function whatsappLink(number: string | undefined, text: string) {
   if (!n) return null;
   return `https://wa.me/${n}?text=${encodeURIComponent(text)}`;
 }
+
+/** Active localities only. This is the one selector every new form uses. */
+export const localitiesQuery = queryOptions({
+  queryKey: ["localities", "active"],
+  queryFn: async () => {
+    const { data, error } = await localityDb().from("localities").select("*").eq("status", "active");
+    if (error) throw new Error(error.message);
+    return sortLocalities((data ?? []) as Locality[]);
+  },
+  staleTime: 10 * 60_000,
+});
+
+export function useLocalities() {
+  return useQuery(localitiesQuery);
+}
+
+/** Admin view: every locality, including hidden ones, so tiers can be edited. */
+export function useAllLocalities() {
+  return useQuery({
+    queryKey: ["localities", "all"],
+    queryFn: async () => {
+      const { data, error } = await localityDb().from("localities").select("*");
+      if (error) throw new Error(error.message);
+      return sortLocalities((data ?? []) as Locality[]);
+    },
+  });
+}
+
+export { visibleLocalities };
 
 /** Published listings visible to the public (RLS also hides demo and unpermitted rows for visitors). */
 export const publicPropertiesQuery = queryOptions({

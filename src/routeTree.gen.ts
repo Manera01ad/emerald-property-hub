@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as LocationIntelligenceAreaRouteImport } from './routes/location-intelligence.$area'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesIdRouteImport } from './routes/properties.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -158,6 +159,12 @@ const ApiAssistantRoute = ApiAssistantRouteImport.update({
   path: '/api/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocationIntelligenceAreaRoute =
+  LocationIntelligenceAreaRouteImport.update({
+    id: '/$area',
+    path: '/$area',
+    getParentRoute: () => LocationIntelligenceRoute,
+  } as any)
 const PropertiesIndexRoute = PropertiesIndexRouteImport.update({
   id: '/properties/',
   path: '/properties/',
@@ -190,7 +197,7 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
-  '/location-intelligence': typeof LocationIntelligenceRoute
+  '/location-intelligence': typeof LocationIntelligenceRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/owners': typeof OwnersRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -219,7 +227,7 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
-  '/location-intelligence': typeof LocationIntelligenceRoute
+  '/location-intelligence': typeof LocationIntelligenceRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/owners': typeof OwnersRoute
@@ -232,6 +240,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties': typeof PropertiesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -250,7 +259,7 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
-  '/location-intelligence': typeof LocationIntelligenceRoute
+  '/location-intelligence': typeof LocationIntelligenceRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/owners': typeof OwnersRoute
@@ -263,6 +272,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/properties/': typeof PropertiesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/my'
     | '/api/assistant'
+    | '/location-intelligence/$area'
     | '/properties/$id'
     | '/properties/'
     | '/.lovable/oauth/consent'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/my'
     | '/api/assistant'
+    | '/location-intelligence/$area'
     | '/properties/$id'
     | '/properties'
     | '/.lovable/oauth/consent'
@@ -353,6 +365,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant'
     | '/_authenticated/my'
     | '/api/assistant'
+    | '/location-intelligence/$area'
     | '/properties/$id'
     | '/properties/'
     | '/.lovable/oauth/consent'
@@ -371,7 +384,7 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   ExploreRoute: typeof ExploreRoute
   InfrastructureRoute: typeof InfrastructureRoute
-  LocationIntelligenceRoute: typeof LocationIntelligenceRoute
+  LocationIntelligenceRoute: typeof LocationIntelligenceRouteWithChildren
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
   OwnersRoute: typeof OwnersRoute
@@ -557,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/location-intelligence/$area': {
+      id: '/location-intelligence/$area'
+      path: '/$area'
+      fullPath: '/location-intelligence/$area'
+      preLoaderRoute: typeof LocationIntelligenceAreaRouteImport
+      parentRoute: typeof LocationIntelligenceRoute
+    }
     '/properties/': {
       id: '/properties/'
       path: '/properties'
@@ -603,6 +623,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface LocationIntelligenceRouteChildren {
+  LocationIntelligenceAreaRoute: typeof LocationIntelligenceAreaRoute
+}
+
+const LocationIntelligenceRouteChildren: LocationIntelligenceRouteChildren = {
+  LocationIntelligenceAreaRoute: LocationIntelligenceAreaRoute,
+}
+
+const LocationIntelligenceRouteWithChildren =
+  LocationIntelligenceRoute._addFileChildren(LocationIntelligenceRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -615,7 +646,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   ExploreRoute: ExploreRoute,
   InfrastructureRoute: InfrastructureRoute,
-  LocationIntelligenceRoute: LocationIntelligenceRoute,
+  LocationIntelligenceRoute: LocationIntelligenceRouteWithChildren,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
   OwnersRoute: OwnersRoute,

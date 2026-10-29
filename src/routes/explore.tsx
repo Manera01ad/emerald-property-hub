@@ -13,6 +13,7 @@ import { purchaseCost } from "@/lib/deal";
 import { formatINR } from "@/lib/format";
 import { LAYERS, LAYER_KEYS, bboxKey, distanceKm, livability, overpassBboxQuery, overpassQuery, parseOverpass, snapBbox, walkMinutes, type LayerKey, type PoiWithDistance } from "@/lib/livability";
 import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
+import { OSM_STYLE, loadMapLibre } from "@/lib/maplibre";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 
 export const Route = createFileRoute("/explore")({
@@ -33,34 +34,10 @@ export const Route = createFileRoute("/explore")({
   component: ExplorePage,
 });
 
-const ML_VERSION = "4.7.1";
-const CHENNAI: LatLng = { lat: 12.9, lng: 80.1 };
 const RADIUS_M = 2000;
 const OVERPASS = "https://overpass-api.de/api/interpreter";
 const MIN_PLACES_ZOOM = 13;
-
-declare global { interface Window { maplibregl?: any } }
-
-let mlLoader: Promise<any> | null = null;
-/** MapLibre is loaded from a CDN so the app needs no new package. Map tiles are OpenStreetMap. */
-function loadMapLibre(): Promise<any> {
-  if (typeof window === "undefined") return Promise.reject(new Error("no window"));
-  if (window.maplibregl) return Promise.resolve(window.maplibregl);
-  if (mlLoader) return mlLoader;
-  mlLoader = new Promise((resolve, reject) => {
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = `https://unpkg.com/maplibre-gl@${ML_VERSION}/dist/maplibre-gl.css`;
-    document.head.appendChild(css);
-    const s = document.createElement("script");
-    s.src = `https://unpkg.com/maplibre-gl@${ML_VERSION}/dist/maplibre-gl.js`;
-    s.async = true;
-    s.onload = () => resolve(window.maplibregl);
-    s.onerror = () => { mlLoader = null; reject(new Error("Map library failed to load")); };
-    document.head.appendChild(s);
-  });
-  return mlLoader;
-}
+const CHENNAI: LatLng = { lat: 12.9, lng: 80.1 };
 
 type Pt = Property & { lat: number; lng: number };
 
@@ -134,7 +111,7 @@ function ExplorePage() {
         container: mapEl.current,
         center: [CHENNAI.lng, CHENNAI.lat],
         zoom: 10,
-        style: { version: 8, sources: { osm: { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 19, attribution: "© OpenStreetMap contributors" } }, layers: [{ id: "osm", type: "raster", source: "osm" }] },
+        style: OSM_STYLE,
       });
       map.current.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
       setReady(true);
