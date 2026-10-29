@@ -11,6 +11,7 @@ import type { AreaSummary } from "@/lib/area-intel";
 import { areaPoint } from "@/lib/areas";
 import { localitiesQuery, publicPropertiesQuery, useSettings } from "@/lib/data";
 import { priceContext } from "@/lib/price-context";
+import { transactionTypeOf } from "@/lib/transaction";
 import { infraStatusLabel } from "@/lib/infrastructure";
 import { formatINR } from "@/lib/format";
 import { findLocality } from "@/lib/localities";
@@ -96,8 +97,10 @@ function LocalityPage() {
     );
   }
 
-  const localListings = (properties.data ?? []).filter((p) => p.location === locality.name);
-  const price = priceContext(localListings);
+  // Sale listings only: a monthly rent is not comparable with a sale price, and this page
+  // publishes one price context figure, so it stays a sale figure until rentals have their own.
+  const localListings = (properties.data ?? []).filter((p) => p.location === locality.name && transactionTypeOf(p) === "buy");
+  const price = priceContext(localListings, "buy");
   const point = (locality.latitude != null && locality.longitude != null)
     ? { lat: Number(locality.latitude), lng: Number(locality.longitude) }
     : areaPoint(locality.city, locality.name);

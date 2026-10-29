@@ -13,6 +13,7 @@ import { purchaseCost } from "@/lib/deal";
 import { formatINR } from "@/lib/format";
 import { LAYERS, LAYER_KEYS, bboxKey, distanceKm, livability, overpassBboxQuery, overpassQuery, parseOverpass, snapBbox, walkMinutes, type LayerKey, type PoiWithDistance } from "@/lib/livability";
 import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
+import { transactionTypeOf } from "@/lib/transaction";
 import { OSM_STYLE, loadMapLibre } from "@/lib/maplibre";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 
@@ -127,8 +128,9 @@ function ExplorePage() {
     pinMarkers.current = visible.map((p) => {
       const el = document.createElement("button");
       el.type = "button";
-      el.textContent = formatINR(p.asking_price);
-      el.setAttribute("aria-label", `${p.title}, ${formatINR(p.asking_price)}`);
+      const perMonth = transactionTypeOf(p) !== "buy";
+      el.textContent = perMonth ? `${formatINR(p.asking_price)}/mo` : formatINR(p.asking_price);
+      el.setAttribute("aria-label", `${p.title}, ${perMonth ? `${formatINR(p.asking_price)} a month` : formatINR(p.asking_price)}`);
       el.className = `rounded-full border-2 border-white px-2 py-0.5 text-xs font-semibold text-white shadow ${p.id === selectedId ? "bg-gold" : "bg-primary"}`;
       el.onclick = (ev) => { ev.stopPropagation(); setSelectedId(p.id); };
       return new ml.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(map.current);
@@ -284,8 +286,12 @@ function ExplorePage() {
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{typeLabel(selected.property_type)} · {selected.location}</p>
                 <h2 className="mt-1 text-xl">{selected.title}</h2>
-                <p className="mt-1 text-lg font-semibold">{formatINR(selected.asking_price)}</p>
-                {cost && <p className="text-xs text-muted-foreground">About {formatINR(cost.total)} all-in with stamp duty, registration and legal fees (estimate).</p>}
+                <p className="mt-1 text-lg font-semibold">
+                  {formatINR(selected.asking_price)}
+                  {transactionTypeOf(selected) !== "buy" && <span className="text-sm font-normal text-muted-foreground"> /month</span>}
+                </p>
+                {/* Purchase cost is a sale concept: stamp duty and registration do not apply to a monthly figure. */}
+                {cost && transactionTypeOf(selected) === "buy" && <p className="text-xs text-muted-foreground">About {formatINR(cost.total)} all-in with stamp duty, registration and legal fees (estimate).</p>}
               </div>
 
               <div>

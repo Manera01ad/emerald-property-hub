@@ -1,4 +1,5 @@
 import type { Evidence } from "./evidence";
+import { transactionTypeOf, type TransactionType } from "./transaction";
 
 /**
  * Locality ranking for the admin panel (Phase 1 W3-3, plan section F3).
@@ -162,7 +163,7 @@ export function rankLocality(inputs: RankingInputs): LocalityRanking {
 
 /** Structural row shapes, so this stays pure and testable without the generated database types. */
 export type RankingRows = {
-  properties: ReadonlyArray<{ id: string; location: string | null; asking_price: number | null; built_area_sqft: number | null; land_area_sqft: number | null }>;
+  properties: ReadonlyArray<{ id: string; location: string | null; asking_price: number | null; built_area_sqft: number | null; land_area_sqft: number | null; transaction_type?: string | null }>;
   interestPropertyIds: ReadonlyArray<string>;
   projects: ReadonlyArray<{ location: string | null; verified: boolean }>;
   snapshotAreas: ReadonlyArray<string>;
@@ -176,9 +177,12 @@ function hasUsableArea(p: { built_area_sqft: number | null; land_area_sqft: numb
  * Gathers one locality's inputs from already-fetched rows. Callers pass published listings,
  * interest-type enquiries, published projects and published snapshot areas; anything else
  * would quietly inflate the evidence counts.
+ *
+ * A ranking is for one transaction type. Sale and rent are different markets, so counting
+ * them in one figure would describe neither. Defaults to sale, matching the column default.
  */
-export function rankingInputsFor(locality: string, rows: RankingRows): RankingInputs {
-  const listings = rows.properties.filter((p) => p.location === locality);
+export function rankingInputsFor(locality: string, rows: RankingRows, type: TransactionType = "buy"): RankingInputs {
+  const listings = rows.properties.filter((p) => p.location === locality && transactionTypeOf(p) === type);
   const ids = new Set(listings.map((p) => p.id));
   const projects = rows.projects.filter((p) => p.location === locality);
   return {

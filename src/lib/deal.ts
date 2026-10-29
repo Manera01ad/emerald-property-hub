@@ -1,5 +1,6 @@
 import { DOCS } from "./constants";
 import type { Evidence } from "./evidence";
+import { transactionTypeOf } from "./transaction";
 
 /** Below this many comparables, a price comparison is UNKNOWN rather than a weak claim. */
 export const MIN_COMPARABLES = 5;
@@ -55,10 +56,23 @@ export type Comparables = {
   evidence: Evidence;
 };
 
-/** Comparables: same location and type, excluding self, with a usable area. */
+/**
+ * Comparables: same location, same type and same transaction, excluding self, with a usable area.
+ *
+ * The transaction filter matters. A rent at ₹25,000 a month and a sale at ₹1 crore are both
+ * numbers in the same column, but they are not comparable, and mixing them would produce a
+ * confident-looking score from two unrelated figures. A row with no transaction type is a
+ * sale, which is what the column defaults to for listings written before it existed.
+ */
 export function comparablesFor(p: DealProperty, pool: DealProperty[]): Comparables {
+  const type = transactionTypeOf(p);
   const comps = pool.filter(
-    (c) => c.id !== p.id && c.location === p.location && c.property_type === p.property_type && pricePerSqft(c) != null,
+    (c) =>
+      c.id !== p.id &&
+      c.location === p.location &&
+      c.property_type === p.property_type &&
+      transactionTypeOf(c) === type &&
+      pricePerSqft(c) != null,
   );
   if (comps.length === 0) return { count: 0, avgPpsf: null, deltaPct: null, evidence: "UNKNOWN" };
   const avg = comps.reduce((s, c) => s + (pricePerSqft(c) as number), 0) / comps.length;

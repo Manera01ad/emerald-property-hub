@@ -10,6 +10,9 @@ import { Panel } from "./shared";
  * Locality ranking, admin only (Phase 1 W3-3). It reads evidence counts we already hold and
  * says UNKNOWN where a component is below its floor. No figure here is shown to buyers and
  * nothing is written back to the database.
+ *
+ * This panel ranks sale listings only. Sale and rent are different markets, so one ranking
+ * covering both would describe neither.
  */
 export function Ranking() {
   const localities = useLocalities();
@@ -17,7 +20,9 @@ export function Ranking() {
     queryKey: ["admin", "ranking-rows"],
     queryFn: async (): Promise<RankingRows> => {
       const [properties, interests, projects, snapshots] = await Promise.all([
-        supabase.from("properties").select("id,location,asking_price,built_area_sqft,land_area_sqft").eq("status", "published").eq("is_demo", false).eq("listing_permission", true),
+        // select("*") because transaction_type is added by migration 0019 and the generated
+        // types do not know it yet. rankingInputsFor reads only the columns it needs.
+        supabase.from("properties").select("*").eq("status", "published").eq("is_demo", false).eq("listing_permission", true),
         supabase.from("enquiries").select("property_id").eq("enquiry_type", "interest"),
         supabase.from("infrastructure_projects").select("location,verified").eq("is_published", true),
         supabase.from("area_intelligence").select("area").eq("is_published", true),
@@ -25,7 +30,7 @@ export function Ranking() {
       const failure = properties.error ?? interests.error ?? projects.error ?? snapshots.error;
       if (failure) throw failure;
       return {
-        properties: properties.data ?? [],
+        properties: (properties.data ?? []) as unknown as RankingRows["properties"],
         interestPropertyIds: (interests.data ?? []).flatMap((r) => (r.property_id ? [r.property_id] : [])),
         projects: projects.data ?? [],
         snapshotAreas: (snapshots.data ?? []).map((r) => r.area),
@@ -35,7 +40,7 @@ export function Ranking() {
 
   const rows = useMemo(() => {
     if (!data) return [];
-    return (localities.data ?? []).map((l) => rankLocality(rankingInputsFor(l.name, data)));
+    return (localities.data ?? []).map((l) => rankLocality(rankingInputsFor(l.name, data, "buy")));
   }, [data, localities.data]);
 
   return (
@@ -44,7 +49,7 @@ export function Ranking() {
       <p className="mt-1 text-sm text-muted-foreground">
         A reading of the evidence we hold, not a market forecast. D is recorded interest, S is published listings, P is price comparables,
         I is infrastructure with confirmed progress. A component below its evidence floor shows UNKNOWN, because "not enough evidence" is not
-        the same as "low". This panel is admin only.
+        the same as "low". This panel is admin only, and it ranks sale listings; rental and lease rankings are not shown yet.
       </p>
 
       {isLoading ? (

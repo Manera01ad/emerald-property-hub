@@ -6,6 +6,7 @@ import {
   isCompleteForType,
   isTransactionType,
   missingTerms,
+  priceFields,
   priceLabel,
   priceUnit,
   TRANSACTION_PARTICIPANTS,
@@ -85,5 +86,26 @@ describe("transaction types", () => {
       renewal_terms: "not_renewable",
     });
     expect(gaps).toEqual([]);
+  });
+});
+
+describe("price fields carry their unit", () => {
+  it("gives a sale a price and no monthly figure", () => {
+    expect(priceFields("buy", 8000000)).toEqual({ price: 8000000, monthly_figure: null, price_unit: "total" });
+  });
+
+  it("gives a rent a monthly figure and no price", () => {
+    expect(priceFields("rent", 25000)).toEqual({ price: null, monthly_figure: 25000, price_unit: "per_month" });
+  });
+
+  it("gives a lease a monthly figure too", () => {
+    expect(priceFields("lease", 40000).monthly_figure).toBe(40000);
+    expect(priceFields("lease", 40000).price).toBeNull();
+  });
+
+  it("reports a missing figure as null rather than zero", () => {
+    expect(priceFields("rent", null).monthly_figure).toBeNull();
+    expect(priceFields("rent", undefined).monthly_figure).toBeNull();
+    expect(priceFields("buy", "").price).toBeNull();
   });
 });

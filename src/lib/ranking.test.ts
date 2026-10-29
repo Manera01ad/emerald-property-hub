@@ -125,3 +125,39 @@ describe("gathering inputs from rows", () => {
     expect(rankLocality(i).quality.evidence).toBe("UNKNOWN");
   });
 });
+
+describe("gathering inputs respects the transaction type", () => {
+  const rows = {
+    properties: [
+      { id: "s1", location: "Tambaram", transaction_type: "buy", asking_price: 5_000_000, built_area_sqft: 1200, land_area_sqft: null },
+      { id: "r1", location: "Tambaram", transaction_type: "rent", asking_price: 25_000, built_area_sqft: 1000, land_area_sqft: null },
+      { id: "r2", location: "Tambaram", transaction_type: "rent", asking_price: 30_000, built_area_sqft: 1000, land_area_sqft: null },
+      { id: "l1", location: "Tambaram", transaction_type: "lease", asking_price: 90_000, built_area_sqft: 2000, land_area_sqft: null },
+    ],
+    interestPropertyIds: [],
+    projects: [],
+    snapshotAreas: [],
+  };
+
+  it("counts only sale listings for a sale ranking", () => {
+    const i = rankingInputsFor("Tambaram", rows, "buy");
+    expect(i.publishedListings).toBe(1);
+    expect(i.priceComparables).toBe(1);
+  });
+
+  it("counts only rentals for a rent ranking, and never the sale", () => {
+    const i = rankingInputsFor("Tambaram", rows, "rent");
+    expect(i.publishedListings).toBe(2);
+    expect(i.priceComparables).toBe(2);
+  });
+
+  it("keeps a lease out of both the sale and the rent ranking", () => {
+    expect(rankingInputsFor("Tambaram", rows, "buy").publishedListings).toBe(1);
+    expect(rankingInputsFor("Tambaram", rows, "rent").publishedListings).toBe(2);
+    expect(rankingInputsFor("Tambaram", rows, "lease").publishedListings).toBe(1);
+  });
+
+  it("defaults to sale when no type is given", () => {
+    expect(rankingInputsFor("Tambaram", rows).publishedListings).toBe(1);
+  });
+});

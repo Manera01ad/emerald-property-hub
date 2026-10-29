@@ -60,6 +60,21 @@ export function budgetLabel(type: TransactionType): string {
 }
 
 /**
+ * One figure, labelled so its unit cannot be mistaken. Every machine-readable surface (the
+ * assistant tools and the MCP tools) uses this instead of passing asking_price through raw,
+ * because a rent of 25000 and a sale of 25000000 are the same column and only the transaction
+ * says which is which.
+ */
+export function priceFields(type: TransactionType, askingPrice: unknown) {
+  const amount = numberOrNull(askingPrice);
+  return {
+    price: type === "buy" ? amount : null,
+    monthly_figure: type === "buy" ? null : amount,
+    price_unit: priceUnit(type),
+  };
+}
+
+/**
  * Which terms a listing of this type must carry before it is comparable with another.
  * Buy needs an area to compute a price per sq ft; rent needs a deposit; lease needs a term.
  */

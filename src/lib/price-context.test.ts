@@ -32,3 +32,31 @@ describe("locality price context", () => {
     expect(p.listings).toBe(MIN_COMPARABLES);
   });
 });
+
+describe("price context stays within one transaction type", () => {
+  const rents = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `r${i}`, property_type: "villa", location: "Tambaram", transaction_type: "rent", asking_price: 25000, built_area_sqft: 1000 }));
+
+  it("ignores rentals when the context is a sale", () => {
+    const p = priceContext(rents(MIN_COMPARABLES), "buy");
+    expect(p.evidence).toBe("UNKNOWN");
+    expect(p.listings).toBe(0);
+  });
+
+  it("reads a rental market from rentals, in monthly terms", () => {
+    const p = priceContext(rents(MIN_COMPARABLES), "rent");
+    expect(p.evidence).toBe("ESTIMATE");
+    expect(p.medianPpsf).toBe(25);
+    expect(p.reason).toContain("monthly rent");
+  });
+
+  it("does not mix rents and sales in one median", () => {
+    const mixed = [...rents(MIN_COMPARABLES), ...listings(MIN_COMPARABLES)];
+    const p = priceContext(mixed, "rent");
+    expect(p.listings).toBe(MIN_COMPARABLES);
+    expect(p.medianPpsf).toBe(25);
+  });
+
+  it("defaults to sale when no type is given", () => {
+    expect(priceContext(listings(MIN_COMPARABLES)).medianPpsf).toBe(2000);
+  });
+});
