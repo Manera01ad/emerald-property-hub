@@ -57,6 +57,59 @@ export function createAssistantTools(ctx: Ctx) {
       },
     }),
 
+    get_locality_evidence: tool({
+      description:
+        "Get published locality evidence for one Chennai area: the open-map snapshot and published infrastructure projects. Use it whenever someone asks what an area is like, what is planned nearby, or what we know about it. It returns only published rows; if there is nothing, the area is unknown to us.",
+      inputSchema: z.object({
+        area: z.string().trim().min(1).max(80).describe("Locality name, e.g. 'Tambaram'."),
+      }),
+      execute: async ({ area }) => {
+        const [intel, infra] = await Promise.all([
+          ctx.db
+            .from("area_intelligence")
+            .select("city,area,summary,sources,fetched_at")
+            .eq("is_published", true)
+            .ilike("area", area)
+            .limit(1),
+          ctx.db
+            .from("infrastructure_projects")
+            .select("name,location,description,progress_status,authority,source_url,verified,last_checked")
+            .eq("is_published", true)
+            .ilike("location", `%${area}%`)
+            .limit(10),
+        ]);
+        if (intel.error || infra.error) {
+          console.error("assistant: get_locality_evidence failed", intel.error ?? infra.error);
+          return { error: "Locality evidence is unavailable right now." };
+        }
+        const snapshot = intel.data?.[0] ?? null;
+        const projects = infra.data ?? [];
+        await record(
+          ctx,
+          "locality",
+          { area },
+          (snapshot ? 1 : 0) + projects.length,
+          projects.flatMap((p) => (p.source_url ? [{ title: p.name, url: p.source_url }] : [])),
+        );
+        if (!snapshot && projects.length === 0) {
+          return {
+            area,
+            unknown: true,
+            note: `We hold no published evidence for ${area}. Say it is unknown rather than describing the area from memory, and suggest the Localities page.`,
+          };
+        }
+        return {
+          area,
+          snapshot,
+          snapshotNote: snapshot
+            ? "Area snapshot figures come from OpenStreetMap and Open-Meteo and are estimates, not a flood or legal check."
+            : `No published snapshot for ${area}.`,
+          infrastructureProjects: projects,
+          note: "Projects carry their own source and last-checked date. Verified means we confirmed progress; unverified means we have not. Never predict price effects.",
+        };
+      },
+    }),
+
     get_listing: tool({
       description: "Get the details of one publicly visible listing by its id (from search_listings).",
       inputSchema: z.object({ id: z.string().uuid() }),

@@ -1,6 +1,6 @@
 /** Pure helpers for the assistant's search history. No I/O here, so they are easy to test. */
 
-export type SearchKind = "listings" | "listing" | "web";
+export type SearchKind = "listings" | "listing" | "web" | "locality";
 
 export type SearchSource = { title?: string; url?: string; id?: string };
 
@@ -71,6 +71,7 @@ export function describeSearch(row: { kind: SearchKind; query: Record<string, un
   const q = row.query;
   if (row.kind === "web") return `Web: ${String(q["query"] ?? q["q"] ?? "web search")}`;
   if (row.kind === "listing") return "Opened one listing";
+  if (row.kind === "locality") return `Locality: ${String(q["area"] ?? "locality evidence")}`;
   const parts: string[] = [];
   if (q["location"]) parts.push(String(q["location"]));
   if (q["property_type"]) parts.push(String(q["property_type"]));
