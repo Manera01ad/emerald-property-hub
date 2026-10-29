@@ -44,7 +44,7 @@ export function citySlugFrom(value: string | null | undefined): string | null {
 
 /** Case-insensitive comparison of two area names, so "T. Nagar" matches "t. nagar". */
 export function sameArea(a: string | null | undefined, b: string | null | undefined): boolean {
-  const norm = (s: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  const norm = (s: string | null | undefined) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
   const left = norm(a);
   return left !== "" && left === norm(b);
 }
