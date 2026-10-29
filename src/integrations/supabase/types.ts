@@ -731,6 +731,7 @@ export type Database = {
           verification_evidence: string | null
           verification_expiry: string | null
           verification_status: string
+          video_urls: string[]
         }
         Insert: {
           address?: string | null
@@ -773,6 +774,7 @@ export type Database = {
           verification_evidence?: string | null
           verification_expiry?: string | null
           verification_status?: string
+          video_urls?: string[]
         }
         Update: {
           address?: string | null
@@ -815,6 +817,7 @@ export type Database = {
           verification_evidence?: string | null
           verification_expiry?: string | null
           verification_status?: string
+          video_urls?: string[]
         }
         Relationships: [
           {
