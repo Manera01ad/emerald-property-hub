@@ -513,6 +513,140 @@ export type Database = {
           },
         ]
       }
+      listing_moderation_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          reason: string | null
+          submission_id: string
+          to_status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id: string
+          to_status: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_moderation_log_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "listing_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_submissions: {
+        Row: {
+          asking_price: number | null
+          bedrooms: number | null
+          built_area_sqft: number | null
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          created_property_id: string | null
+          declaration_text: string
+          declaration_version: string
+          declared_at: string
+          description: string | null
+          id: string
+          land_area_sqft: number | null
+          locality_slug: string
+          property_type: string
+          rera_number: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitter_id: string
+          submitter_kind: string
+          submitter_name: string
+          updated_at: string
+        }
+        Insert: {
+          asking_price?: number | null
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          contact_email: string
+          contact_phone: string
+          created_at?: string
+          created_property_id?: string | null
+          declaration_text: string
+          declaration_version: string
+          declared_at?: string
+          description?: string | null
+          id?: string
+          land_area_sqft?: number | null
+          locality_slug: string
+          property_type: string
+          rera_number?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_id: string
+          submitter_kind: string
+          submitter_name: string
+          updated_at?: string
+        }
+        Update: {
+          asking_price?: number | null
+          bedrooms?: number | null
+          built_area_sqft?: number | null
+          contact_email?: string
+          contact_phone?: string
+          created_at?: string
+          created_property_id?: string | null
+          declaration_text?: string
+          declaration_version?: string
+          declared_at?: string
+          description?: string | null
+          id?: string
+          land_area_sqft?: number | null
+          locality_slug?: string
+          property_type?: string
+          rera_number?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_id?: string
+          submitter_kind?: string
+          submitter_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_submissions_created_property_id_fkey"
+            columns: ["created_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_submissions_locality_slug_fkey"
+            columns: ["locality_slug"]
+            isOneToOne: false
+            referencedRelation: "localities"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       localities: {
         Row: {
           city: string
@@ -1261,6 +1395,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_listing_submission: {
+        Args: { _reason?: string; _submission_id: string; _title: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
