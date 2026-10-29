@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/assistant")({
       { name: "description", content: "Ask questions about using PropWise AI's property tools for Chennai." },
       { property: "og:title", content: "Ask PropWise — help assistant" },
       { property: "og:description", content: "Ask questions about using PropWise AI's property tools for Chennai." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),

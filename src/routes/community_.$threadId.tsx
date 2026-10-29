@@ -14,6 +14,11 @@ export const Route = createFileRoute("/community_/$threadId")({
   head: () => ({
     meta: [
       { title: "Thread — PropWise AI community" },
+      { name: "description", content: "Read a moderated Chennai property discussion on PropWise AI." },
+      { property: "og:title", content: "Thread — PropWise AI community" },
+      { property: "og:description", content: "Read a moderated Chennai property discussion on PropWise AI." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),

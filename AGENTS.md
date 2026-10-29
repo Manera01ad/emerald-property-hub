@@ -92,4 +92,5 @@ Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and public `VITE_*` val
 One change per pull request. Three fixes are three pull requests. A large diff cannot be reviewed properly, and review is the only control that catches what the tests miss.
 
 - The help assistant (src/lib/assistant, /api/assistant) verifies the caller's token and saves chats under RLS; AI keys stay server-side.
-- Area intelligence: pure rules in src/lib/area-intel.ts, fetched by an admin-checked server function; rows stay hidden until an admin publishes.
+- Area intelligence uses pure rules and admin-only fetching; rows stay hidden until admin publication.
+- Home-screen support uses a manifest and icons only, without offline caches, to preserve preview freshness.
