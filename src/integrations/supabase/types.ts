@@ -513,6 +513,54 @@ export type Database = {
           },
         ]
       }
+      localities: {
+        Row: {
+          city: string
+          corridor: string
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          slug: string
+          state: string
+          status: string
+          tier: number
+          updated_at: string
+        }
+        Insert: {
+          city?: string
+          corridor: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          slug: string
+          state?: string
+          status?: string
+          tier: number
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          corridor?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          slug?: string
+          state?: string
+          status?: string
+          tier?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nearby_places: {
         Row: {
           category: string
