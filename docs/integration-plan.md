@@ -21,12 +21,12 @@ functionality are preserved; unfinished work stays behind its feature flag.
 
 ## 2. What this branch changes (implemented)
 
-| # | Change | Files | Why |
-| --- | --- | --- | --- |
-| 1 | Phase A audit docs | `docs/PRODUCT_MAP.md`, `docs/FEATURE_INVENTORY.md`, `docs/DATA_FLOW.md` | Make the real state legible |
-| 2 | Group admin nav into the five required sections **and make Commissions reachable** | `src/routes/_authenticated/admin.tsx` | The trigger set (14) and panel set (15) disagreed; `commissions` had a panel and no trigger |
-| 3 | Public nav: Discover (Buy / Rent / Lease) + "My activity" | `src/components/SiteHeader.tsx` | The four required public entries; the three Discover links reuse `/properties?transaction=` |
-| 4 | Remove the duplicate `0012` migration stub | `drizzle/migrations/0012_assistant_search_log.sql` (deleted) | Two files shared the `0012` prefix; the stub was an unreferenced placeholder |
+| #   | Change                                                                             | Files                                                                   | Why                                                                                         |
+| --- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | Phase A audit docs                                                                 | `docs/PRODUCT_MAP.md`, `docs/FEATURE_INVENTORY.md`, `docs/DATA_FLOW.md` | Make the real state legible                                                                 |
+| 2   | Group admin nav into the five required sections **and make Commissions reachable** | `src/routes/_authenticated/admin.tsx`                                   | The trigger set (14) and panel set (15) disagreed; `commissions` had a panel and no trigger |
+| 3   | Public nav: Discover (Buy / Rent / Lease) + "My activity"                          | `src/components/SiteHeader.tsx`                                         | The four required public entries; the three Discover links reuse `/properties?transaction=` |
+| 4   | Remove the duplicate `0012` migration stub                                         | `drizzle/migrations/0012_assistant_search_log.sql` (deleted)            | Two files shared the `0012` prefix; the stub was an unreferenced placeholder                |
 
 All four are **presentation, docs or repository hygiene**. None changes a
 database object, an RLS policy, the visibility rule, the auth boundary or the
@@ -38,22 +38,22 @@ scheduler.
 
 ### Public
 
-| Assignment | Implemented | Reused, not rebuilt |
-| --- | --- | --- |
-| Discover: Buy / Rent / Lease | `/properties?transaction=buy\|rent\|lease` | Existing search page + `TransactionSelector` |
-| Locality Intelligence | `/location-intelligence` (+ `/…/:area`) | Existing pages |
-| Community | `/community` | Existing pages, still behind `feature_community` |
-| My Activity | `/auth` → `/my` | Existing buyer/renter workspace |
+| Assignment                   | Implemented                                | Reused, not rebuilt                              |
+| ---------------------------- | ------------------------------------------ | ------------------------------------------------ |
+| Discover: Buy / Rent / Lease | `/properties?transaction=buy\|rent\|lease` | Existing search page + `TransactionSelector`     |
+| Locality Intelligence        | `/location-intelligence` (+ `/…/:area`)    | Existing pages                                   |
+| Community                    | `/community`                               | Existing pages, still behind `feature_community` |
+| My Activity                  | `/auth` → `/my`                            | Existing buyer/renter workspace                  |
 
 ### Admin
 
-| Assignment | Implemented (existing panels, regrouped) |
-| --- | --- |
-| Properties | Listings |
-| People | Enquiries, Buyers & renters, Site visits, Partners |
-| Intelligence | AI Research Agents, Area intelligence, Localities, Infrastructure, Ranking |
-| Community & Work | Submissions, Community |
-| Operations | Overview, Commissions, Settings |
+| Assignment       | Implemented (existing panels, regrouped)                                   |
+| ---------------- | -------------------------------------------------------------------------- |
+| Properties       | Listings                                                                   |
+| People           | Enquiries, Buyers & renters, Site visits, Partners                         |
+| Intelligence     | AI Research Agents, Area intelligence, Localities, Infrastructure, Ranking |
+| Community & Work | Submissions, Community                                                     |
+| Operations       | Overview, Commissions, Settings                                            |
 
 CRM (enquiries, site visits, partners, commissions) is preserved. Commissions
 was **unreachable** before this branch and is now reachable.
@@ -62,16 +62,16 @@ was **unreachable** before this branch and is now reachable.
 
 ## 4. Workflows — status (assignment Phase C)
 
-| Workflow | Status | Where |
-| --- | --- | --- |
-| Property discovery and comparison | working | `/properties`, `/compare` |
-| Buyer and tenant requirements | working | `/properties` form, `/my` |
-| Owner submissions and moderation | gated + pending tables | `/owners`, admin Submissions |
-| Community discussions | gated + pending tables | `/community`, admin Community |
-| Locality intelligence with sources | working | `/location-intelligence`, admin Area intelligence |
-| AI research agents | working, orchestration untested | admin AI Research Agents, `/api/public/research/tick` |
-| Admin approval queues | working | admin Submissions, Community, Area intelligence |
-| Contributor research tasks, evidence review, **manual payment tracking** | **new development** | see §5 |
+| Workflow                                                                 | Status                          | Where                                                 |
+| ------------------------------------------------------------------------ | ------------------------------- | ----------------------------------------------------- |
+| Property discovery and comparison                                        | working                         | `/properties`, `/compare`                             |
+| Buyer and tenant requirements                                            | working                         | `/properties` form, `/my`                             |
+| Owner submissions and moderation                                         | gated + pending tables          | `/owners`, admin Submissions                          |
+| Community discussions                                                    | gated + pending tables          | `/community`, admin Community                         |
+| Locality intelligence with sources                                       | working                         | `/location-intelligence`, admin Area intelligence     |
+| AI research agents                                                       | working, orchestration untested | admin AI Research Agents, `/api/public/research/tick` |
+| Admin approval queues                                                    | working                         | admin Submissions, Community, Area intelligence       |
+| Contributor research tasks, evidence review, **manual payment tracking** | **new development**             | see §5                                                |
 
 ### Distinguishing new development from existing code
 
@@ -99,12 +99,12 @@ points model is the one the code and tests implement today.
 `drizzle/pending/` holds four files whose numbers **collide with already-applied
 migrations**:
 
-| Pending file | Collides with (applied) | Promote as |
-| --- | --- | --- |
-| `0017_interest_requests.sql` | `0017_assistant_locality_search.sql` | `0019_interest_requests.sql` |
-| `0018_community.sql` | `0018_owner_submissions.sql` | `0020_community.sql` |
-| `0019_buy_rent_lease.sql` | — | `0021_buy_rent_lease.sql` |
-| `0020_local_research_network.sql` | — | `0022_local_research_network.sql` |
+| Pending file                      | Collides with (applied)              | Promote as                        |
+| --------------------------------- | ------------------------------------ | --------------------------------- |
+| `0017_interest_requests.sql`      | `0017_assistant_locality_search.sql` | `0019_interest_requests.sql`      |
+| `0018_community.sql`              | `0018_owner_submissions.sql`         | `0020_community.sql`              |
+| `0019_buy_rent_lease.sql`         | —                                    | `0021_buy_rent_lease.sql`         |
+| `0020_local_research_network.sql` | —                                    | `0022_local_research_network.sql` |
 
 Steps for the owner (agents do not apply migrations):
 
@@ -124,15 +124,15 @@ interest and research-network access go through narrow hand-written shapes
 `.github/CODEOWNERS` already gives a clear structure and is **kept as is**;
 restructuring would move files for no functional gain (Phase D.5).
 
-| Area | Path | Gate |
-| --- | --- | --- |
-| Schema and migrations | `/drizzle/` | owner |
-| Supabase clients + auth | `/src/integrations/supabase/` | owner |
-| Research engine + server fns | `/src/lib/research/`, `*.functions.ts` | owner |
-| Scheduler + API routes | `/src/routes/api/` | owner |
-| Visibility rule | `/src/lib/visibility.ts` | owner |
-| The gate itself | `/.github/` | owner |
-| Everything else | `*` | owner (default) |
+| Area                         | Path                                   | Gate            |
+| ---------------------------- | -------------------------------------- | --------------- |
+| Schema and migrations        | `/drizzle/`                            | owner           |
+| Supabase clients + auth      | `/src/integrations/supabase/`          | owner           |
+| Research engine + server fns | `/src/lib/research/`, `*.functions.ts` | owner           |
+| Scheduler + API routes       | `/src/routes/api/`                     | owner           |
+| Visibility rule              | `/src/lib/visibility.ts`               | owner           |
+| The gate itself              | `/.github/`                            | owner           |
+| Everything else              | `*`                                    | owner (default) |
 
 ---
 
@@ -140,25 +140,25 @@ restructuring would move files for no functional gain (Phase D.5).
 
 ### 7.1 Checks (run on this branch)
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Unit tests | `bun run test` | 35 files, 333 tests, pass |
-| Type-check | `bun run type-check` | pass (exit 0) |
-| Build | `bun run build` | pass |
-| Lint | `bun run lint` | reported, non-blocking (pre-existing debt) |
+| Check      | Command              | Result                                     |
+| ---------- | -------------------- | ------------------------------------------ |
+| Unit tests | `bun run test`       | 35 files, 333 tests, pass                  |
+| Type-check | `bun run type-check` | pass (exit 0)                              |
+| Build      | `bun run build`      | pass                                       |
+| Lint       | `bun run lint`       | reported, non-blocking (pre-existing debt) |
 
 ### 7.2 Permission matrix to exercise
 
 Test each role on each surface. Nothing below was exercised by this branch —
 `/admin`, `/my` and `/assistant` are `ssr: false`, so they need a real session.
 
-| Role | Surfaces to test |
-| --- | --- |
-| Visitor | `/properties`, `/compare`, `/location-intelligence`, `/sitemap.xml`, enquiry submit |
-| Authenticated user | `/my` (profile + report), `/assistant`, interest request on a listing |
-| Contributor | research tasks and evidence submission (**UI does not exist yet**) |
-| Reviewer / moderator | admin Submissions, Community, Area intelligence queues |
-| Administrator | all 15 admin panels, incl. the restored Commissions panel |
+| Role                 | Surfaces to test                                                                    |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| Visitor              | `/properties`, `/compare`, `/location-intelligence`, `/sitemap.xml`, enquiry submit |
+| Authenticated user   | `/my` (profile + report), `/assistant`, interest request on a listing               |
+| Contributor          | research tasks and evidence submission (**UI does not exist yet**)                  |
+| Reviewer / moderator | admin Submissions, Community, Area intelligence queues                              |
+| Administrator        | all 15 admin panels, incl. the restored Commissions panel                           |
 
 ### 7.3 RLS and migration verification (owner, before activation)
 
@@ -185,11 +185,11 @@ Test each role on each surface. Nothing below was exercised by this branch —
 
 ## 8. Feature flags
 
-| Flag | Default | Enable when |
-| --- | --- | --- |
-| `feature_owner_submissions` | off | migration `0020_*` promoted and Submissions queue tested |
-| `feature_community` | off | migration `0020_community` promoted and moderation tested |
-| `feature_interest_requests` | off | migration `0019_interest_requests` promoted and consent copy approved |
+| Flag                        | Default | Enable when                                                           |
+| --------------------------- | ------- | --------------------------------------------------------------------- |
+| `feature_owner_submissions` | off     | migration `0020_*` promoted and Submissions queue tested              |
+| `feature_community`         | off     | migration `0020_community` promoted and moderation tested             |
+| `feature_interest_requests` | off     | migration `0019_interest_requests` promoted and consent copy approved |
 
 Flags are read through RLS and only the exact value `on` enables a feature, so a
 feature never flashes open. **Verified.**

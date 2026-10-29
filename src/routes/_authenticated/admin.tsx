@@ -96,13 +96,19 @@ function AdminPage() {
     navigate({ to: "/auth", replace: true });
   }
 
-  if (!session || isLoading) return <div className="mx-auto max-w-7xl px-4 py-20 text-muted-foreground">Loading…</div>;
+  if (!session || isLoading)
+    return <div className="mx-auto max-w-7xl px-4 py-20 text-muted-foreground">Loading…</div>;
   if (!isAdmin)
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
         <h1 className="text-2xl">No admin access</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Signed in as {session.user.email}. Ask the account owner to grant you administrator access.</p>
-        <Button variant="outline" className="mt-6" onClick={signOut}>Sign out</Button>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Signed in as {session.user.email}. Ask the account owner to grant you administrator
+          access.
+        </p>
+        <Button variant="outline" className="mt-6" onClick={signOut}>
+          Sign out
+        </Button>
       </div>
     );
 
@@ -110,7 +116,12 @@ function AdminPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-3xl">Dashboard</h1>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">{session.user.email}<Button size="sm" variant="outline" onClick={signOut}>Sign out</Button></div>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          {session.user.email}
+          <Button size="sm" variant="outline" onClick={signOut}>
+            Sign out
+          </Button>
+        </div>
       </div>
       <Tabs defaultValue="overview" className="mt-6">
         {/*
@@ -121,28 +132,67 @@ function AdminPage() {
         <TabsList className="flex h-auto flex-wrap justify-start gap-y-2">
           {ADMIN_GROUPS.map((group, i) => (
             <Fragment key={group.label}>
-              {i > 0 && <span aria-hidden className="mx-1 self-center text-xs font-medium uppercase tracking-wide text-muted-foreground/60">{group.label}</span>}
+              {i > 0 && (
+                <span
+                  aria-hidden
+                  className="mx-1 self-center text-xs font-medium uppercase tracking-wide text-muted-foreground/60"
+                >
+                  {group.label}
+                </span>
+              )}
               {group.tabs.map((t) => (
-                <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
+                <TabsTrigger key={t.value} value={t.value}>
+                  {t.label}
+                </TabsTrigger>
               ))}
             </Fragment>
           ))}
         </TabsList>
-        <TabsContent value="overview"><Overview /></TabsContent>
-        <TabsContent value="listings"><Listings /></TabsContent>
-        <TabsContent value="enquiries"><Enquiries /></TabsContent>
-        <TabsContent value="buyers"><Buyers /></TabsContent>
-        <TabsContent value="visits"><SiteVisits /></TabsContent>
-        <TabsContent value="partners"><Partners /></TabsContent>
-        <TabsContent value="commissions"><Commissions /></TabsContent>
-        <TabsContent value="infra"><Infrastructure /></TabsContent>
-        <TabsContent value="areas"><AreaIntel /></TabsContent>
-        <TabsContent value="localities"><Localities /></TabsContent>
-        <TabsContent value="submissions"><Submissions /></TabsContent>
-        <TabsContent value="ranking"><Ranking /></TabsContent>
-        <TabsContent value="community"><CommunityQueue /></TabsContent>
-        <TabsContent value="research"><ResearchAgents /></TabsContent>
-        <TabsContent value="settings"><SettingsPanel /></TabsContent>
+        <TabsContent value="overview">
+          <Overview />
+        </TabsContent>
+        <TabsContent value="listings">
+          <Listings />
+        </TabsContent>
+        <TabsContent value="enquiries">
+          <Enquiries />
+        </TabsContent>
+        <TabsContent value="buyers">
+          <Buyers />
+        </TabsContent>
+        <TabsContent value="visits">
+          <SiteVisits />
+        </TabsContent>
+        <TabsContent value="partners">
+          <Partners />
+        </TabsContent>
+        <TabsContent value="commissions">
+          <Commissions />
+        </TabsContent>
+        <TabsContent value="infra">
+          <Infrastructure />
+        </TabsContent>
+        <TabsContent value="areas">
+          <AreaIntel />
+        </TabsContent>
+        <TabsContent value="localities">
+          <Localities />
+        </TabsContent>
+        <TabsContent value="submissions">
+          <Submissions />
+        </TabsContent>
+        <TabsContent value="ranking">
+          <Ranking />
+        </TabsContent>
+        <TabsContent value="community">
+          <CommunityQueue />
+        </TabsContent>
+        <TabsContent value="research">
+          <ResearchAgents />
+        </TabsContent>
+        <TabsContent value="settings">
+          <SettingsPanel />
+        </TabsContent>
       </Tabs>
     </div>
   );

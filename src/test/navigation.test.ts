@@ -29,7 +29,13 @@ describe("admin navigation", () => {
   });
 
   it("groups the tabs under the five required sections", () => {
-    for (const label of ["Properties", "People", "Intelligence", "Community & Work", "Operations"]) {
+    for (const label of [
+      "Properties",
+      "People",
+      "Intelligence",
+      "Community & Work",
+      "Operations",
+    ]) {
       expect(src).toContain(`label: "${label}"`);
     }
   });
