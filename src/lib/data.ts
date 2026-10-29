@@ -6,7 +6,21 @@ import type { CostRules } from "./deal";
 export type Property = Tables<"properties">;
 export type Place = Tables<"nearby_places">;
 
-export type Settings = Partial<Record<"stamp_duty_pct" | "registration_pct" | "legal_fee_flat" | "whatsapp_number" | "contact_email" | "contact_phone" | "rera_agent_status", string>>;
+export type Settings = Partial<
+  Record<
+    | "stamp_duty_pct"
+    | "registration_pct"
+    | "legal_fee_flat"
+    | "whatsapp_number"
+    | "contact_email"
+    | "contact_phone"
+    | "rera_agent_status"
+    | "feature_community"
+    | "feature_owner_submissions"
+    | "feature_interest_requests",
+    string
+  >
+>;
 
 export const settingsQuery = queryOptions({
   queryKey: ["settings"],

@@ -7,16 +7,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VerificationBadge, EstimateNote } from "@/components/Badges";
+import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { ResearchBrief } from "@/components/ResearchBrief";
 import { AVAILABILITY, DOCS, PLACE_CATEGORIES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, usePhotoUrls, useSettings, whatsappLink } from "@/lib/data";
-import { dealScore, negotiationHints, pricePerSqft, purchaseCost } from "@/lib/deal";
+import { dealScore, MIN_COMPARABLES, priceQuestions, pricePerSqft, purchaseCost } from "@/lib/deal";
+import type { Evidence } from "@/lib/evidence";
 import { formatINR, formatINRFull } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { hiddenReasons } from "@/lib/visibility";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
+
+/** The asking price is what the seller states, so it is always a CLAIM, never verified by us. */
+const ASKING_PRICE_EVIDENCE: Evidence = "CLAIM";
 
 export const Route = createFileRoute("/properties/$id")({
   staticData: { sitemap: true },
@@ -84,7 +89,7 @@ function PropertyPage() {
   const rules = costRulesFrom(settings);
   const cost = purchaseCost(p, rules);
   const score = dealScore(p, pool, places);
-  const hints = negotiationHints(p, pool);
+  const hints = priceQuestions(p, pool);
   const ppsf = pricePerSqft(p);
   const wa = whatsappLink(settings?.whatsapp_number, `Hi PropWise, I'm interested in: ${p.title} (${p.location})`);
   const hidden = hiddenReasons(p);
@@ -159,23 +164,39 @@ function PropertyPage() {
           <Section title="Deal analysis">
             <div className="flex items-center gap-4">
               <div className="flex size-20 items-center justify-center rounded-full border-4 border-gold font-display text-3xl text-primary">{score.overall ?? "–"}</div>
-              <p className="text-sm text-muted-foreground">Transparent score out of 100, averaged from the parts below that have enough data.</p>
+              <div>
+                <EvidenceBadge evidence={score.overall != null ? "ESTIMATE" : "UNKNOWN"} />
+                <p className="mt-1 text-sm text-muted-foreground">Transparent score out of 100, averaged from the parts below that have enough data. Parts without enough evidence stay UNKNOWN.</p>
+              </div>
             </div>
             <div className="mt-5 space-y-3">
               {score.parts.map((s) => (
                 <div key={s.key}>
-                  <div className="flex justify-between text-sm"><span className="font-medium">{s.label}</span><span>{s.score ?? "Insufficient data"}</span></div>
+                  <div className="flex justify-between gap-2 text-sm">
+                    <span className="flex items-center gap-2 font-medium">{s.label} <EvidenceBadge evidence={s.evidence} /></span>
+                    <span>{s.score ?? "Insufficient data"}</span>
+                  </div>
                   <div className="mt-1 h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary" style={{ width: `${s.score ?? 0}%` }} /></div>
                   <p className="mt-1 text-xs text-muted-foreground">{s.reason}</p>
                 </div>
               ))}
             </div>
-            {score.comps.count > 0 && (
-              <p className="mt-4 text-sm">Comparable listings: {score.comps.count} · average {formatINR(score.comps.avgPpsf)}/sq ft</p>
+            {score.comps.evidence === "ESTIMATE" ? (
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <EvidenceBadge evidence="ESTIMATE" />
+                Comparable listings: {score.comps.count} · average {formatINR(score.comps.avgPpsf)}/sq ft
+              </p>
+            ) : (
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <EvidenceBadge evidence="UNKNOWN" />
+                {score.comps.count === 0
+                  ? "No comparable listings in PropWise, so there is no price comparison to show."
+                  : `Only ${score.comps.count} comparable listing(s) in PropWise. At least ${MIN_COMPARABLES} are needed before a comparison means anything.`}
+              </p>
             )}
             {hints.length > 0 && (
               <div className="mt-5 rounded-lg bg-gold-soft p-4">
-                <p className="text-sm font-semibold text-accent-foreground">Possible negotiation points</p>
+                <p className="text-sm font-semibold text-accent-foreground">Questions to ask on price</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{hints.map((h) => <li key={h}>{h}</li>)}</ul>
               </div>
             )}
@@ -192,7 +213,10 @@ function PropertyPage() {
               const flags = evidenceFlags(p);
               return (
                 <div className="space-y-3 text-sm">
-                  <p className="text-2xl">{v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)}` : "Not enough evidence for a range"}</p>
+                  <p className="flex flex-wrap items-center gap-2 text-2xl">
+                    <EvidenceBadge evidence={v.mid != null ? "ESTIMATE" : "UNKNOWN"} />
+                    {v.mid != null ? `${formatINR(v.low)} – ${formatINR(v.high)}` : "Not enough evidence for a range"}
+                  </p>
                   <p>Confidence: <b>{v.confidence}</b> · Method: {v.method}</p>
                   {v.warnings.map((w) => <p key={w} className="text-destructive">{w}</p>)}
                   <p className="font-medium">Missing or unconfirmed information</p>
@@ -245,7 +269,7 @@ function PropertyPage() {
 
         <aside className="h-fit space-y-4 lg:sticky lg:top-20">
           <div className="rounded-xl border bg-card p-6 shadow-card">
-            <p className="text-sm text-muted-foreground">Asking price</p>
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">Asking price <EvidenceBadge evidence={ASKING_PRICE_EVIDENCE} /></p>
             <p className="font-display text-4xl text-primary">{formatINR(p.asking_price)}</p>
             <div className="gold-rule my-4" />
             <p className="text-sm font-semibold">Estimated total purchase cost</p>
@@ -256,7 +280,7 @@ function PropertyPage() {
               <Row k="Legal & documentation" v={formatINRFull(cost.legal)} />
               <div className="border-t pt-2"><Row k={<b>Total</b>} v={<b>{formatINRFull(cost.total)}</b>} /></div>
             </dl>
-            <p className="mt-2 text-xs text-muted-foreground">Duties calculated on {cost.base > Number(p.asking_price) ? "guideline value" : "asking price"}. Estimate only.</p>
+            <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><EvidenceBadge evidence="ESTIMATE" /> Duties calculated on {cost.base > Number(p.asking_price) ? "guideline value" : "asking price"} using the rates in PropWise settings.</p>
             <div className="mt-5 space-y-2">
               <Button variant="gold" className="w-full" onClick={() => setForm("site_visit")}>Book a site visit</Button>
               <Button variant="default" className="w-full" onClick={() => setForm("consultation")}>Ask a consultant</Button>

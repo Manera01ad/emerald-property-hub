@@ -69,7 +69,6 @@ function AdminPage() {
           <TabsTrigger value="buyers">Buyers & renters</TabsTrigger>
           <TabsTrigger value="visits">Site visits</TabsTrigger>
           <TabsTrigger value="partners">Partners</TabsTrigger>
-          <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="infra">Infrastructure</TabsTrigger>
           <TabsTrigger value="areas">Area intelligence</TabsTrigger>
           <TabsTrigger value="research">AI Research Agents</TabsTrigger>

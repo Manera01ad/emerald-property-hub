@@ -18,19 +18,60 @@ describe("purchase cost", () => {
 
 describe("comparables", () => {
   const base = { property_type: "villa", location: "Avadi" };
+  const pool = (n: number, location = "Avadi") =>
+    Array.from({ length: n }, (_, i) => ({ property_type: "villa", location, id: `c${i}`, asking_price: 2000000, built_area_sqft: 1000 }));
+  const subject = { ...base, id: "a", asking_price: 1000000, built_area_sqft: 1000 };
+
   it("only compares the same location and type", () => {
-    const p = { ...base, id: "a", asking_price: 1000000, built_area_sqft: 1000 };
-    const pool = [
-      p,
+    const mixed = [
+      subject,
       { ...base, id: "b", asking_price: 2000000, built_area_sqft: 1000 },
       { ...base, id: "c", location: "Tambaram", asking_price: 9000000, built_area_sqft: 1000 },
     ];
-    expect(comparablesFor(p, pool).count).toBe(1);
-    expect(comparablesFor(p, pool).avgPpsf).toBe(2000);
+    expect(comparablesFor(subject, mixed).count).toBe(1);
+    expect(comparablesFor(subject, mixed).avgPpsf).toBe(2000);
   });
-  it("does not score affordability without at least two comparables", () => {
-    const p = { ...base, id: "a", asking_price: 1000000, built_area_sqft: 1000 };
-    const s = dealScore(p, [p], []);
-    expect(s.parts.find((x) => x.key === "affordability")?.score).toBeNull();
+
+  it("stays UNKNOWN with no comparables", () => {
+    const c = comparablesFor(subject, [subject]);
+    expect(c.count).toBe(0);
+    expect(c.avgPpsf).toBeNull();
+    expect(c.deltaPct).toBeNull();
+    expect(c.evidence).toBe("UNKNOWN");
+  });
+
+  it("stays UNKNOWN with four comparables", () => {
+    const c = comparablesFor(subject, [subject, ...pool(4)]);
+    expect(c.count).toBe(4);
+    expect(c.deltaPct).toBeNull();
+    expect(c.evidence).toBe("UNKNOWN");
+  });
+
+  it("becomes an ESTIMATE at five comparables", () => {
+    const c = comparablesFor(subject, [subject, ...pool(5)]);
+    expect(c.count).toBe(5);
+    expect(c.avgPpsf).toBe(2000);
+    expect(c.deltaPct).toBeCloseTo(-50, 5);
+    expect(c.evidence).toBe("ESTIMATE");
+  });
+
+  it("ignores near-miss location strings", () => {
+    const c = comparablesFor(subject, [subject, ...pool(5, "Avadi "), ...pool(5, "avadi")]);
+    expect(c.count).toBe(0);
+    expect(c.evidence).toBe("UNKNOWN");
+  });
+
+  it("does not score affordability below the comparables minimum", () => {
+    const s = dealScore(subject, [subject, ...pool(4)], []);
+    const part = s.parts.find((x) => x.key === "affordability");
+    expect(part?.score).toBeNull();
+    expect(part?.evidence).toBe("UNKNOWN");
+  });
+
+  it("scores affordability once there are enough comparables", () => {
+    const s = dealScore(subject, [subject, ...pool(5)], []);
+    const part = s.parts.find((x) => x.key === "affordability");
+    expect(part?.evidence).toBe("ESTIMATE");
+    expect(part?.score).not.toBeNull();
   });
 });

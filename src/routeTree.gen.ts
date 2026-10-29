@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CommunityRouteImport } from './routes/community'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConsultRouteImport } from './routes/consult'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -22,6 +23,7 @@ import { Route as InfrastructureRouteImport } from './routes/infrastructure'
 import { Route as LocationIntelligenceRouteImport } from './routes/location-intelligence'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as OwnersRouteImport } from './routes/owners'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResearchServicesRouteImport } from './routes/research-services'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -53,6 +55,11 @@ const AdvisorRoute = AdvisorRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -98,6 +105,11 @@ const MapRoute = MapRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnersRoute = OwnersRouteImport.update({
+  id: '/owners',
+  path: '/owners',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -171,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/advisor': typeof AdvisorRoute
   '/auth': typeof AuthRoute
+  '/community': typeof CommunityRoute
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
@@ -180,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/location-intelligence': typeof LocationIntelligenceRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
+  '/owners': typeof OwnersRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -198,6 +212,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/advisor': typeof AdvisorRoute
   '/auth': typeof AuthRoute
+  '/community': typeof CommunityRoute
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
@@ -207,6 +222,7 @@ export interface FileRoutesByTo {
   '/location-intelligence': typeof LocationIntelligenceRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
+  '/owners': typeof OwnersRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -227,6 +243,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/advisor': typeof AdvisorRoute
   '/auth': typeof AuthRoute
+  '/community': typeof CommunityRoute
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
@@ -236,6 +253,7 @@ export interface FileRoutesById {
   '/location-intelligence': typeof LocationIntelligenceRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
+  '/owners': typeof OwnersRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -256,6 +274,7 @@ export interface FileRouteTypes {
     | '/'
     | '/advisor'
     | '/auth'
+    | '/community'
     | '/compare'
     | '/consult'
     | '/contact'
@@ -265,6 +284,7 @@ export interface FileRouteTypes {
     | '/location-intelligence'
     | '/map'
     | '/mcp'
+    | '/owners'
     | '/privacy'
     | '/research-services'
     | '/sitemap.xml'
@@ -283,6 +303,7 @@ export interface FileRouteTypes {
     | '/'
     | '/advisor'
     | '/auth'
+    | '/community'
     | '/compare'
     | '/consult'
     | '/contact'
@@ -292,6 +313,7 @@ export interface FileRouteTypes {
     | '/location-intelligence'
     | '/map'
     | '/mcp'
+    | '/owners'
     | '/privacy'
     | '/research-services'
     | '/sitemap.xml'
@@ -311,6 +333,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/advisor'
     | '/auth'
+    | '/community'
     | '/compare'
     | '/consult'
     | '/contact'
@@ -320,6 +343,7 @@ export interface FileRouteTypes {
     | '/location-intelligence'
     | '/map'
     | '/mcp'
+    | '/owners'
     | '/privacy'
     | '/research-services'
     | '/sitemap.xml'
@@ -340,6 +364,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdvisorRoute: typeof AdvisorRoute
   AuthRoute: typeof AuthRoute
+  CommunityRoute: typeof CommunityRoute
   CompareRoute: typeof CompareRoute
   ConsultRoute: typeof ConsultRoute
   ContactRoute: typeof ContactRoute
@@ -349,6 +374,7 @@ export interface RootRouteChildren {
   LocationIntelligenceRoute: typeof LocationIntelligenceRoute
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
+  OwnersRoute: typeof OwnersRoute
   PrivacyRoute: typeof PrivacyRoute
   ResearchServicesRoute: typeof ResearchServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -389,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -452,6 +485,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owners': {
+      id: '/owners'
+      path: '/owners'
+      fullPath: '/owners'
+      preLoaderRoute: typeof OwnersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -568,6 +608,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdvisorRoute: AdvisorRoute,
   AuthRoute: AuthRoute,
+  CommunityRoute: CommunityRoute,
   CompareRoute: CompareRoute,
   ConsultRoute: ConsultRoute,
   ContactRoute: ContactRoute,
@@ -577,6 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   LocationIntelligenceRoute: LocationIntelligenceRoute,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
+  OwnersRoute: OwnersRoute,
   PrivacyRoute: PrivacyRoute,
   ResearchServicesRoute: ResearchServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

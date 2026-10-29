@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/research-services")({
-  staticData: { sitemap: true },
+  staticData: { sitemap: false },
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/research-services" }],
     meta: [
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/research-services")({
       { property: "og:description", content: "Research paid for by buyers, never by sellers." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: Services,
