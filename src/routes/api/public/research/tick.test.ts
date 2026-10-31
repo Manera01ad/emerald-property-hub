@@ -50,7 +50,9 @@ describe("research tick route", () => {
   });
 
   it("rejects a POST whose token is not 64 hex characters as 401", async () => {
-    const response = (await call("POST", { headers: { authorization: "Bearer not-a-real-token" } })) as Response;
+    const response = (await call("POST", {
+      headers: { authorization: "Bearer not-a-real-token" },
+    })) as Response;
     expect(response.status).toBe(401);
   });
 });
