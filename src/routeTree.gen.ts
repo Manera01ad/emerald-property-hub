@@ -17,6 +17,7 @@ import { Route as CommunityRouteImport } from './routes/community'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConsultRouteImport } from './routes/consult'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as InfrastructureRouteImport } from './routes/infrastructure'
@@ -77,6 +78,11 @@ const ConsultRoute = ConsultRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContributeRoute = ContributeRouteImport.update({
+  id: '/contribute',
+  path: '/contribute',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DisclaimerRoute = DisclaimerRouteImport.update({
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
+  '/contribute': typeof ContributeRoute
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
+  '/contribute': typeof ContributeRoute
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/consult': typeof ConsultRoute
   '/contact': typeof ContactRoute
+  '/contribute': typeof ContributeRoute
   '/disclaimer': typeof DisclaimerRoute
   '/explore': typeof ExploreRoute
   '/infrastructure': typeof InfrastructureRoute
@@ -298,6 +307,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/consult'
     | '/contact'
+    | '/contribute'
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/consult'
     | '/contact'
+    | '/contribute'
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/consult'
     | '/contact'
+    | '/contribute'
     | '/disclaimer'
     | '/explore'
     | '/infrastructure'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   ConsultRoute: typeof ConsultRoute
   ContactRoute: typeof ContactRoute
+  ContributeRoute: typeof ContributeRoute
   DisclaimerRoute: typeof DisclaimerRoute
   ExploreRoute: typeof ExploreRoute
   InfrastructureRoute: typeof InfrastructureRoute
@@ -471,6 +484,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contribute': {
+      id: '/contribute'
+      path: '/contribute'
+      fullPath: '/contribute'
+      preLoaderRoute: typeof ContributeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/disclaimer': {
@@ -654,6 +674,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   ConsultRoute: ConsultRoute,
   ContactRoute: ContactRoute,
+  ContributeRoute: ContributeRoute,
   DisclaimerRoute: DisclaimerRoute,
   ExploreRoute: ExploreRoute,
   InfrastructureRoute: InfrastructureRoute,
