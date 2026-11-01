@@ -64,11 +64,11 @@ builds the live site from it, there is no staging, so a merge is a release.
 | Requirement | Status | Evidence / gap |
 | --- | --- | --- |
 | One central AI coordinator | done | Single `streamText` call in `src/lib/assistant/chat.server.ts`; one model gateway (`@ai-sdk/openai` via Lovable provider) |
-| Reusable skill architecture | **partial — on an unmerged branch** | `feat/assistant-skills` adds `src/lib/assistant/skills.ts`, `skill-files.ts` and three `SKILL.md` playbooks. Not merged |
-| Skill definition structure (name, description, triggers, tools, evidence, safety, output, errors, tests, version) | partial | Existing loader requires `name` + `description` header and a body; it rejects unknown header keys, so the richer fields cannot be added until the loader is extended |
-| Progressive disclosure (metadata → load on demand) | done (branch) | `skillIndex()` puts only names+descriptions in the prompt; `load_skill` tool returns the body on demand |
-| Backend adapters + permission checks | done (branch) | `load_skill` reads no data; `search_listings`/`get_listing`/`get_locality_evidence` run as the caller under RLS and re-apply the visibility rule |
-| 15 required skills | **missing** | 3 of 15 exist on the branch (rent-or-buy, locality-brief, document-check). 12 missing: property-discovery, rental-lease-intelligence, locality-intelligence, valuation, total-purchase-cost, flood-water-risk, infrastructure-research, legal-document-readiness, property-comparison, community-knowledge, research-report, contributor-challenge, membership-entitlement, enquiry-routing |
+| Reusable skill architecture | **done** | `src/lib/assistant/skills.ts` + `skill-files.ts` + 17 `SKILL.md` playbooks. Delivered on `feat/skill-registry` (PR #19), building on `feat/assistant-skills` |
+| Skill definition structure | done | Header carries `name`, `description`, `version`, `tools`; the directive's other fields (triggers, inputs, evidence standards, safety, output, errors, test cases) are headed sections in the body. Unknown header keys are rejected by the parser and fail the tests |
+| Progressive disclosure (metadata → load on demand) | done | `skillIndex()` puts only names+descriptions in the prompt; `load_skill` returns the body on demand |
+| Backend adapters + permission checks | done | `load_skill` reads no data; `search_listings`/`get_listing`/`get_locality_evidence` run as the caller under RLS and re-apply the visibility rule. Declared `tools` are checked against a fixed allowlist and grant nothing on their own |
+| 15 required skills | **done** | 17 skills: property-discovery, rental-lease-intelligence, locality-intelligence, property-valuation, total-purchase-cost, rent-or-buy, flood-water-risk, infrastructure-research, legal-document-readiness, document-check, property-comparison, community-knowledge, research-report, contributor-challenge, membership-entitlement, enquiry-routing, locality-brief |
 
 ### 2.4 Human conversation → intelligence loop (§5)
 
@@ -183,14 +183,14 @@ See §5 below for the full treatment.
 | Phase | Status |
 | --- | --- |
 | 0 Audit and baseline | **done** |
-| 1 Stabilise | see §4 — the directive's "critical defects" are the audit's P0/P1 list, and most are Tier 3 (owner-only) |
-| 2 Intelligence foundation | **partial** — exists on `feat/assistant-skills`, unmerged |
-| 3 Product integration | not started |
+| 1 Stabilise | partial — see §4. Most remaining items are Tier 3 (owner-only); the tracker note fix was Tier 2 and is done |
+| 2 Intelligence foundation | **done** — skill registry, progressive disclosure, tool allowlist, validation and the 17 required skills are on `feat/skill-registry` (PR #19) |
+| 3 Product integration | not started — the AI is not yet the primary homepage entry |
 | 4 Community intelligence | not started |
 | 5 Contributor network | not started (rules only) |
 | 6 Commercial foundation | not started |
 | 7 Quality and security | not started |
-| 8 Delivery | not started |
+| 8 Delivery | partial — PRs #18 and #19 open, both CI-green |
 
 ---
 
