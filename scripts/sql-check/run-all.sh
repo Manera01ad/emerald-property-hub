@@ -15,13 +15,13 @@ set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 echo "=============================================================="
-echo " 1/6  apply every migration"
+echo " 1/7  apply every migration"
 echo "=============================================================="
 bash "$HERE/apply.sh" --drop || { echo; echo "STOPPED: migrations did not apply."; exit 1; }
 
 echo
 echo "=============================================================="
-echo " 2/6  seed test users"
+echo " 2/7  seed test users"
 echo "=============================================================="
 sudo docker exec -i -e PGPASSWORD=pw pw-sqlcheck-pg \
   psql -U postgres -d propwise_sqlcheck -q -v ON_ERROR_STOP=1 -c "
@@ -42,7 +42,7 @@ fi
 echo "  OK    exactly one admin exists"
 
 STATUS=0
-for t in test-concurrency test-isolation test-rls test-functions test-adversarial; do
+for t in test-concurrency test-isolation test-rls test-functions test-adversarial test-undo; do
   echo
   echo "=============================================================="
   echo " running $t"

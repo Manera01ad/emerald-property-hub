@@ -47,6 +47,9 @@ There is no code path that writes to a hosted database.
 | `test-rls.sh` | Row-level security for the community and research tables. |
 | `test-functions.sh` | The `SECURITY DEFINER` functions and the budget lifecycle. |
 | `test-adversarial.sh` | What a signed-in caller can do by calling the functions directly. |
+| `test-undo.sh` | Proves the undo restores the schema, by diffing against a baseline. |
+| `undo-pending.sql` | Reverses the five pending migrations. Destructive; not run automatically. |
+| `verify-applied.sql` | The per-migration checks in `docs/APPLY_RUNBOOK.md`, in one file. |
 | `run-all.sh` | Runs all of the above. |
 
 ## The stubs
@@ -76,6 +79,18 @@ If you add a test, do the same.
 is listed in `docs/SQL_TEST_FINDINGS.md`.
 
 A non-zero exit means a migration failed to apply, or an assertion failed.
+
+## The undo check
+
+`test-undo.sh` builds the schema twice — once from the 19 applied migrations,
+once from all 24 followed by `undo-pending.sql` — and diffs them. They must be
+identical. It compares tables, columns, constraints, policies, row-level security
+flags, and the body of every function, because an undo that leaves the right
+function name attached to the wrong body is not an undo.
+
+It also refuses to compare if the schema query errors, and refuses to pass if the
+pending migrations turned out to change nothing — either would make the diff pass
+for the wrong reason.
 
 ## Known findings
 
