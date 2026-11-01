@@ -52,11 +52,11 @@ builds the live site from it, there is no staging, so a merge is a release.
 | Requirement | Status | Evidence / gap |
 | --- | --- | --- |
 | Assistant answers website-help questions | done | `src/lib/assistant/instructions.ts`, `src/routes/api/assistant.ts` |
-| Assistant understands property conversations | partial | Instructions cover buying, renting, leasing, areas, evidence labels and refusal to invent. No valuation, flood-risk, infrastructure-research, comparison or membership skills yet |
-| Conversational follow-ups without re-asking | done | Message history persisted (`assistant_messages`, migration 0010), `MAX_HISTORY_MESSAGES = 20` |
+| Assistant understands property conversations | done | `instructions.ts` now opens as the property consultant and names the full scope: buying, renting, leasing, plots, houses, flats, commercial, affordability, schools, commute, water and flooding, infrastructure, valuation, documents, comparison, negotiation, local services. 17 skills back it |
+| Conversational follow-ups without re-asking | done | Message history persisted (`assistant_messages`, migration 0010), `MAX_HISTORY_MESSAGES = 20`; the prompt now says plainly not to re-ask for anything already given |
 | User context with consent and privacy | partial | History is per-user under RLS; no explicit consent capture on the assistant itself |
 | Never claim verified facts without evidence | done | Enforced in `instructions.ts`; tools return only published rows |
-| AI consultant is the primary homepage entry | **missing** | `src/routes/index.tsx` still leads with a property **search box**; the assistant is a nav item to `/assistant`. Directive requires the AI to be the primary entry |
+| AI consultant is the primary homepage entry | **done** | Homepage hero is now the "Ask PropWise AI" box; the listing search moved into a `<details>` toggle beneath it. Header carries a first, always-visible "Ask PropWise AI" link. Delivered on `feat/ai-homepage-entry` (PR #20) |
 | Free tools alongside the AI | done | Locality exploration, purchase-cost estimate, compare, calculators all exist |
 
 ### 2.3 Single intelligence engine with reusable skills (§4)
@@ -173,7 +173,7 @@ See §5 below for the full treatment.
 | Requirement | Status | Evidence / gap |
 | --- | --- | --- |
 | One coherent product | done | Single app, single nav |
-| Recommended primary nav (Ask PropWise AI, Explore Localities, Find Properties, Compare & Calculate, Community, Services, Membership) | partial | Nav has Buy/Rent/Lease, Localities, Community, For owners, Compare, Ask us. **Missing:** a dedicated "Ask PropWise AI" entry, "Services", "Membership" |
+| Recommended primary nav (Ask PropWise AI, Explore Localities, Find Properties, Compare & Calculate, Community, Services, Membership) | partial | Nav now leads with "Ask PropWise AI", then Buy/Rent/Lease, Localities, Community, For owners, Compare. **Still missing:** a "Services" entry (the page exists at `/research-services` but is not linked from the nav) and a "Membership" entry (no page yet) |
 | "Help build this" entry point | missing | Does not exist |
 | Admin/dev tools out of public UI | done | Admin is behind `/admin` + `has_role` |
 | Mobile-first, responsive, accessible, no dead buttons, honest labels | partial | Responsive classes throughout; no browser available in this environment to verify layouts |
@@ -185,7 +185,7 @@ See §5 below for the full treatment.
 | 0 Audit and baseline | **done** |
 | 1 Stabilise | partial — see §4. Most remaining items are Tier 3 (owner-only); the tracker note fix was Tier 2 and is done |
 | 2 Intelligence foundation | **done** — skill registry, progressive disclosure, tool allowlist, validation and the 17 required skills are on `feat/skill-registry` (PR #19) |
-| 3 Product integration | not started — the AI is not yet the primary homepage entry |
+| 3 Product integration | **partial** — the AI is now the primary homepage entry (PR #20); property, rental, locality and comparison tools are reachable from the assistant through its tools and skills. Evidence handling already existed |
 | 4 Community intelligence | not started |
 | 5 Contributor network | not started (rules only) |
 | 6 Commercial foundation | not started |
@@ -332,3 +332,5 @@ because a technical control exists.**
 | Date | Change |
 | --- | --- |
 | 2026-11-01 | Tracker created; baseline recorded on `main` @ `d96a4ff` |
+| 2026-11-01 | Phase 2 delivered on `feat/skill-registry` (PR #19): 17 skills, tool allowlist, validation |
+| 2026-11-01 | Phase 3 started on `feat/ai-homepage-entry` (PR #20): AI as the primary homepage entry |
