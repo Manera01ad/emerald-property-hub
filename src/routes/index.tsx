@@ -1,13 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Calculator, GitCompareArrows, MapPinned, ShieldCheck, Search } from "lucide-react";
+import { Calculator, GitCompareArrows, MapPinned, MessageCircle, Search, ShieldCheck } from "lucide-react";
 import hero from "@/assets/hero.jpg";
 import { Button } from "@/components/ui/button";
 import { MARKETS } from "@/lib/constants";
 import { publicPropertiesQuery } from "@/lib/data";
 import { PropertyCard } from "@/components/PropertyCard";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { useSession } from "@/lib/auth";
+import { planAssistantEntry } from "@/lib/assistant/entry";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -36,26 +38,71 @@ const FEATURES = [
 function Home() {
   const navigate = useNavigate();
   const [loc, setLoc] = useState("");
+  const [question, setQuestion] = useState("");
+  const [problem, setProblem] = useState("");
+  const { session, ready } = useSession();
   const { data: props } = useQuery(publicPropertiesQuery);
+
+  const ask = (e: React.FormEvent) => {
+    e.preventDefault();
+    const plan = planAssistantEntry(question, Boolean(session));
+    if (plan.kind === "problem") { setProblem(plan.message); return; }
+    setProblem("");
+    if (plan.kind === "sign-in") {
+      try { sessionStorage.setItem(plan.store.key, plan.store.value); } catch { /* private mode: the question is lost, not the visit */ }
+      navigate({ to: plan.to, search: { next: plan.next } });
+      return;
+    }
+    navigate({ to: plan.to, search: { q: plan.question } });
+  };
+
   return (
     <>
       <section className="relative isolate overflow-hidden">
         <img src={hero} alt="Residential neighbourhood near Chennai" width={1600} height={912} className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div className="hero-overlay absolute inset-0 -z-10" />
-        <div className="mx-auto max-w-7xl px-4 py-28 text-hero-foreground md:py-40">
+        <div className="mx-auto max-w-7xl px-4 py-24 text-hero-foreground md:py-32">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold">Chennai · Tamil Nadu</p>
-          <h1 className="mt-4 max-w-3xl text-4xl leading-tight md:text-6xl">Compare Smarter.<br />Buy with Confidence.</h1>
-          <p className="mt-5 max-w-xl text-lg opacity-85">Understand the real cost, the neighbourhood and the paperwork before you commit.</p>
-          <form
-            onSubmit={(e) => { e.preventDefault(); navigate({ to: "/properties", search: loc ? { location: loc } : {} }); }}
-            className="mt-8 flex max-w-xl flex-col gap-2 rounded-xl bg-background p-2 sm:flex-row"
-          >
-            <select value={loc} onChange={(e) => setLoc(e.target.value)} className="h-11 flex-1 rounded-md bg-transparent px-3 text-sm text-foreground outline-none">
-              <option value="">All locations</option>
-              {MARKETS.map((m) => <option key={m}>{m}</option>)}
-            </select>
-            <Button type="submit" variant="gold" size="lg" className="h-11"><Search /> Search properties</Button>
+          <h1 className="mt-4 max-w-3xl text-4xl leading-tight md:text-6xl">Ask PropWise AI.<br />Then decide with evidence.</h1>
+          <p className="mt-5 max-w-xl text-lg opacity-85">A property consultant for Chennai. Ask about buying, renting, an area, the paperwork or the real cost — and get an answer that shows what is known and what is not.</p>
+
+          <form onSubmit={ask} className="mt-8 max-w-2xl rounded-xl bg-background p-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <label htmlFor="ask-propwise" className="sr-only">Ask PropWise AI a question</label>
+              <input
+                id="ask-propwise"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                maxLength={1000}
+                placeholder="e.g. What should I check before buying a plot in Guduvancheri?"
+                className="h-11 flex-1 rounded-md bg-transparent px-3 text-sm text-foreground outline-none"
+              />
+              <Button type="submit" variant="gold" size="lg" className="h-11" disabled={!ready}>
+                <MessageCircle /> Ask PropWise AI
+              </Button>
+            </div>
+            {problem && <p className="px-3 pt-1 pb-2 text-left text-xs text-destructive">{problem}</p>}
+            <p className="px-3 pb-2 pt-1 text-left text-xs text-muted-foreground">
+              {session
+                ? "Signed in. Your question goes straight to the assistant."
+                : "Signing in is needed for the assistant, so your question is saved and sent after you sign in."}
+            </p>
           </form>
+
+          <details className="mt-4 max-w-2xl text-hero-foreground">
+            <summary className="cursor-pointer text-sm opacity-80 hover:opacity-100">Prefer to browse listings instead?</summary>
+            <form
+              onSubmit={(e) => { e.preventDefault(); navigate({ to: "/properties", search: loc ? { location: loc } : {} }); }}
+              className="mt-2 flex flex-col gap-2 rounded-xl bg-background p-2 sm:flex-row"
+            >
+              <label htmlFor="browse-locality" className="sr-only">Choose a locality to browse</label>
+              <select id="browse-locality" value={loc} onChange={(e) => setLoc(e.target.value)} className="h-11 flex-1 rounded-md bg-transparent px-3 text-sm text-foreground outline-none">
+                <option value="">All locations</option>
+                {MARKETS.map((m) => <option key={m}>{m}</option>)}
+              </select>
+              <Button type="submit" variant="outline" size="lg" className="h-11"><Search /> Search properties</Button>
+            </form>
+          </details>
           <InstallAppButton className="mt-4 h-11 border-hero-foreground/40 bg-transparent text-hero-foreground hover:bg-hero-foreground/10 hover:text-hero-foreground" />
         </div>
       </section>
