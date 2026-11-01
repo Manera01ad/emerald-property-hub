@@ -9,6 +9,10 @@ export const Route = createFileRoute("/api/public/research/tick")({
   staticData: { sitemap: false },
   server: {
     handlers: {
+      // Only POST runs the pipeline. Without this, a GET falls through to the SPA
+      // shell and returns 200 HTML, so a scheduler pointed at this address with the
+      // wrong method would look healthy while never running an agent.
+      GET: () => new Response("Method Not Allowed", { status: 405, headers: { allow: "POST" } }),
       POST: async ({ request }) => {
         const token = /^Bearer ([a-f0-9]{64})$/.exec(request.headers.get("authorization") ?? "")?.[1];
         if (!token) return new Response("Unauthorized", { status: 401 });
