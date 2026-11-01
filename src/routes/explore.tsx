@@ -17,6 +17,7 @@ import { transactionTypeOf } from "@/lib/transaction";
 import { OSM_STYLE, loadMapLibre } from "@/lib/maplibre";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 import { searchString } from "@/lib/search-params";
+import { LOCATION_FILTER_GRID, SHRINKABLE_SELECT } from "@/lib/responsive";
 
 export const Route = createFileRoute("/explore")({
   staticData: { sitemap: true },
@@ -235,15 +236,15 @@ function ExplorePage() {
         </label>
         <div className="text-sm">
           <span>Where do you want to live or work?</span>
-          <div className="mt-1 grid grid-cols-[1fr_1.4fr_auto] gap-2">
-            <select aria-label="City" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={city} onChange={(e) => { setCity(e.target.value); setArea(""); }}>
+          <div className={LOCATION_FILTER_GRID}>
+            <select aria-label="City" className={SHRINKABLE_SELECT} value={city} onChange={(e) => { setCity(e.target.value); setArea(""); }}>
               {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-            <select aria-label="Area" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={area} onChange={(e) => setArea(e.target.value)}>
+            <select aria-label="Area" className={SHRINKABLE_SELECT} value={area} onChange={(e) => setArea(e.target.value)}>
               <option value="">All areas</option>
               {Object.keys(AREAS[city] ?? {}).map((a) => <option key={a} value={a}>{a}</option>)}
             </select>
-            <select aria-label="Within distance" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={officeKm} onChange={(e) => setOfficeKm(e.target.value)} disabled={!area}>
+            <select aria-label="Within distance" className={`col-span-2 sm:col-span-1 ${SHRINKABLE_SELECT}`} value={officeKm} onChange={(e) => setOfficeKm(e.target.value)} disabled={!area}>
               {RADIUS_OPTIONS.map((r) => <option key={r} value={r}>within {r} km</option>)}
             </select>
           </div>
