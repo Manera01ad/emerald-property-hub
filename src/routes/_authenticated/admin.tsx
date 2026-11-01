@@ -196,6 +196,7 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="ai-costs">
           <AiCosts />
+        </TabsContent>
         <TabsContent value="gaps">
           <IntelligenceGaps />
         </TabsContent>
