@@ -4,6 +4,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { TRANSACTION_LABELS, priceFields, termsOf, transactionTypeOf } from "@/lib/transaction";
 import { buildLogRow, type SearchKind, type SearchSource } from "./search-log";
+import { SKILLS } from "./skill-files";
+import { findSkill } from "./skills";
 
 type Db = SupabaseClient<Database>;
 
@@ -52,6 +54,18 @@ async function record(ctx: Ctx, kind: SearchKind, input: unknown, resultCount: n
  */
 export function createAssistantTools(ctx: Ctx) {
   return {
+    load_skill: tool({
+      description:
+        "Load a skill: a short playbook for one kind of question. Call it before answering when the question matches a skill's description in the system prompt. It reads no personal data and runs no lookup.",
+      inputSchema: z.object({
+        name: z.string().trim().min(1).max(60).describe("The skill name exactly as listed in the system prompt."),
+      }),
+      execute: async ({ name }) => {
+        const skill = findSkill(SKILLS, name);
+        if (!skill) return { error: "No skill with that name.", available: SKILLS.map((s) => s.name) };
+        return { name: skill.name, instructions: skill.body };
+      },
+    }),
     search_listings: tool({
       description:
         "Search publicly visible PropWise property listings by locality, property type, transaction type and maximum price. A listing is either for sale, for rent (a monthly figure) or for lease (a monthly figure).",
