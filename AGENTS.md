@@ -85,7 +85,7 @@ Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and public `VITE_*` val
 
 `bun run test` and `bun run build` must pass — they gate the pull request.
 
-`bun run type-check` and `bun run lint` are reported but do not block. Both currently fail on pre-existing debt: two type errors in plugin-generated files under `src/routes/`, and roughly 2,300 unformatted spots. Do not fix this debt opportunistically inside an unrelated pull request; it makes the diff unreviewable. Clear it in a dedicated pull request, and flip `continue-on-error` to `false` in `.github/workflows/verify.yml` once both are clean.
+`bun run type-check` and `bun run lint` are reported but do not block. Type-check **passes** (verified on `main` @ `d96a4ff`). Lint fails on pre-existing formatting debt only: `bun run lint` reports about 3,600 problems, almost all `prettier/prettier`, and they are fixable with `--fix`. Do not fix this debt opportunistically inside an unrelated pull request; it makes the diff unreviewable. Clear it in a dedicated pull request, and flip `continue-on-error` to `false` for each check once it is clean — type-check can be flipped today, lint once the formatting debt is cleared.
 
 ### Keep pull requests small
 
