@@ -334,3 +334,5 @@ because a technical control exists.**
 | 2026-11-01 | Tracker created; baseline recorded on `main` @ `d96a4ff` |
 | 2026-11-01 | Phase 2 delivered on `feat/skill-registry` (PR #19): 17 skills, tool allowlist, validation |
 | 2026-11-01 | Phase 3 started on `feat/ai-homepage-entry` (PR #20): AI as the primary homepage entry |
+| 2026-11-01 | `fix/services-nav-entry` (PR #21): the research services page was unreachable; now linked |
+| 2026-11-01 | `docs/DELIVERY_REPORT.md` added: the consolidated report for the whole programme |
