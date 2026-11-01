@@ -19,6 +19,7 @@ const DISCOVER = [
 const NAV = [
   { to: "/location-intelligence", label: "Localities" },
   { to: "/community", label: "Community" },
+  { to: "/research-services", label: "Services" },
   { to: "/owners", label: "For owners" },
 ] as const;
 
