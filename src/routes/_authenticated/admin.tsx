@@ -20,6 +20,7 @@ import { Localities } from "@/components/admin/Localities";
 import { Submissions } from "@/components/admin/Submissions";
 import { Ranking } from "@/components/admin/Ranking";
 import { CommunityQueue } from "@/components/admin/CommunityQueue";
+import { AiCosts } from "@/components/admin/AiCosts";
 
 /**
  * Admin navigation in five groups. Every entry is an existing panel, preserved
@@ -48,6 +49,7 @@ const ADMIN_GROUPS = [
       { value: "localities", label: "Localities" },
       { value: "infra", label: "Infrastructure" },
       { value: "ranking", label: "Ranking" },
+      { value: "ai-costs", label: "AI costs" },
     ],
   },
   {
@@ -189,6 +191,9 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="research">
           <ResearchAgents />
+        </TabsContent>
+        <TabsContent value="ai-costs">
+          <AiCosts />
         </TabsContent>
         <TabsContent value="settings">
           <SettingsPanel />
