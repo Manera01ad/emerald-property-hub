@@ -9,6 +9,8 @@ import {
 } from "./run-id";
 import { ASSISTANT_INSTRUCTIONS } from "./instructions";
 import { createAssistantTools, recordWebSearches, webSearchEnabled } from "./tools";
+import { SKILLS } from "./skill-files";
+import { withSkills } from "./skills";
 import { DAILY_MESSAGE_LIMIT, LIMIT_REACHED_MESSAGE, MAX_HISTORY_MESSAGES, UNAVAILABLE_MESSAGE, checkMessage, windowStart } from "./limits";
 
 const MODEL = "openai/gpt-6-astra";
@@ -95,13 +97,14 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
   const webSearch = webSearchEnabled();
   const result = streamText({
     model: provider.responses(MODEL),
-    system: ASSISTANT_INSTRUCTIONS,
+    system: withSkills(ASSISTANT_INSTRUCTIONS, SKILLS),
     messages: await convertToModelMessages(messages),
     tools: {
       ...createAssistantTools(toolCtx),
       ...(webSearch ? { web_search: provider.tools.webSearch({}) } : {}),
     },
-    stopWhen: stepCountIs(4),
+    // One more step than before: loading a skill takes a step of its own before the lookups and the answer.
+    stopWhen: stepCountIs(5),
     onStepFinish: (step) => recordWebSearches(toolCtx, step),
     abortSignal: request.signal,
     providerOptions: {
