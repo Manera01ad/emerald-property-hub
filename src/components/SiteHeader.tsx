@@ -197,6 +197,9 @@ export function SiteFooter() {
           <Link to="/owners" className="block opacity-80 hover:opacity-100">
             For owners
           </Link>
+          <Link to="/contribute" className="block opacity-80 hover:opacity-100">
+            Contribute
+          </Link>
         </div>
         <div className="space-y-2 text-sm">
           <p className="font-semibold text-gold">Trust</p>
