@@ -176,34 +176,34 @@ function PropertiesPage() {
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
         <aside className="h-fit space-y-4 rounded-xl border bg-card p-5 shadow-card lg:sticky lg:top-20">
-          <div className="space-y-1.5"><Label>Locality</Label>
-            <select className={sel} value={s.locality ?? ""} onChange={(e) => set({ locality: e.target.value || undefined, location: undefined })}>
+          <div className="space-y-1.5"><Label htmlFor="f-locality">Locality</Label>
+            <select id="f-locality" className={sel} value={s.locality ?? ""} onChange={(e) => set({ locality: e.target.value || undefined, location: undefined })}>
               <option value="">Any locality</option>{localities.map((l) => <option key={l.id} value={l.name}>{l.name}</option>)}
             </select></div>
-          <div className="space-y-1.5"><Label>Type</Label>
-            <select className={sel} value={s.type ?? ""} onChange={(e) => set({ type: e.target.value || undefined })}>
+          <div className="space-y-1.5"><Label htmlFor="f-type">Type</Label>
+            <select id="f-type" className={sel} value={s.type ?? ""} onChange={(e) => set({ type: e.target.value || undefined })}>
               <option value="">All</option>{PROPERTY_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select></div>
-          <div className="space-y-1.5"><Label>Budget (₹ lakhs)</Label>
+          <div className="space-y-1.5"><Label htmlFor="f-min-price">Budget (₹ lakhs)</Label>
             <div className="flex gap-2">
-              <Input type="number" placeholder="Min" defaultValue={s.minPrice} onBlur={(e) => set({ minPrice: num(e.target.value) })} />
-              <Input type="number" placeholder="Max" defaultValue={s.maxPrice} onBlur={(e) => set({ maxPrice: num(e.target.value) })} />
+              <Input id="f-min-price" type="number" aria-label="Minimum budget in lakhs" placeholder="Min" defaultValue={s.minPrice} onBlur={(e) => set({ minPrice: num(e.target.value) })} />
+              <Input type="number" aria-label="Maximum budget in lakhs" placeholder="Max" defaultValue={s.maxPrice} onBlur={(e) => set({ maxPrice: num(e.target.value) })} />
             </div>
             <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
               <Checkbox checked={!!s.allInclusive} onCheckedChange={(v) => set({ allInclusive: v === true || undefined })} />
-              All-inclusive (incl. estimated duties & fees)
+              All-inclusive (incl. estimated duties &amp; fees)
             </label>
           </div>
-          <div className="space-y-1.5"><Label>Min bedrooms</Label>
-            <Input type="number" min={0} defaultValue={s.bedrooms} onBlur={(e) => set({ bedrooms: num(e.target.value) })} /></div>
-          <div className="space-y-1.5"><Label>Min land area (sq ft)</Label>
-            <Input type="number" min={0} defaultValue={s.minLand} onBlur={(e) => set({ minLand: num(e.target.value) })} /></div>
-          <div className="space-y-1.5"><Label>Approval</Label>
-            <select className={sel} value={s.approval ?? ""} onChange={(e) => set({ approval: e.target.value || undefined })}>
+          <div className="space-y-1.5"><Label htmlFor="f-bedrooms">Min bedrooms</Label>
+            <Input id="f-bedrooms" type="number" min={0} defaultValue={s.bedrooms} onBlur={(e) => set({ bedrooms: num(e.target.value) })} /></div>
+          <div className="space-y-1.5"><Label htmlFor="f-min-land">Min land area (sq ft)</Label>
+            <Input id="f-min-land" type="number" min={0} defaultValue={s.minLand} onBlur={(e) => set({ minLand: num(e.target.value) })} /></div>
+          <div className="space-y-1.5"><Label htmlFor="f-approval">Approval</Label>
+            <select id="f-approval" className={sel} value={s.approval ?? ""} onChange={(e) => set({ approval: e.target.value || undefined })}>
               <option value="">Any</option>{APPROVALS.map((a) => <option key={a}>{a}</option>)}
             </select></div>
-          <div className="space-y-1.5"><Label>Availability</Label>
-            <select className={sel} value={s.availability ?? ""} onChange={(e) => set({ availability: e.target.value || undefined })}>
+          <div className="space-y-1.5"><Label htmlFor="f-availability">Availability</Label>
+            <select id="f-availability" className={sel} value={s.availability ?? ""} onChange={(e) => set({ availability: e.target.value || undefined })}>
               <option value="">Any</option>{Object.entries(AVAILABILITY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select></div>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
