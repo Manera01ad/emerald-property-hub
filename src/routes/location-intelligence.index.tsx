@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AreaIntelCard } from "@/components/AreaIntelCard";
 import type { AreaSummary } from "@/lib/area-intel";
 import { areaPoint } from "@/lib/areas";
+import { searchString } from "@/lib/search-params";
 
 const URL = "https://emerald-property-hub.lovable.app/location-intelligence";
 const TITLE = "Location intelligence for Chennai areas — PropWise AI";
@@ -14,7 +15,7 @@ const DESC = "Water bodies, parks, bus and train access and height above sea lev
 
 export const Route = createFileRoute("/location-intelligence/")({
   staticData: { sitemap: true },
-  validateSearch: z.object({ area: z.string().optional() }),
+  validateSearch: z.object({ area: searchString }),
   head: () => ({
     meta: [
       { title: TITLE },
