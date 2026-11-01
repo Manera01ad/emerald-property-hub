@@ -1,6 +1,8 @@
 ---
 name: rent-or-buy
 description: Use when someone is deciding between renting and buying in Chennai, or asks which is cheaper or smarter for them.
+version: 1.0.0
+tools: search_listings
 ---
 
 # Rent or buy

@@ -63,7 +63,14 @@ export function createAssistantTools(ctx: Ctx) {
       execute: async ({ name }) => {
         const skill = findSkill(SKILLS, name);
         if (!skill) return { error: "No skill with that name.", available: SKILLS.map((s) => s.name) };
-        return { name: skill.name, instructions: skill.body };
+        return {
+          name: skill.name,
+          version: skill.version,
+          // Declared tools are informational: the tool set is fixed and every call still runs as the
+          // signed-in user under RLS, so a declaration grants nothing on its own.
+          tools: skill.tools,
+          instructions: skill.body,
+        };
       },
     }),
     search_listings: tool({

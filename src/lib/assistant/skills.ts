@@ -11,15 +11,32 @@
  * read in skill-files.ts.
  */
 
-export type Skill = { name: string; description: string; body: string };
+export type Skill = { name: string; description: string; tools: string[]; version: string; body: string };
 export type SkillLoadResult = { skills: Skill[]; errors: string[] };
 
 export const MAX_DESCRIPTION_CHARS = 200;
 export const MAX_BODY_CHARS = 4000;
+export const MAX_TOOLS = 4;
+export const DEFAULT_VERSION = "1.0.0";
 
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 const HEADER_PATTERN = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
-const ALLOWED_KEYS = new Set(["name", "description"]);
+const ALLOWED_KEYS = new Set(["name", "description", "tools", "version"]);
+
+/**
+ * The tools a skill may declare. A skill can only ever ask for a tool that exists, so a
+ * declaration is a permission statement, not an instruction the runtime has to trust. The
+ * assistant's tool set is fixed in tools.ts; this list is the allowlist it is checked against.
+ */
+export const KNOWN_TOOLS = [
+  "search_listings",
+  "get_listing",
+  "get_locality_evidence",
+  "web_search",
+] as const;
+
+const KNOWN_TOOL_SET = new Set<string>(KNOWN_TOOLS);
 
 /** The folder name from a glob path such as "./skills/rent-or-buy/SKILL.md", or null if it does not match. */
 export function folderOf(path: string): string | null {
@@ -44,6 +61,7 @@ export function parseSkill(folder: string, raw: string): { skill: Skill } | { er
 
   const name = fields["name"] ?? "";
   const description = fields["description"] ?? "";
+  const version = fields["version"] ?? DEFAULT_VERSION;
   const body = (match[2] ?? "").trim();
 
   if (!NAME_PATTERN.test(name)) return { error: `${folder}: name must be lowercase letters, digits and hyphens` };
@@ -52,10 +70,20 @@ export function parseSkill(folder: string, raw: string): { skill: Skill } | { er
   if (description.length > MAX_DESCRIPTION_CHARS) {
     return { error: `${folder}: description is over ${MAX_DESCRIPTION_CHARS} characters` };
   }
+  if (!VERSION_PATTERN.test(version)) return { error: `${folder}: version must look like 1.0.0` };
   if (!body) return { error: `${folder}: the skill has no instructions` };
   if (body.length > MAX_BODY_CHARS) return { error: `${folder}: instructions are over ${MAX_BODY_CHARS} characters` };
 
-  return { skill: { name, description, body } };
+  const tools = (fields["tools"] ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  if (tools.length > MAX_TOOLS) return { error: `${folder}: no more than ${MAX_TOOLS} tools may be declared` };
+  for (const t of tools) {
+    if (!KNOWN_TOOL_SET.has(t)) return { error: `${folder}: unknown tool "${t}"` };
+  }
+
+  return { skill: { name, description, tools, version, body } };
 }
 
 /** Turns a map of file path to file text into valid skills, collecting a message for every file it skips. */

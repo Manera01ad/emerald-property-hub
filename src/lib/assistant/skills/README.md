@@ -12,12 +12,31 @@ help write one without touching code.
        ---
        name: <skill-name>
        description: One sentence saying when the assistant should use this skill.
+       version: 1.0.0
+       tools: search_listings, get_locality_evidence
        ---
 
-   The `name` must match the folder. The description can be 200 characters at most and the whole file
-   4,000 characters at most.
+   - `name` must match the folder.
+   - `description` can be 200 characters at most.
+   - `version` must look like `1.0.0`. It is optional and defaults to `1.0.0`.
+   - `tools` is optional. It lists the tools the skill expects to use, comma
+     separated, from the allowlist in `skills.ts` (`search_listings`,
+     `get_listing`, `get_locality_evidence`, `web_search`). A name that is not on
+     the allowlist fails the tests. Declaring a tool grants nothing: the
+     assistant's tool set is fixed and every call still runs as the signed-in
+     user under row-level security.
+   - The whole file can be 4,000 characters at most.
 3. Open a pull request. The tests check the format automatically. The owner reviews the content before it
    goes live.
+
+## What the header must and must not contain
+
+Only `name`, `description`, `version` and `tools` are accepted. An unknown key
+fails the tests, so a skill cannot smuggle in a new instruction field. The
+directive's richer fields — trigger conditions, required inputs, evidence
+standards, safety restrictions, output format, error handling and test cases —
+belong in the **body** as headed sections, not in the header. That keeps the
+parser small and the file readable.
 
 ## Rules for every skill
 

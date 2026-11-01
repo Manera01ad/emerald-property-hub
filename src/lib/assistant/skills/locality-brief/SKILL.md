@@ -1,6 +1,8 @@
 ---
 name: locality-brief
 description: Use when someone asks what a Chennai area or locality is like, or wants help comparing areas.
+version: 1.0.0
+tools: get_locality_evidence
 ---
 
 # Locality brief

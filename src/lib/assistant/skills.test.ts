@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_VERSION,
+  KNOWN_TOOLS,
   MAX_BODY_CHARS,
   MAX_DESCRIPTION_CHARS,
+  MAX_TOOLS,
   findSkill,
   folderOf,
   loadSkills,
@@ -18,8 +21,26 @@ describe("the skills shipped with the assistant", () => {
     expect(SKILL_ERRORS).toEqual([]);
   });
 
-  it("include the starter set", () => {
-    expect(SKILLS.map((s) => s.name).sort()).toEqual(["document-check", "locality-brief", "rent-or-buy"]);
+  it("include the required skill set", () => {
+    expect(SKILLS.map((s) => s.name).sort()).toEqual([
+      "community-knowledge",
+      "contributor-challenge",
+      "document-check",
+      "enquiry-routing",
+      "flood-water-risk",
+      "infrastructure-research",
+      "legal-document-readiness",
+      "locality-brief",
+      "locality-intelligence",
+      "membership-entitlement",
+      "property-comparison",
+      "property-discovery",
+      "property-valuation",
+      "rent-or-buy",
+      "rental-lease-intelligence",
+      "research-report",
+      "total-purchase-cost",
+    ]);
   });
 
   it("stay within the size limits", () => {
@@ -27,6 +48,16 @@ describe("the skills shipped with the assistant", () => {
       expect(skill.description.length).toBeGreaterThan(0);
       expect(skill.description.length).toBeLessThanOrEqual(MAX_DESCRIPTION_CHARS);
       expect(skill.body.length).toBeLessThanOrEqual(MAX_BODY_CHARS);
+    }
+  });
+
+  it("declare a version and only tools that exist", () => {
+    for (const skill of SKILLS) {
+      expect(skill.version, `${skill.name} version`).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(skill.tools.length, `${skill.name} tools`).toBeLessThanOrEqual(MAX_TOOLS);
+      for (const tool of skill.tools) {
+        expect(KNOWN_TOOLS, `${skill.name} declares ${tool}`).toContain(tool);
+      }
     }
   });
 
@@ -46,7 +77,9 @@ describe("the skills shipped with the assistant", () => {
 describe("parseSkill", () => {
   it("reads a valid skill", () => {
     const parsed = parseSkill("demo", good("demo"));
-    expect(parsed).toEqual({ skill: { name: "demo", description: "Use when testing demo.", body: "Step one." } });
+    expect(parsed).toEqual({
+      skill: { name: "demo", description: "Use when testing demo.", tools: [], version: DEFAULT_VERSION, body: "Step one." },
+    });
   });
 
   it("rejects a file with no header", () => {
@@ -80,6 +113,37 @@ describe("parseSkill", () => {
   it("accepts Windows line endings", () => {
     const parsed = parseSkill("demo", good("demo").replace(/\n/g, "\r\n"));
     expect("skill" in parsed && parsed.skill.name).toBe("demo");
+  });
+
+  it("defaults the version and tools when they are absent", () => {
+    const parsed = parseSkill("demo", good("demo"));
+    expect(parsed).toEqual({
+      skill: { name: "demo", description: "Use when testing demo.", tools: [], version: DEFAULT_VERSION, body: "Step one." },
+    });
+  });
+
+  it("reads a declared version and tools", () => {
+    const raw = "---\nname: demo\ndescription: x\nversion: 2.1.0\ntools: search_listings, get_listing\n---\nBody";
+    expect(parseSkill("demo", raw)).toEqual({
+      skill: { name: "demo", description: "x", tools: ["search_listings", "get_listing"], version: "2.1.0", body: "Body" },
+    });
+  });
+
+  it("rejects a bad version, an unknown tool and too many tools", () => {
+    expect(parseSkill("demo", "---\nname: demo\ndescription: x\nversion: v1\n---\nBody")).toEqual({
+      error: expect.stringMatching(/version must look like/),
+    });
+    expect(parseSkill("demo", "---\nname: demo\ndescription: x\ntools: delete_everything\n---\nBody")).toEqual({
+      error: expect.stringMatching(/unknown tool/),
+    });
+    const tooMany = "---\nname: demo\ndescription: x\ntools: " + KNOWN_TOOLS.join(", ") + ", extra\n---\nBody";
+    expect(parseSkill("demo", tooMany)).toEqual({ error: expect.stringMatching(/no more than/) });
+  });
+
+  it("allows the maximum number of tools", () => {
+    const raw = "---\nname: demo\ndescription: x\ntools: " + KNOWN_TOOLS.slice(0, MAX_TOOLS).join(", ") + "\n---\nBody";
+    const parsed = parseSkill("demo", raw);
+    expect("skill" in parsed && parsed.skill.tools).toHaveLength(MAX_TOOLS);
   });
 });
 

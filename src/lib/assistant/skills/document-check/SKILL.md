@@ -1,6 +1,8 @@
 ---
 name: document-check
 description: Use when someone is close to buying or renting and asks what documents or approvals to check before paying.
+version: 1.0.0
+tools: get_listing
 ---
 
 # Document check
