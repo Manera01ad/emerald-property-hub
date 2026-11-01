@@ -12,9 +12,12 @@ import { createAssistantTools, recordWebSearches, webSearchEnabled } from "./too
 import { SKILLS } from "./skill-files";
 import { withSkills } from "./skills";
 import { DAILY_MESSAGE_LIMIT, LIMIT_REACHED_MESSAGE, MAX_HISTORY_MESSAGES, UNAVAILABLE_MESSAGE, checkMessage, windowStart } from "./limits";
+import { buildUsageRecord } from "./cost";
+import { ASSISTANT_MODEL_ID, AI_GATEWAY_URL } from "./pricing";
+import { reconcileBudget, refusalFor, reserveBudget } from "./budget.server";
 
-const MODEL = "openai/gpt-6-astra";
-const GATEWAY = "https://ai.gateway.lovable.dev/v1";
+const MODEL = ASSISTANT_MODEL_ID;
+const GATEWAY = AI_GATEWAY_URL;
 
 function json(status: number, message: string) {
   return new Response(JSON.stringify({ error: message }), {
@@ -84,6 +87,19 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
 
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) return json(500, "The assistant isn't configured yet.");
+
+  // Global daily cap, checked before the paid call. The per-user limit above
+  // bounds one person; this bounds the total bill. If the cap cannot be enforced
+  // the call is refused, because the alternative is unbounded spend.
+  const reservation = await reserveBudget(db, MODEL);
+  if (!reservation.ok) {
+    console.warn(`assistant: refused a call (${reservation.reason})`);
+    return json(
+      reservation.reason === "budget_exhausted" ? 429 : 503,
+      refusalFor(reservation.reason),
+    );
+  }
+
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
   const provider = createOpenAI({
     baseURL: GATEWAY,
@@ -106,6 +122,14 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
     // One more step than before: loading a skill takes a step of its own before the lookups and the answer.
     stopWhen: stepCountIs(5),
     onStepFinish: (step) => recordWebSearches(toolCtx, step),
+    // Reconcile the reservation with real usage. `usage` is aggregated across all
+    // steps, and its token fields are optional: when the provider omits them,
+    // buildUsageRecord falls back to the reservation amount and labels the row
+    // `estimated` rather than inventing counts.
+    onFinish: ({ usage }) => {
+      const record = buildUsageRecord(MODEL, usage);
+      void reconcileBudget(db, reservation.id, record);
+    },
     abortSignal: request.signal,
     providerOptions: {
       openai: {
