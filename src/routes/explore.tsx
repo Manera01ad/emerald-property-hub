@@ -16,10 +16,11 @@ import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
 import { transactionTypeOf } from "@/lib/transaction";
 import { OSM_STYLE, loadMapLibre } from "@/lib/maplibre";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
+import { searchString } from "@/lib/search-params";
 
 export const Route = createFileRoute("/explore")({
   staticData: { sitemap: true },
-  validateSearch: z.object({ area: z.string().optional() }),
+  validateSearch: z.object({ area: searchString }),
   head: () => ({
     links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/explore" }],
     meta: [

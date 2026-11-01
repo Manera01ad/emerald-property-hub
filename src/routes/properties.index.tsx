@@ -18,20 +18,28 @@ import { costRulesFrom, publicPropertiesQuery, useLocalities, useSettings } from
 import { matchProperty } from "@/lib/buyer";
 import { purchaseCost } from "@/lib/deal";
 import { transactionTypeOf, type TransactionType } from "@/lib/transaction";
+import {
+  searchBoolean,
+  searchEnum,
+  searchInt,
+  searchNumber,
+  searchString,
+} from "@/lib/search-params";
 
+// Tolerant by design: a mistyped filter in the URL is dropped, never a 500.
 const searchSchema = z.object({
-  transaction: z.enum(["buy", "rent", "lease"]).optional(),
-  location: z.string().optional(),
-  locality: z.string().optional(),
-  type: z.string().optional(),
-  minPrice: z.number().optional(),
-  maxPrice: z.number().optional(),
-  bedrooms: z.number().optional(),
-  minLand: z.number().optional(),
-  approval: z.string().optional(),
-  availability: z.string().optional(),
-  allInclusive: z.boolean().optional(),
-  verifiedOnly: z.boolean().optional(),
+  transaction: searchEnum(["buy", "rent", "lease"] as const),
+  location: searchString,
+  locality: searchString,
+  type: searchString,
+  minPrice: searchNumber,
+  maxPrice: searchNumber,
+  bedrooms: searchInt,
+  minLand: searchInt,
+  approval: searchString,
+  availability: searchString,
+  allInclusive: searchBoolean,
+  verifiedOnly: searchBoolean,
 });
 type Search = z.infer<typeof searchSchema>;
 
