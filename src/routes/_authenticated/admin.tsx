@@ -21,6 +21,7 @@ import { Submissions } from "@/components/admin/Submissions";
 import { Ranking } from "@/components/admin/Ranking";
 import { CommunityQueue } from "@/components/admin/CommunityQueue";
 import { AiCosts } from "@/components/admin/AiCosts";
+import { IntelligenceGaps } from "@/components/admin/IntelligenceGaps";
 
 /**
  * Admin navigation in five groups. Every entry is an existing panel, preserved
@@ -50,6 +51,7 @@ const ADMIN_GROUPS = [
       { value: "infra", label: "Infrastructure" },
       { value: "ranking", label: "Ranking" },
       { value: "ai-costs", label: "AI costs" },
+      { value: "gaps", label: "Knowledge gaps" },
     ],
   },
   {
@@ -194,6 +196,8 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="ai-costs">
           <AiCosts />
+        <TabsContent value="gaps">
+          <IntelligenceGaps />
         </TabsContent>
         <TabsContent value="settings">
           <SettingsPanel />

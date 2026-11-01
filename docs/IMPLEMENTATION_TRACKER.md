@@ -74,8 +74,8 @@ builds the live site from it, there is no staging, so a merge is a release.
 
 | Requirement | Status | Evidence / gap |
 | --- | --- | --- |
-| Detect frequent/missing/unanswered demand | missing | `assistant_search_log` records lookups, but nothing aggregates gaps |
-| Intelligence Gap Dashboard (admin) | **missing** | No route, no table |
+| Detect frequent/missing/unanswered demand | **done (PR #29)** | `src/lib/intelligence-gaps.ts` aggregates the search log into ranked gaps |
+| Intelligence Gap Dashboard (admin) | **done (PR #29)** | "Knowledge gaps" tab; admin-only server function; aggregated, no user identity |
 | AI may propose skills/improvements/tasks | missing | No mechanism |
 | AI must not autonomously install/modify/deploy/spend | done | No such capability exists; correct by construction |
 
@@ -99,7 +99,7 @@ builds the live site from it, there is no staging, so a merge is a release.
 | Build on the existing forum | done | `/community` exists behind `feature_community` (default off) |
 | Structured contributions (rent, water, flooding, roads, transport, noise, amenities, infrastructure, general) | partial | `src/lib/community.ts` has categories; tables are in `drizzle/pending/0018_community.sql` (**not applied**) |
 | Consent, moderation, evidence, duplicate detection, source dates, expiry, dispute, privacy, abuse reporting, audit history | partial | Moderation rules + audit log exist in code and tests; tables pending-migration; no expiry/revalidation implemented |
-| Evidence labels VERIFIED / OFFICIAL SOURCE / COMMUNITY-REPORTED / ESTIMATE / CLAIM / UNKNOWN | partial | VERIFIED, ESTIMATE, CLAIM, UNKNOWN and COMMUNITY-REPORTED are used; **OFFICIAL SOURCE** is not a distinct label in code |
+| Evidence labels VERIFIED / OFFICIAL SOURCE / COMMUNITY-REPORTED / ESTIMATE / CLAIM / UNKNOWN | **done (PR #28)** | All six defined in `src/lib/evidence.ts` with `weakerEvidence` preventing promotion. Note: nothing yet *emits* the two new labels, so they are defined but unused at runtime |
 | Do not publish private details / defamatory claims | done | Moderation rules and assistant instructions forbid it |
 | AI cites approved community info with a label | missing | `get_locality_evidence` reads `area_intelligence` + `infrastructure_projects` only; no community retrieval tool |
 
@@ -336,3 +336,10 @@ because a technical control exists.**
 | 2026-11-01 | Phase 3 started on `feat/ai-homepage-entry` (PR #20): AI as the primary homepage entry |
 | 2026-11-01 | `fix/services-nav-entry` (PR #21): the research services page was unreachable; now linked |
 | 2026-11-01 | `docs/DELIVERY_REPORT.md` added: the consolidated report for the whole programme |
+| 2026-11-01 | `feat/ai-cost-control` (PR #24): global daily AI spending cap, cost logging, AI costs tab |
+| 2026-11-01 | `docs/skill-promise-corrections` (PR #25): two skills stopped promising unavailable things |
+| 2026-11-01 | `feat/contribute-page` (PR #26): a public Contribute page, honest about what is not open |
+| 2026-11-01 | `test/e2e-regression-guards` (PR #27): browser guards for the two defects that shipped |
+| 2026-11-01 | `feat/evidence-labels` (PR #28): OFFICIAL_SOURCE and COMMUNITY_REPORTED added, with the no-promotion rule |
+| 2026-11-01 | `feat/knowledge-gap-dashboard` (PR #29): the Intelligence Gap Dashboard, admin-only and aggregated |
+| 2026-11-01 | `docs/RELEASE_AUDIT.md`: independent release audit. Verdict: not ready to launch |
