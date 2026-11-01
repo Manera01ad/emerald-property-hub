@@ -12,32 +12,42 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import mark from "@/assets/assistant-mark.png";
 import { describeSearch, type SearchKind } from "@/lib/assistant/search-log";
+import { questionFromSearch, takePendingQuestion } from "@/lib/assistant/entry";
 
 export const Route = createFileRoute("/_authenticated/assistant")({
   head: () => ({
     meta: [
-      { title: "Ask PropWise — help assistant" },
-      { name: "description", content: "Ask questions about using PropWise AI's property tools for Chennai." },
-      { property: "og:title", content: "Ask PropWise — help assistant" },
-      { property: "og:description", content: "Ask questions about using PropWise AI's property tools for Chennai." },
+      { title: "Ask PropWise AI — property consultant for Chennai" },
+      { name: "description", content: "Ask about buying, renting, leasing, an area, the paperwork or the real cost in Chennai. Every answer shows what is known and what is not." },
+      { property: "og:title", content: "Ask PropWise AI — property consultant for Chennai" },
+      { property: "og:description", content: "Ask about buying, renting, leasing, an area, the paperwork or the real cost." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { q?: string | undefined } => ({
+    q: questionFromSearch(s["q"]) ?? undefined,
+  }),
   component: AssistantPage,
 });
 
 const SUGGESTIONS = [
-  "How do I estimate the full cost of buying a plot?",
-  "How does the value estimate work?",
-  "Why can't I see any listings?",
-  "How do I compare two properties?",
+  "What should I check before buying a plot in Guduvancheri?",
+  "Is Potheri better than Guduvancheri for a family?",
+  "What does it really cost to buy a ₹60 lakh flat?",
+  "How do I check the papers before I pay a deposit?",
 ];
 
 function AssistantPage() {
+  const { q } = Route.useSearch();
   const [initial, setInitial] = useState<UIMessage[] | null>(null);
   const [loadError, setLoadError] = useState(false);
+  // The question from the homepage box: `?q=` when signed in, or the value parked during sign-in.
+  const [question] = useState<string | null>(() => {
+    if (q) return q;
+    try { return takePendingQuestion(sessionStorage); } catch { return null; }
+  });
 
   useEffect(() => {
     supabase
@@ -51,12 +61,13 @@ function AssistantPage() {
   }, []);
 
   if (!initial) return <div className="mx-auto max-w-3xl px-4 py-16"><Shimmer>Loading your conversation…</Shimmer></div>;
-  return <ChatWindow initial={initial} loadError={loadError} />;
+  return <ChatWindow initial={initial} loadError={loadError} initialQuestion={question} />;
 }
 
-function ChatWindow({ initial, loadError }: { initial: UIMessage[]; loadError: boolean }) {
+function ChatWindow({ initial, loadError, initialQuestion }: { initial: UIMessage[]; loadError: boolean; initialQuestion: string | null }) {
   const [input, setInput] = useState("");
   const [cleared, setCleared] = useState(0);
+  const sentQuestion = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const transport = useMemo(
     () =>
@@ -85,6 +96,14 @@ function ChatWindow({ initial, loadError }: { initial: UIMessage[]; loadError: b
     if (loadError) toast.error("Couldn't load your earlier messages.");
   }, [loadError]);
 
+  // Send the question carried from the homepage once, after the earlier conversation has loaded, so it
+  // lands at the end of the thread rather than in the middle of it.
+  useEffect(() => {
+    if (sentQuestion.current || !initialQuestion || busy) return;
+    sentQuestion.current = true;
+    sendMessage({ text: initialQuestion });
+  }, [initialQuestion, busy, sendMessage]);
+
   const send = (text: string) => {
     const t = text.trim();
     if (!t || busy) return;
@@ -110,8 +129,8 @@ function ChatWindow({ initial, loadError }: { initial: UIMessage[]; loadError: b
         <div className="flex items-center gap-3">
           <img src={mark} alt="" width={40} height={40} className="size-10" />
           <div>
-            <h1 className="font-display text-2xl font-semibold text-primary">Ask PropWise</h1>
-            <p className="text-xs text-muted-foreground">Help with using the site. Answers are general guidance, not legal advice.</p>
+            <h1 className="font-display text-2xl font-semibold text-primary">Ask PropWise AI</h1>
+            <p className="text-xs text-muted-foreground">Your property consultant for Chennai. General guidance with sources — not legal advice, and never a valuation.</p>
           </div>
         </div>
         {messages.length > 0 && (

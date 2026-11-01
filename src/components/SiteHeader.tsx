@@ -23,6 +23,9 @@ const NAV = [
   { to: "/owners", label: "For owners" },
 ] as const;
 
+/** The assistant is the primary entry point, so it sits first and is always visible. */
+const ASK = { to: "/assistant", label: "Ask PropWise AI" } as const;
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { ids } = useCompare();
@@ -37,6 +40,13 @@ export function SiteHeader() {
           <span className="font-display text-2xl font-semibold text-gold">AI</span>
         </Link>
         <nav className="hidden items-center gap-6 lg:flex">
+          <Link
+            to={ASK.to}
+            className="text-sm font-semibold text-primary transition-colors hover:text-gold"
+            activeProps={{ className: "text-gold" }}
+          >
+            {ASK.label}
+          </Link>
           <div className="flex items-center gap-4">
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground/60">
               Discover
@@ -91,6 +101,13 @@ export function SiteHeader() {
       </div>
       {open && (
         <nav className="border-t bg-background px-4 py-3 lg:hidden">
+          <Link
+            to={ASK.to}
+            onClick={() => setOpen(false)}
+            className="block py-2 text-sm font-semibold text-primary"
+          >
+            {ASK.label}
+          </Link>
           <p className="pt-1 text-xs font-medium uppercase tracking-wide text-muted-foreground/60">
             Discover
           </p>
