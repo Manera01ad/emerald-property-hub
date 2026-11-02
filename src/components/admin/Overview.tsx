@@ -1,5 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useAdminTable, Panel, Stat } from "./shared";
+import { VerificationExpiry } from "./VerificationExpiry";
 import { formatINR } from "@/lib/format";
 
 function monthKey(d: string) {
@@ -34,6 +35,7 @@ export function Overview() {
 
   return (
     <div className="mt-4 space-y-6">
+      <VerificationExpiry />
       <Panel>
         <p className="mb-2 font-medium">Getting started</p>
         <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
