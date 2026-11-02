@@ -14,6 +14,8 @@ import { costRulesFrom, publicPropertiesQuery, useSettings } from "@/lib/data";
 import { MARKETS, PROPERTY_TYPES } from "@/lib/constants";
 import { formatINR } from "@/lib/format";
 import { buyAnalysis, rentAnalysis, rentVsBuy, matchProperty, DUE_DILIGENCE_QUESTIONS } from "@/lib/buyer";
+import { buildReportEvidence, renderReportEvidenceHtml, type ReportEvidence } from "@/lib/decision-report";
+import { transactionTypeOf } from "@/lib/transaction";
 
 export const Route = createFileRoute("/_authenticated/my")({
   staticData: { sitemap: false },
@@ -98,11 +100,21 @@ function MyPage() {
   const matches = useMemo(() => (props ?? []).map((p) => ({ p, m: matchProperty(p, f, rules) })).sort((a, z) => (z.m.overall ?? -1) - (a.m.overall ?? -1)), [props, f, rules]);
 
   async function saveReport(kind: "buy" | "rent" | "rent_vs_buy") {
+    // Published area rows only (public-read policy), for the flood context of each locality.
+    const { data: areaRows } = await supabase.from("area_intelligence").select("area, summary").eq("is_published", true);
+    const top = matches.slice(0, 5).map(({ p }) => p);
+    const evidence = buildReportEvidence(
+      top.map((p) => ({ ...p, transaction: transactionTypeOf(p) })),
+      areaRows ?? [],
+      f.preferred_locations,
+      rules,
+    );
     const result = {
       generated_at: new Date().toISOString(),
       requirements: f,
       observed_facts: matches.slice(0, 5).map(({ p }) => ({ id: p.id, title: p.title, location: p.location, asking_price: p.asking_price, verification_status: p.verification_status, source: p.source, listed_on_propwise: p.created_at })),
       calculations: kind === "rent" ? rent : kind === "buy" ? buy : { buy, rent, rvb },
+      evidence,
       assumptions: { stamp_duty_pct: rules.stampDutyPct, registration_pct: rules.registrationPct, legal_fee: rules.legalFee, rates_status: "Unverified placeholders until confirmed with Tamil Nadu registration department", no_appreciation_or_returns_assumed: true },
       interpretation: matches.slice(0, 5).map(({ p, m }) => ({ title: p.title, match_score: m.overall, parts: m.parts, concerns: m.concerns, missing: m.missing })),
       inventory_note: matches.length === 0 ? "No published, permission-backed listings are available yet; this report covers costs only." : null,
@@ -216,10 +228,10 @@ function Rows({ rows, action }: { rows: [string, number][]; action: React.ReactN
 function esc(s: unknown) { return String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!); }
 function section(title: string, v: unknown) { return `<h2>${esc(title)}</h2><pre>${esc(JSON.stringify(v, null, 2))}</pre>`; }
 function download(title: string, result: Json) {
-  const r = (result ?? {}) as { requirements?: unknown; observed_facts?: unknown; calculations?: unknown; assumptions?: unknown; interpretation?: unknown; inventory_note?: string; due_diligence_questions?: string[] };
+  const r = (result ?? {}) as { requirements?: unknown; observed_facts?: unknown; calculations?: unknown; assumptions?: unknown; interpretation?: unknown; inventory_note?: string; due_diligence_questions?: string[]; evidence?: ReportEvidence };
   const html = `<!doctype html><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:sans-serif;max-width:800px;margin:2rem auto}pre{white-space:pre-wrap;background:#f4f4f4;padding:1rem}</style>
 <h1>${esc(title)}</h1><p><b>PropWise AI buyer decision report.</b> Estimates only — not legal verification, a title certificate or an approval certification.</p>
-${section("Your requirements", r.requirements)}${section("Observed facts (from listings)", r.observed_facts)}${section("Calculations", r.calculations)}${section("Assumptions", r.assumptions)}${section("AI interpretation", r.interpretation)}${r.inventory_note ? `<p><i>${esc(r.inventory_note)}</i></p>` : ""}
+${section("Your requirements", r.requirements)}${section("Observed facts (from listings)", r.observed_facts)}${section("Calculations", r.calculations)}${r.evidence ? renderReportEvidenceHtml(r.evidence) : ""}${section("Assumptions", r.assumptions)}${section("AI interpretation", r.interpretation)}${r.inventory_note ? `<p><i>${esc(r.inventory_note)}</i></p>` : ""}
 <h2>Questions to ask before paying any advance</h2><ul>${((r.due_diligence_questions as string[]) ?? []).map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`;
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
