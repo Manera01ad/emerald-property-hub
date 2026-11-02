@@ -7,6 +7,7 @@ import { AREAS } from "@/lib/areas";
 import { refreshAreaIntelligence } from "@/lib/area-intel.functions";
 import type { AreaSummary } from "@/lib/area-intel";
 import { AreaIntelCard } from "@/components/AreaIntelCard";
+import { OfficialFloodEditor } from "./OfficialFlood";
 import { Panel, useAdminTable, useInvalidateAdmin } from "./shared";
 
 export function AreaIntel() {
@@ -87,7 +88,12 @@ export function AreaIntel() {
                   <Button size="sm" variant="outline" disabled={!!busy || batch} onClick={() => refresh(city, area)}>{busy === area ? "Fetching…" : r ? "Refresh" : "Fetch"}</Button>
                 </div>
               </div>
-              {r && open === area && <div className="mt-3"><AreaIntelCard s={r.summary as unknown as AreaSummary} fetchedAt={r.fetched_at} /></div>}
+              {r && open === area && (
+                <div className="mt-3">
+                  <AreaIntelCard s={r.summary as unknown as AreaSummary} fetchedAt={r.fetched_at} />
+                  <OfficialFloodEditor id={r.id} area={area} summary={r.summary} published={r.is_published} onSaved={() => invalidate("area_intelligence")} />
+                </div>
+              )}
             </div>
           );
         })}
