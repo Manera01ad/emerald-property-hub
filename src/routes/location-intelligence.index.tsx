@@ -52,6 +52,7 @@ function LocationIntelPage() {
       <div className="mt-3 flex flex-wrap gap-2 text-sm">
         <Button asChild variant="outline" size="sm"><Link to="/map">Look up an exact location</Link></Button>
         <Button asChild variant="outline" size="sm"><Link to="/infrastructure">Infrastructure projects</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link to="/location-intelligence/compare" search={{ a: "", b: "" }} data-testid="compare-localities-link">Compare two localities</Link></Button>
       </div>
 
       <div className="mt-6 rounded-xl border bg-card p-4 shadow-card md:p-6">
