@@ -5,6 +5,8 @@ import { ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AreaIntelCard } from "@/components/AreaIntelCard";
+import { FloodPanel } from "@/components/FloodPanel";
+import { floodBrief, floodInputFromSummary } from "@/lib/flood";
 import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { LocalityMap } from "@/components/LocalityMap";
 import type { AreaSummary } from "@/lib/area-intel";
@@ -137,6 +139,17 @@ function LocalityPage() {
               <div className="mt-3"><AreaIntelCard s={intel.data.summary as unknown as AreaSummary} fetchedAt={intel.data.fetched_at} /></div>
             ) : (
               <div className="mt-3"><Unknown>No published area snapshot for {locality.name}. We have not checked the open map data for this locality, so nothing is shown.</Unknown></div>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-2xl">Flood and drainage</h2>
+            {intel.isLoading ? (
+              <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+            ) : (
+              <div className="mt-3">
+                <FloodPanel area={locality.name} brief={floodBrief(floodInputFromSummary(intel.data ? (intel.data.summary as unknown as AreaSummary) : null))} />
+              </div>
             )}
           </section>
 
