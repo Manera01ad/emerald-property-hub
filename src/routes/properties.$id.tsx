@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ExternalLink, ImageOff, MapPin, MessageCircle, XCircle } from "lucide-react";
+import { AlertTriangle, ExternalLink, ImageOff, MapPin, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { VerificationBadge, EstimateNote } from "@/components/Badges";
 import { EvidenceBadge } from "@/components/EvidenceBadge";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { ResearchBrief } from "@/components/ResearchBrief";
-import { AVAILABILITY, DOCS, PLACE_CATEGORIES, typeLabel } from "@/lib/constants";
+import { DocumentScreen } from "@/components/DocumentScreen";
+import { AVAILABILITY, PLACE_CATEGORIES, typeLabel } from "@/lib/constants";
 import { costRulesFrom, publicPropertiesQuery, usePropertyPhotoUrls, useSettings, whatsappLink } from "@/lib/data";
 import { dealScore, MIN_COMPARABLES, priceQuestions, pricePerSqft, purchaseCost } from "@/lib/deal";
 import type { Evidence } from "@/lib/evidence";
@@ -159,19 +160,9 @@ function PropertyPage() {
           <TransactionTerms listing={p} type={type} />
 
           {!monthly && (
-            <Section title="Legal documentation">
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {DOCS.map((d) => {
-                const ok = p[d.key as keyof typeof p];
-                return (
-                  <li key={d.key} className="flex items-center gap-2 text-sm">
-                    {ok ? <CheckCircle2 className="size-4 text-success" /> : <XCircle className="size-4 text-destructive" />}
-                    <span className={ok ? "" : "text-destructive"}>{d.label}{!ok && " — missing"}</span>
-                  </li>
-                );
-              })}
-              </ul>
-              <p className="mt-3 text-xs text-muted-foreground">Recorded by PropWise from documents shared with us. Always have a lawyer review originals.</p>
+            <Section title="Document and approval screen">
+              <DocumentScreen listing={p} />
+              <p className="mt-3 text-xs text-muted-foreground">Recorded by PropWise from documents shared with us. This is not a legal title check — always have a lawyer review originals.</p>
             </Section>
           )}
 
