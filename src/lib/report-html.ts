@@ -8,10 +8,19 @@ import { renderReportEvidenceHtml, type ReportEvidence } from "./decision-report
 export const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-/** "preferred_locations" → "Preferred locations". */
+/** Short forms that must stay upper-case in labels, and units spelled out. */
+const LABEL_WORDS: Record<string, string> = {
+  emi: "EMI", ec: "EC", id: "ID", bhk: "BHK", dtcp: "DTCP", cmda: "CMDA", rera: "RERA", tnrera: "TNRERA",
+  gst: "GST", inr: "INR", ai: "AI", url: "URL", pct: "%", sqft: "sq ft", ppsf: "per sq ft",
+};
+
+/** "preferred_locations" → "Preferred locations"; "emi_pct" → "EMI %". */
 export function humanize(key: string): string {
-  const s = key.replace(/[_-]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim().toLowerCase();
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  const words = key.replace(/[_-]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const out = words.map((w) => LABEL_WORDS[w] ?? w);
+  const first = out[0] ?? "";
+  if (first && first === words[0]) out[0] = first.charAt(0).toUpperCase() + first.slice(1);
+  return out.join(" ");
 }
 
 const isPlain = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
