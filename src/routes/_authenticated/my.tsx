@@ -14,7 +14,8 @@ import { costRulesFrom, publicPropertiesQuery, useSettings } from "@/lib/data";
 import { MARKETS, PROPERTY_TYPES } from "@/lib/constants";
 import { formatINR } from "@/lib/format";
 import { buyAnalysis, rentAnalysis, rentVsBuy, matchProperty, DUE_DILIGENCE_QUESTIONS } from "@/lib/buyer";
-import { buildReportEvidence, renderReportEvidenceHtml, type ReportEvidence } from "@/lib/decision-report";
+import { buildReportEvidence } from "@/lib/decision-report";
+import { buildReportHtml } from "@/lib/report-html";
 import { transactionTypeOf } from "@/lib/transaction";
 
 export const Route = createFileRoute("/_authenticated/my")({
@@ -225,14 +226,8 @@ function Rows({ rows, action }: { rows: [string, number][]; action: React.ReactN
   );
 }
 
-function esc(s: unknown) { return String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!); }
-function section(title: string, v: unknown) { return `<h2>${esc(title)}</h2><pre>${esc(JSON.stringify(v, null, 2))}</pre>`; }
 function download(title: string, result: Json) {
-  const r = (result ?? {}) as { requirements?: unknown; observed_facts?: unknown; calculations?: unknown; assumptions?: unknown; interpretation?: unknown; inventory_note?: string; due_diligence_questions?: string[]; evidence?: ReportEvidence };
-  const html = `<!doctype html><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:sans-serif;max-width:800px;margin:2rem auto}pre{white-space:pre-wrap;background:#f4f4f4;padding:1rem}</style>
-<h1>${esc(title)}</h1><p><b>PropWise AI buyer decision report.</b> Estimates only — not legal verification, a title certificate or an approval certification.</p>
-${section("Your requirements", r.requirements)}${section("Observed facts (from listings)", r.observed_facts)}${section("Calculations", r.calculations)}${r.evidence ? renderReportEvidenceHtml(r.evidence) : ""}${section("Assumptions", r.assumptions)}${section("AI interpretation", r.interpretation)}${r.inventory_note ? `<p><i>${esc(r.inventory_note)}</i></p>` : ""}
-<h2>Questions to ask before paying any advance</h2><ul>${((r.due_diligence_questions as string[]) ?? []).map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`;
+  const html = buildReportHtml(title, result);
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
   a.download = `${title.replace(/[^\w]+/g, "-")}.html`;
