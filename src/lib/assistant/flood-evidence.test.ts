@@ -24,7 +24,7 @@ function fakeDb(rows: Record<string, Row[]>) {
 
 async function evidenceFor(rows: Record<string, Row[]>, area: string) {
   const tools = createAssistantTools({ db: fakeDb(rows), userId: "u1", messageId: "m1" });
-  const run = tools.get_locality_evidence.execute as (input: { area: string }, opts: unknown) => Promise<Record<string, unknown>>;
+  const run = tools.get_locality_evidence.execute as unknown as (input: { area: string }, opts: unknown) => Promise<Record<string, unknown>>;
   return run({ area }, { toolCallId: "t1", messages: [] });
 }
 
