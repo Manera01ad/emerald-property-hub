@@ -28,8 +28,83 @@ export type FloodInput = {
    * its source filed. The label is whatever the source calls it — carried
    * verbatim, with the source and date — never a score invented from it.
    */
-  officialZone?: { label: string; source: string; observedOn: string } | null;
+  officialZone?: { label: string; source: string; observedOn: string; url?: string | null } | null;
 };
+
+/**
+ * An official flood-zone record an admin filed for an area, kept inside the
+ * area-intelligence summary under `official_flood`. The label is the source's
+ * own wording, carried verbatim — never a score derived from it.
+ */
+export type OfficialFloodRecord = {
+  label: string;
+  source: string;
+  source_url: string | null;
+  /** The date the source describes or was published, YYYY-MM-DD. */
+  observed_on: string;
+  /** When the admin filed it (ISO timestamp). */
+  recorded_at: string;
+};
+
+export type OfficialFloodDraft = { label: string; source: string; source_url: string; observed_on: string };
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isRealDate(s: string): boolean {
+  if (!ISO_DATE.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+/**
+ * Checks an admin's entry before it is saved. A record needs the source's own
+ * label, a named source and a real date that is not in the future; a link, if
+ * given, must be https.
+ */
+export function validateOfficialFlood(
+  draft: OfficialFloodDraft,
+  today: string = new Date().toISOString().slice(0, 10),
+  now: string = new Date().toISOString(),
+): { ok: true; record: OfficialFloodRecord } | { ok: false; errors: string[] } {
+  const label = draft.label.trim();
+  const source = draft.source.trim();
+  const url = draft.source_url.trim();
+  const observed = draft.observed_on.trim();
+  const errors: string[] = [];
+  if (label.length < 3 || label.length > 160) errors.push("Enter the record's label as the source words it (3–160 characters).");
+  if (source.length < 3 || source.length > 160) errors.push("Name the official source (3–160 characters).");
+  if (!isRealDate(observed)) errors.push("Enter the source's date as YYYY-MM-DD.");
+  else if (observed > today) errors.push("The source's date cannot be in the future.");
+  if (url) {
+    let valid = false;
+    try { valid = new URL(url).protocol === "https:"; } catch { valid = false; }
+    if (!valid) errors.push("The source link must start with https://.");
+  }
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, record: { label, source, source_url: url || null, observed_on: observed, recorded_at: now } };
+}
+
+/** Reads a stored record back, tolerating missing or malformed data (which reads as no record). */
+export function readOfficialFlood(summary: unknown): OfficialFloodRecord | null {
+  if (!summary || typeof summary !== "object") return null;
+  const r = (summary as Record<string, unknown>)["official_flood"];
+  if (!r || typeof r !== "object") return null;
+  const o = r as Record<string, unknown>;
+  const str = (k: string) => (typeof o[k] === "string" ? (o[k] as string) : null);
+  const label = str("label"), source = str("source"), observed = str("observed_on");
+  if (!label || !source || !observed || !isRealDate(observed)) return null;
+  const url = str("source_url");
+  return { label, source, source_url: url && url.startsWith("https://") ? url : null, observed_on: observed, recorded_at: str("recorded_at") ?? "" };
+}
+
+/**
+ * Keeps an admin-filed official record when the open-data snapshot is refreshed,
+ * so re-fetching map data never silently deletes official evidence.
+ */
+export function withOfficialFlood<T extends object>(fresh: T, previous: unknown): T & { official_flood?: OfficialFloodRecord } {
+  const kept = readOfficialFlood(previous);
+  return kept ? { ...fresh, official_flood: kept } : fresh;
+}
 
 export type FloodFact = {
   key: string;
@@ -38,6 +113,8 @@ export type FloodFact = {
   value: string | null;
   evidence: Evidence;
   note: string;
+  /** Link to the source, only for an official record that has one. */
+  url?: string;
 };
 
 export type FloodBrief = {
@@ -75,7 +152,7 @@ export function floodBrief(input: FloodInput): FloodBrief {
 
   facts.push(
     input.officialZone
-      ? { key: "official_zone", label: "Official flood-zone record", value: `${input.officialZone.label} — source: ${input.officialZone.source}, dated ${input.officialZone.observedOn}`, evidence: "OFFICIAL_SOURCE", note: "Recorded from the named official publication. It describes the area, not any specific plot." }
+      ? { key: "official_zone", label: "Official flood-zone record", value: `${input.officialZone.label} — source: ${input.officialZone.source}, dated ${input.officialZone.observedOn}`, evidence: "OFFICIAL_SOURCE", note: "Recorded from the named official publication. It describes the area, not any specific plot.", ...(input.officialZone.url ? { url: input.officialZone.url } : {}) }
       : { key: "official_zone", label: "Official flood-zone record", value: null, evidence: "UNKNOWN", note: "No official flood map on file for this area." },
   );
 
@@ -108,18 +185,19 @@ export function floodBrief(input: FloodInput): FloodBrief {
 
 /**
  * Reads the flood inputs out of a published area-intelligence summary. A missing
- * summary (no published snapshot) gives all-unknown input. No official zone is
- * read from it: the summary holds no such field, and none is invented.
+ * summary (no published snapshot) gives all-unknown input. The official zone is
+ * read only from an admin-filed `official_flood` record; it is never inferred.
  */
 export function floodInputFromSummary(summary: AreaSummary | null | undefined): FloodInput {
   if (!summary) return { elevation_m: null, mappedWaterCount: null, nearestWaterKm: null, officialZone: null };
   const elevation = typeof summary.elevation_m === "number" && Number.isFinite(summary.elevation_m) ? summary.elevation_m : null;
   const water = summary.water;
+  const official = readOfficialFlood(summary);
   return {
     elevation_m: elevation,
     mappedWaterCount: water && typeof water.count === "number" ? water.count : null,
     nearestWaterKm: water?.nearest && typeof water.nearest.km === "number" ? water.nearest.km : null,
-    officialZone: null,
+    officialZone: official ? { label: official.label, source: official.source, observedOn: official.observed_on, url: official.source_url } : null,
   };
 }
 

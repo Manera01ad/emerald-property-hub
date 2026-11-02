@@ -24,6 +24,11 @@ export function FloodPanel({ brief, area }: { brief: FloodBrief; area: string })
             </p>
             <p className="mt-1 text-sm">{f.value ?? "Unknown"}</p>
             <p className="mt-0.5 text-xs text-muted-foreground">{f.note}</p>
+            {f.url && (
+              <a href={f.url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary hover:underline" data-testid={`flood-fact-${f.key}-source-link`}>
+                View the official source
+              </a>
+            )}
           </li>
         ))}
       </ul>
