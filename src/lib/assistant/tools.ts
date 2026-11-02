@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { TRANSACTION_LABELS, priceFields, termsOf, transactionTypeOf } from "@/lib/transaction";
+import type { AreaSummary } from "@/lib/area-intel";
+import { floodBrief, floodInputFromSummary } from "@/lib/flood";
 import { buildLogRow, type SearchKind, type SearchSource } from "./search-log";
 import { SKILLS } from "./skill-files";
 import { findSkill } from "./skills";
@@ -182,16 +184,21 @@ export function createAssistantTools(ctx: Ctx) {
           (snapshot ? 1 : 0) + projects.length,
           projects.flatMap((p) => (p.source_url ? [{ title: p.name, url: p.source_url }] : [])),
         );
+        // Flood and drainage context from the same published snapshot. It carries its own evidence
+        // labels and is all-unknown without a snapshot, so the assistant never fills the gap itself.
+        const flood = floodBrief(floodInputFromSummary(snapshot ? (snapshot.summary as unknown as AreaSummary) : null));
         if (!snapshot && projects.length === 0) {
           return {
             area,
             unknown: true,
+            flood,
             note: `We hold no published evidence for ${area}. Say it is unknown rather than describing the area from memory, and suggest the Localities page.`,
           };
         }
         return {
           area,
           snapshot,
+          flood,
           snapshotNote: snapshot
             ? "Area snapshot figures come from OpenStreetMap and Open-Meteo and are estimates, not a flood or legal check."
             : `No published snapshot for ${area}.`,
