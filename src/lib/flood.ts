@@ -13,7 +13,7 @@
  */
 
 import type { Evidence } from "./evidence";
-import { elevationNote } from "./area-intel";
+import { elevationNote, type AreaSummary } from "./area-intel";
 
 /** Everything the brief needs — all of it already collected by area intelligence. */
 export type FloodInput = {
@@ -104,6 +104,23 @@ export function floodBrief(input: FloodInput): FloodBrief {
   ];
 
   return { headline: FLOOD_HEADLINE, facts, unknowns, groundChecks, caveats };
+}
+
+/**
+ * Reads the flood inputs out of a published area-intelligence summary. A missing
+ * summary (no published snapshot) gives all-unknown input. No official zone is
+ * read from it: the summary holds no such field, and none is invented.
+ */
+export function floodInputFromSummary(summary: AreaSummary | null | undefined): FloodInput {
+  if (!summary) return { elevation_m: null, mappedWaterCount: null, nearestWaterKm: null, officialZone: null };
+  const elevation = typeof summary.elevation_m === "number" && Number.isFinite(summary.elevation_m) ? summary.elevation_m : null;
+  const water = summary.water;
+  return {
+    elevation_m: elevation,
+    mappedWaterCount: water && typeof water.count === "number" ? water.count : null,
+    nearestWaterKm: water?.nearest && typeof water.nearest.km === "number" ? water.nearest.km : null,
+    officialZone: null,
+  };
 }
 
 /** True when every fact is unknown — the honest "we hold nothing" state. */

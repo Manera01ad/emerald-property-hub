@@ -1,5 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { floodBrief, floodBriefIsEmpty, type FloodInput } from "./flood";
+import { floodBrief, floodBriefIsEmpty, floodInputFromSummary, type FloodInput } from "./flood";
+import { summariseArea } from "./area-intel";
+
+describe("flood input from an area summary", () => {
+  it("gives all-unknown input when no snapshot is published", () => {
+    expect(floodInputFromSummary(null)).toEqual({ elevation_m: null, mappedWaterCount: null, nearestWaterKm: null, officialZone: null });
+    expect(floodBriefIsEmpty(floodBrief(floodInputFromSummary(undefined)))).toBe(true);
+  });
+
+  it("reads elevation and mapped water from a real summary, and never an official zone", () => {
+    const s = summariseArea(
+      [{ type: "way", id: 1, center: { lat: 12.846, lon: 80.06 }, tags: { natural: "water", name: "Near Tank" } }],
+      12.845,
+      80.06,
+      12,
+    );
+    const input = floodInputFromSummary(s);
+    expect(input.elevation_m).toBe(12);
+    expect(input.mappedWaterCount).toBe(1);
+    expect(input.nearestWaterKm).toBe(s.water.nearest?.km);
+    expect(input.officialZone).toBeNull();
+  });
+
+  it("treats a summary with no elevation as unknown height, not zero", () => {
+    const s = summariseArea([], 12.845, 80.06, null);
+    const b = floodBrief(floodInputFromSummary(s));
+    expect(b.facts.find((f) => f.key === "elevation")?.evidence).toBe("UNKNOWN");
+    expect(b.facts.find((f) => f.key === "mapped_water")?.value).toContain("0 lakes");
+  });
+});
 
 const base: FloodInput = { elevation_m: null, mappedWaterCount: null, nearestWaterKm: null, officialZone: null };
 
