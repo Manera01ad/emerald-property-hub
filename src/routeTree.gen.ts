@@ -36,6 +36,7 @@ import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as CommunityThreadIdRouteImport } from './routes/community_.$threadId'
 import { Route as LocationIntelligenceIndexRouteImport } from './routes/location-intelligence.index'
 import { Route as LocationIntelligenceAreaRouteImport } from './routes/location-intelligence.$area'
+import { Route as LocationIntelligenceCompareRouteImport } from './routes/location-intelligence.compare'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesIdRouteImport } from './routes/properties.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -178,6 +179,12 @@ const LocationIntelligenceAreaRoute =
     path: '/location-intelligence/$area',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LocationIntelligenceCompareRoute =
+  LocationIntelligenceCompareRouteImport.update({
+    id: '/location-intelligence/compare',
+    path: '/location-intelligence/compare',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PropertiesIndexRoute = PropertiesIndexRouteImport.update({
   id: '/properties/',
   path: '/properties/',
@@ -225,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/api/assistant': typeof ApiAssistantRoute
   '/community/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
+  '/location-intelligence/compare': typeof LocationIntelligenceCompareRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/location-intelligence/': typeof LocationIntelligenceIndexRoute
   '/properties/': typeof PropertiesIndexRoute
@@ -257,6 +265,7 @@ export interface FileRoutesByTo {
   '/api/assistant': typeof ApiAssistantRoute
   '/community/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
+  '/location-intelligence/compare': typeof LocationIntelligenceCompareRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/location-intelligence': typeof LocationIntelligenceIndexRoute
   '/properties': typeof PropertiesIndexRoute
@@ -291,6 +300,7 @@ export interface FileRoutesById {
   '/api/assistant': typeof ApiAssistantRoute
   '/community_/$threadId': typeof CommunityThreadIdRoute
   '/location-intelligence/$area': typeof LocationIntelligenceAreaRoute
+  '/location-intelligence/compare': typeof LocationIntelligenceCompareRoute
   '/properties/$id': typeof PropertiesIdRoute
   '/location-intelligence/': typeof LocationIntelligenceIndexRoute
   '/properties/': typeof PropertiesIndexRoute
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/community/$threadId'
     | '/location-intelligence/$area'
+    | '/location-intelligence/compare'
     | '/properties/$id'
     | '/location-intelligence/'
     | '/properties/'
@@ -357,6 +368,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/community/$threadId'
     | '/location-intelligence/$area'
+    | '/location-intelligence/compare'
     | '/properties/$id'
     | '/location-intelligence'
     | '/properties'
@@ -390,6 +402,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/community_/$threadId'
     | '/location-intelligence/$area'
+    | '/location-intelligence/compare'
     | '/properties/$id'
     | '/location-intelligence/'
     | '/properties/'
@@ -421,6 +434,7 @@ export interface RootRouteChildren {
   ApiAssistantRoute: typeof ApiAssistantRoute
   CommunityThreadIdRoute: typeof CommunityThreadIdRoute
   LocationIntelligenceAreaRoute: typeof LocationIntelligenceAreaRoute
+  LocationIntelligenceCompareRoute: typeof LocationIntelligenceCompareRoute
   PropertiesIdRoute: typeof PropertiesIdRoute
   LocationIntelligenceIndexRoute: typeof LocationIntelligenceIndexRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
@@ -619,6 +633,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocationIntelligenceAreaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/location-intelligence/compare': {
+      id: '/location-intelligence/compare'
+      path: '/location-intelligence/compare'
+      fullPath: '/location-intelligence/compare'
+      preLoaderRoute: typeof LocationIntelligenceCompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/properties/': {
       id: '/properties/'
       path: '/properties'
@@ -690,6 +711,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAssistantRoute: ApiAssistantRoute,
   CommunityThreadIdRoute: CommunityThreadIdRoute,
   LocationIntelligenceAreaRoute: LocationIntelligenceAreaRoute,
+  LocationIntelligenceCompareRoute: LocationIntelligenceCompareRoute,
   PropertiesIdRoute: PropertiesIdRoute,
   LocationIntelligenceIndexRoute: LocationIntelligenceIndexRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,

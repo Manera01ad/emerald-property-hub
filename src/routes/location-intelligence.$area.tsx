@@ -120,6 +120,11 @@ function LocalityPage() {
         Data quality: <EvidenceBadge evidence={dataQuality} />
         {checkedAt ? `Area data checked ${checkedAt}.` : "No area data published for this locality yet."}
       </p>
+      <Button asChild variant="outline" size="sm" className="mt-3">
+        <Link to="/location-intelligence/compare" search={{ a: locality.slug, b: "" }} data-testid="compare-with-another-locality-button">
+          Compare with another locality
+        </Link>
+      </Button>
 
       <div className="mt-6 flex gap-2">
         {(["snapshot", "map", "sources"] as const).map((t) => (

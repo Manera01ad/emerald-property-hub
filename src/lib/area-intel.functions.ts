@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { AREAS } from "@/lib/areas";
 import { overpassAreaQuery, summariseArea, type OsmElement } from "@/lib/area-intel";
+import { withOfficialFlood } from "@/lib/flood";
 
 const OVERPASS = [
   "https://overpass-api.de/api/interpreter",
@@ -60,7 +61,10 @@ export const refreshAreaIntelligence = createServerFn({ method: "POST" })
     }
     if (elevation === null) throw new Error("Height data is unavailable. No incomplete area was saved; try again later.");
 
-    const summary = summariseArea(elements, pt.lat, pt.lng, elevation);
+    // An admin-filed official flood record lives in the same summary. Carry it over so a
+    // refresh of open map data never deletes official evidence.
+    const { data: previous } = await context.supabase.from("area_intelligence").select("summary").eq("city", data.city).eq("area", data.area).maybeSingle();
+    const summary = withOfficialFlood(summariseArea(elements, pt.lat, pt.lng, elevation), previous?.summary);
     const now = new Date().toISOString();
     const sources = [
       { name: "OpenStreetMap contributors (ODbL)", url: "https://www.openstreetmap.org/copyright", fetched_at: now },
