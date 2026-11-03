@@ -7,6 +7,16 @@ describe("report layout", () => {
     expect(humanize("monthlyRent")).toBe("Monthly rent");
   });
 
+  it("keeps short forms upper-case and spells out units", () => {
+    expect(humanize("emi")).toBe("EMI");
+    expect(humanize("doc_ec_current")).toBe("Doc EC current");
+    expect(humanize("stamp_duty_pct")).toBe("Stamp duty %");
+    expect(humanize("price_per_sqft")).toBe("Price per sq ft");
+    expect(humanize("id")).toBe("ID");
+    expect(humanize("rera_registered")).toBe("RERA registered");
+    expect(humanize("emiAmount")).toBe("EMI amount");
+  });
+
   it("shows missing values as Unknown, never blank", () => {
     expect(cellHtml(null)).toContain("Unknown");
     expect(cellHtml(undefined)).toContain("Unknown");
@@ -24,7 +34,7 @@ describe("report layout", () => {
   it("nests records as field/value tables and escapes everything", () => {
     const html = tableHtml({ buy: { emi: 42000 }, note: "<script>x</script>" });
     expect(html).toContain('<th scope="row">Buy</th>');
-    expect(html).toContain('<th scope="row">Emi</th>');
+    expect(html).toContain('<th scope="row">EMI</th>');
     expect(html).toContain("&lt;script&gt;");
     expect(html).not.toContain("<script>");
   });
