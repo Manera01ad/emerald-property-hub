@@ -51,7 +51,7 @@ export function LocationMap({ center, zoom = 11, view = "roadmap", pins = [], fo
       layer.on("tileerror", () => setTileError(true));
       return layer.addTo(instance);
     });
-    return () => { layers.forEach((layer) => { layer.off(); layer.remove(); }); };
+    return () => { layers.forEach((layer) => { layer.remove(); layer.off("tileerror"); }); };
   }, [ready, view, attempt]);
 
   useEffect(() => {
