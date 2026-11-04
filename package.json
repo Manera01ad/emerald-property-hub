@@ -22,6 +22,8 @@
   "dependencies": {
     "@ai-sdk/openai": "^4.0.99",
     "@ai-sdk/react": "^4.0.152",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@lovable.dev/mcp-js": "^3.0.5",
