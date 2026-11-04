@@ -52,7 +52,7 @@ export const signPublicPhotos = createServerFn({ method: "POST" })
 
     const allowed = new Set<string>();
     for (const row of rows ?? []) {
-      for (const photo of (row.photos as string[] | null) ?? []) if (safePath(photo)) allowed.add(photo);
+      for (const photo of (row.photos as string[] | null) ?? []) if (isSafePhotoPath(photo)) allowed.add(photo);
     }
     return sign(paths.filter((p) => allowed.has(p)));
   });
