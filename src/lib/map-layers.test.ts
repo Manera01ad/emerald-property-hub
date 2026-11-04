@@ -20,4 +20,7 @@ describe("keyless map views", () => {
       for (const layer of mapLayers(view)) expect(layer.url).not.toMatch(/google|key=|token=/);
     }
   });
+  it("overzooms existing Terrain tiles instead of requesting unavailable street-level detail", () => {
+    expect(mapLayers("terrain")[0]?.maxNativeZoom).toBe(16);
+  });
 });

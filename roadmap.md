@@ -1,4 +1,5 @@
 # Roadmap (Super Intelligence expansion)
+- [ ] Verify every map display uses Leaflet, preserve search/coordinates/four views, and correct close-zoom Terrain coverage
 - [x] Keyless map displays: Leaflet/OSM + Esri four views and coordinate pin verified on 375px/1280px; property display replaced; automatic build OK; 577 tests pass
 - [ ] Complete Google API removal (blocked: maps.functions.ts, places.functions.ts and research/engine.server.ts are owner-only Tier 3; public /map no longer imports or calls them, fonts self-hosted; existing admin/research calls and managed connector remain)
 - [x] Mobile home-screen support: manifest, standalone launch metadata and PropWise icons; no offline cache or account/data changes
