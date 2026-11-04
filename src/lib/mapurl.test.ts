@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { parseLocationInput, validLatLng } from "./mapurl";
 
 describe("parseLocationInput", () => {
+  it("reads OpenStreetMap pins and camera coordinates", () => {
+    expect(parseLocationInput("https://www.openstreetmap.org/?mlat=13.0827&mlon=80.2707#map=16/13/80")).toEqual({ ok: true, point: { lat: 13.0827, lng: 80.2707 } });
+    expect(parseLocationInput("https://www.openstreetmap.org/#map=16/13.0827/80.2707")).toEqual({ ok: true, point: { lat: 13.0827, lng: 80.2707 } });
+  });
   it("reads @lat,lng links", () => {
     const r = parseLocationInput("https://www.google.com/maps/@13.0827,80.2707,15z");
     expect(r).toEqual({ ok: true, point: { lat: 13.0827, lng: 80.2707 } });
