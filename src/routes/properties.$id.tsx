@@ -23,6 +23,8 @@ import { priceLabel, priceUnit, transactionTypeOf, termsSummary, TRANSACTION_LAB
 import { hiddenReasons } from "@/lib/visibility";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
+import { LocationMap } from "@/components/LocationMap";
+import { validLatLng } from "@/lib/mapurl";
 
 /** The asking price is what the seller states, so it is always a CLAIM, never verified by us. */
 const ASKING_PRICE_EVIDENCE: Evidence = "CLAIM";
@@ -258,14 +260,15 @@ function PropertyPage() {
                 })}
               </div>
             )}
-            {p.latitude && p.longitude && import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] && (
-              <iframe title="Property location map" loading="lazy" className="mt-4 h-64 w-full rounded-lg border" referrerPolicy="no-referrer-when-downgrade"
-                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"]}&q=${p.latitude},${p.longitude}&zoom=14`} />
+            {validLatLng(p.latitude, p.longitude) && (
+              <div className="mt-4 h-64 overflow-hidden rounded-lg border">
+                <LocationMap center={{ lat: Number(p.latitude), lng: Number(p.longitude) }} zoom={14} pins={[{ id: p.id, point: { lat: Number(p.latitude), lng: Number(p.longitude) }, label: p.title }]} />
+              </div>
             )}
             {p.latitude && p.longitude && (
               <a className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline" target="_blank" rel="noreferrer"
-                href={`https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}`}>
-                Open location in Google Maps <ExternalLink className="size-3.5" />
+                href={`https://www.openstreetmap.org/?mlat=${p.latitude}&mlon=${p.longitude}#map=16/${p.latitude}/${p.longitude}`}>
+                Open location in OpenStreetMap <ExternalLink className="size-3.5" />
               </a>
             )}
             <p className="mt-3 text-xs text-muted-foreground">Distances are straight-line estimates with their source shown, not travel distances or times.</p>

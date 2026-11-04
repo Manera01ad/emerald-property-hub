@@ -94,3 +94,4 @@ One change per pull request. Three fixes are three pull requests. A large diff c
 - The help assistant (src/lib/assistant, /api/assistant) verifies the caller's token and saves chats under RLS; AI keys stay server-side.
 - Area intelligence uses pure rules and admin-only fetching; rows stay hidden until admin publication.
 - Home-screen support uses a manifest and icons only, without offline caches, to preserve preview freshness.
+- Public map displays share LocationMap, dynamically importing Leaflet inside an effect; map-layer definitions stay browser-safe and preserve provider attribution, so SSR and rendering never require Google credentials. Existing authenticated geocoding/routing services remain separate.
