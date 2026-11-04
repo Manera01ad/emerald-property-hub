@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { LAYERS, LAYER_KEYS, overpassQuery, parseOverpass, type PoiWithDistance } from "@/lib/livability";
-import { OSM_STYLE, loadMapLibre } from "@/lib/maplibre";
+import { LocationMap } from "@/components/LocationMap";
 
 const OVERPASS = "https://overpass-api.de/api/interpreter";
 const RADIUS_M = 2000;
@@ -11,34 +11,26 @@ const RADIUS_M = 2000;
  * instead of showing an empty map that looks like a result.
  */
 export function LocalityMap({ name, lat, lng }: { name: string; lat: number; lng: number }) {
-  const el = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
   const [pois, setPois] = useState<PoiWithDistance[]>([]);
 
   useEffect(() => {
     let dead = false;
-    let map: any = null;
     const ctl = new AbortController();
-    loadMapLibre()
-      .then((ml) => {
-        if (dead || !el.current) return;
-        map = new ml.Map({ container: el.current, center: [lng, lat], zoom: 13, style: OSM_STYLE });
-        map.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
-        new ml.Marker({ color: "#0f172a" }).setLngLat([lng, lat]).addTo(map);
-      })
-      .catch(() => { if (!dead) setState("error"); });
 
     fetch(OVERPASS, { method: "POST", body: new URLSearchParams({ data: overpassQuery(lat, lng, RADIUS_M) }), signal: ctl.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((json: { elements?: any[] }) => { if (!dead) { setPois(parseOverpass(json.elements ?? [], lat, lng)); setState("ok"); } })
       .catch((e) => { if (!dead && (e as Error).name !== "AbortError") setState("error"); });
 
-    return () => { dead = true; ctl.abort(); map?.remove(); };
+    return () => { dead = true; ctl.abort(); };
   }, [lat, lng]);
 
   return (
     <div>
-      <div ref={el} className="h-80 w-full overflow-hidden rounded-xl border bg-muted" role="img" aria-label={`Map around ${name}`} />
+      <div className="h-80 w-full overflow-hidden rounded-xl border bg-muted" aria-label={`Map around ${name}`}>
+        <LocationMap center={{ lat, lng }} zoom={13} pins={[{ id: name, point: { lat, lng }, label: name }]} />
+      </div>
       {state === "error" ? (
         <p className="mt-3 text-sm text-muted-foreground">
           Unknown — the open map place lookup did not answer, so we cannot list what is near {name} right now. Try again later.

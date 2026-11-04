@@ -14,7 +14,8 @@ import { formatINR } from "@/lib/format";
 import { LAYERS, LAYER_KEYS, bboxKey, distanceKm, livability, overpassBboxQuery, overpassQuery, parseOverpass, snapBbox, walkMinutes, type LayerKey, type PoiWithDistance } from "@/lib/livability";
 import { AREAS, CITIES, RADIUS_OPTIONS, areaPoint } from "@/lib/areas";
 import { transactionTypeOf } from "@/lib/transaction";
-import { OSM_STYLE, loadMapLibre } from "@/lib/maplibre";
+import type * as Leaflet from "leaflet";
+import { mapLayers } from "@/lib/map-layers";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 import { searchString } from "@/lib/search-params";
 import { LOCATION_FILTER_GRID, SHRINKABLE_SELECT } from "@/lib/responsive";
@@ -97,10 +98,11 @@ function ExplorePage() {
   const live = useMemo(() => (nearby.data ? livability(nearby.data) : null), [nearby.data]);
 
   const mapEl = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const pinMarkers = useRef<any[]>([]);
-  const poiMarkers = useRef<any[]>([]);
-  const officeMarker = useRef<any>(null);
+  const map = useRef<Leaflet.Map | null>(null);
+  const library = useRef<typeof Leaflet | null>(null);
+  const pinMarkers = useRef<Leaflet.Marker[]>([]);
+  const poiMarkers = useRef<Leaflet.Marker[]>([]);
+  const officeMarker = useRef<Leaflet.Marker | null>(null);
   const [ready, setReady] = useState(false);
   const [viewPois, setViewPois] = useState<PoiWithDistance[]>([]);
   const [placesState, setPlacesState] = useState<"zoom" | "loading" | "ok" | "error">("zoom");
@@ -108,24 +110,26 @@ function ExplorePage() {
 
   useEffect(() => {
     let dead = false;
-    loadMapLibre().then((ml) => {
+    let observer: ResizeObserver | undefined;
+    import("leaflet").then((L) => {
       if (dead || !mapEl.current) return;
-      map.current = new ml.Map({
-        container: mapEl.current,
-        center: [CHENNAI.lng, CHENNAI.lat],
-        zoom: 10,
-        style: OSM_STYLE,
-      });
-      map.current.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
+      library.current = L;
+      const instance = L.map(mapEl.current, { center: [CHENNAI.lat, CHENNAI.lng], zoom: 10, zoomControl: false });
+      map.current = instance;
+      L.control.zoom({ position: "topright" }).addTo(instance);
+      for (const layer of mapLayers("roadmap")) L.tileLayer(layer.url, { attribution: layer.attribution, maxNativeZoom: layer.maxNativeZoom, maxZoom: 20 }).addTo(instance);
+      observer = new ResizeObserver(() => instance.invalidateSize());
+      observer.observe(mapEl.current);
       setReady(true);
-    }).catch((e) => setMapErr(e.message));
-    return () => { dead = true; map.current?.remove(); map.current = null; };
+    }).catch((e) => { if (!dead) setMapErr(e.message); });
+    return () => { dead = true; observer?.disconnect(); map.current?.remove(); map.current = null; };
   }, []);
 
   // Property pins
   useEffect(() => {
-    if (!ready) return;
-    const ml = window.maplibregl;
+    const L = library.current;
+    const instance = map.current;
+    if (!ready || !L || !instance) return;
     pinMarkers.current.forEach((m) => m.remove());
     pinMarkers.current = visible.map((p) => {
       const el = document.createElement("button");
@@ -135,27 +139,27 @@ function ExplorePage() {
       el.setAttribute("aria-label", `${p.title}, ${perMonth ? `${formatINR(p.asking_price)} a month` : formatINR(p.asking_price)}`);
       el.className = `rounded-full border-2 border-white px-2 py-0.5 text-xs font-semibold text-white shadow ${p.id === selectedId ? "bg-gold" : "bg-primary"}`;
       el.onclick = (ev) => { ev.stopPropagation(); setSelectedId(p.id); };
-      return new ml.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(map.current);
+      return L.marker([p.lat, p.lng], { icon: L.divIcon({ className: "property-map-price", html: el, iconSize: [100, 28], iconAnchor: [50, 14] }) }).addTo(instance);
     });
     if (visible.length && !selectedId) {
-      const b = new ml.LngLatBounds();
-      visible.forEach((p) => b.extend([p.lng, p.lat]));
-      map.current.fitBounds(b, { padding: 70, maxZoom: 14, duration: 0 });
+      const b = L.latLngBounds(visible.map((p) => [p.lat, p.lng] as [number, number]));
+      instance.fitBounds(b, { padding: [70, 70], maxZoom: 14, animate: false });
     }
   }, [ready, visible, selectedId]);
 
   // Fly to selection
   useEffect(() => {
-    if (ready && selected) map.current.flyTo({ center: [selected.lng, selected.lat], zoom: 14.5, duration: 600 });
+    if (ready && selected) map.current?.flyTo([selected.lat, selected.lng], 14, { duration: 0.6 });
   }, [ready, selected?.id]);
 
   // Places in the current map view, like a normal map: loads whenever the map stops moving at street level.
   useEffect(() => {
-    if (!ready) return;
     const m = map.current;
+    if (!ready || !m) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let ctl: AbortController | undefined;
     async function load() {
+      if (!m) return;
       if (m.getZoom() < MIN_PLACES_ZOOM) { setViewPois([]); setPlacesState("zoom"); return; }
       const bounds = m.getBounds();
       const box = snapBbox({ south: bounds.getSouth(), west: bounds.getWest(), north: bounds.getNorth(), east: bounds.getEast() });
@@ -186,29 +190,33 @@ function ExplorePage() {
 
   // Neighbourhood markers
   useEffect(() => {
-    if (!ready) return;
-    const ml = window.maplibregl;
+    const L = library.current;
+    const instance = map.current;
+    if (!ready || !L || !instance) return;
     poiMarkers.current.forEach((m) => m.remove());
     const source = selected ? nearby.data ?? [] : viewPois;
     poiMarkers.current = source.filter((p) => layers[p.layer]).slice(0, 300).map((p) => {
       const el = document.createElement("div");
       el.style.cssText = `width:12px;height:12px;border-radius:9999px;background:${LAYERS[p.layer].color};border:2px solid #fff;box-shadow:0 0 2px #0006;cursor:pointer`;
-      const popup = new ml.Popup({ offset: 10, closeButton: false }).setText(`${p.name} · ${LAYERS[p.layer].label}${selected ? ` · ${p.km.toFixed(1)} km` : ""}`);
-      return new ml.Marker({ element: el }).setLngLat([p.lng, p.lat]).setPopup(popup).addTo(map.current);
+      const text = document.createElement("span");
+      text.textContent = `${p.name} · ${LAYERS[p.layer].label}${selected ? ` · ${p.km.toFixed(1)} km` : ""}`;
+      return L.marker([p.lat, p.lng], { icon: L.divIcon({ className: "property-map-place", html: el, iconSize: [12, 12], iconAnchor: [6, 6] }) }).bindPopup(text).addTo(instance);
     });
   }, [ready, nearby.data, viewPois, layers, selected?.id]);
 
   // Move the map to the chosen area
   useEffect(() => {
-    if (ready && office) map.current.flyTo({ center: [office.lng, office.lat], zoom: 13 });
+    if (ready && office) map.current?.flyTo([office.lat, office.lng], 13);
   }, [ready, office?.lat, office?.lng]);
 
   // Area marker
   useEffect(() => {
-    if (!ready) return;
+    const L = library.current;
+    const instance = map.current;
+    if (!ready || !L || !instance) return;
     officeMarker.current?.remove();
     officeMarker.current = null;
-    if (office) officeMarker.current = new window.maplibregl.Marker({ color: "#0f172a" }).setLngLat([office.lng, office.lat]).addTo(map.current);
+    if (office) officeMarker.current = L.marker([office.lat, office.lng], { icon: L.divIcon({ className: "property-map-pin", html: '<span class="property-map-pin-dot property-map-focus-dot"></span>', iconSize: [24, 24], iconAnchor: [12, 12] }) }).addTo(instance);
   }, [ready, office]);
 
   const cost = selected ? purchaseCost(selected, rules) : null;
@@ -253,20 +261,20 @@ function ExplorePage() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <div className="relative">
+        <div className="relative isolate">
           <div ref={mapEl} className="h-[70vh] min-h-[420px] w-full overflow-hidden rounded-xl border" />
           {mapErr && <p role="alert" className="absolute inset-x-3 top-3 rounded bg-destructive px-3 py-2 text-sm text-destructive-foreground">{mapErr}</p>}
           {!isLoading && !located.length && (
-            <p className="pointer-events-none absolute inset-x-3 bottom-8 mx-auto w-fit max-w-full rounded-lg bg-background/95 px-3 py-2 text-center text-xs shadow">
+            <p className="pointer-events-none absolute z-[1000] inset-x-3 bottom-8 mx-auto w-fit max-w-full rounded-lg bg-background/95 px-3 py-2 text-center text-xs shadow">
               No homes with map locations yet. <Link to="/consult" className="pointer-events-auto underline">Tell us what you need</Link> and we will find homes for you.
             </p>
           )}
           {!selected && (
-            <p className="pointer-events-none absolute bottom-8 left-3 rounded bg-background/95 px-2 py-1 text-xs shadow">
+            <p className="pointer-events-none absolute z-[1000] bottom-8 left-3 rounded bg-background/95 px-2 py-1 text-xs shadow">
               {placesState === "zoom" ? "Zoom in to see schools, hospitals, shops and transit" : placesState === "loading" ? "Loading places…" : placesState === "error" ? "Place data is busy. Move the map to try again." : `${viewPois.filter((p) => layers[p.layer]).length} places shown`}
             </p>
           )}
-          <div className="absolute left-3 top-3 flex flex-wrap gap-1.5 rounded-lg bg-background/95 p-2 shadow">
+          <div className="absolute left-3 top-3 z-[1000] flex flex-wrap gap-1.5 rounded-lg bg-background/95 p-2 shadow">
             {LAYER_KEYS.map((k) => (
               <button key={k} type="button" aria-pressed={layers[k]} onClick={() => setLayers((l) => ({ ...l, [k]: !l[k] }))}
                 className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${layers[k] ? "bg-foreground text-background" : "bg-background"}`}>

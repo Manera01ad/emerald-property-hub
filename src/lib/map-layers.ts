@@ -18,7 +18,7 @@ const labels = {
 const terrain = {
   url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
   attribution: 'Tiles &copy; Esri, HERE, Garmin, USGS, NGA, and the GIS User Community',
-  maxNativeZoom: 19,
+  maxNativeZoom: 16,
 };
 
 export function mapLayers(view: MapView) {
