@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { publicPropertiesQuery, type Property } from "@/lib/data";
@@ -9,8 +8,10 @@ import { formatINR } from "@/lib/format";
 import { parseLocationInput, validLatLng, type LatLng } from "@/lib/mapurl";
 import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { transactionTypeOf } from "@/lib/transaction";
-import { geocodeAddress, travelRoute } from "@/lib/maps.functions";
+import { searchLocation } from "@/lib/open-location-search";
 import { useSession } from "@/lib/auth";
+import { LocationMap } from "@/components/LocationMap";
+import type { MapView } from "@/lib/map-layers";
 
 export const Route = createFileRoute("/map")({
   staticData: { sitemap: true },
@@ -39,74 +40,24 @@ const OFFICIAL = [
 ] as const;
 const CHENNAI = { lat: 13.0827, lng: 80.2707 };
 
-declare global { interface Window { __pwMapsReady?: () => void; google?: any } }
-let loader: Promise<void> | null = null;
-function loadMaps(): Promise<void> {
-  if (window.google?.maps?.Map) return Promise.resolve();
-  if (loader) return loader;
-  const key = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"];
-  const ch = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID"] ?? "";
-  if (!key) return Promise.reject(new Error("Google Maps key missing"));
-  loader = new Promise((resolve, reject) => {
-    window.__pwMapsReady = () => resolve();
-    const s = document.createElement("script");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&loading=async&callback=__pwMapsReady&channel=${ch}`;
-    s.async = true;
-    s.onerror = () => { loader = null; reject(new Error("Google Maps failed to load")); };
-    document.head.appendChild(s);
-  });
-  return loader;
-}
-
 function MapPage() {
   const { data: props = [], error: propsError } = useQuery(publicPropertiesQuery);
   const { session } = useSession();
-  const el = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const pin = useRef<any>(null);
-  const markers = useRef<any[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [mapErr, setMapErr] = useState("");
-  const [view, setView] = useState<string>("hybrid");
+  const [view, setView] = useState<MapView>("hybrid");
   const [input, setInput] = useState("");
   const [address, setAddress] = useState("");
   const [msg, setMsg] = useState("");
   const [point, setPoint] = useState<{ p: LatLng; label: string; approx: boolean } | null>(null);
   const [selected, setSelected] = useState<Property | null>(null);
-  const geocode = useServerFn(geocodeAddress);
+  const [searching, setSearching] = useState(false);
 
-  const located = props.filter((p) => validLatLng(p.latitude, p.longitude));
-
-  useEffect(() => {
-    if (window.location.hostname.includes("-devserver-")) { setStatus("error"); setMapErr("The live map is hidden in this private preview. Open the published site to see it."); return; }
-    (window as any).gm_authFailure = () => { setStatus("error"); setMapErr("Google Maps refused this website address. The map works only on the PropWise site addresses the key allows."); };
-    loadMaps().then(() => {
-      if (!el.current) return;
-      const g = window.google.maps;
-      map.current = new g.Map(el.current, { center: CHENNAI, zoom: 11, mapTypeId: "hybrid", clickableIcons: false, mapTypeControl: false, streetViewControl: false });
-      setStatus("ready");
-    }).catch((e: Error) => { setStatus("error"); setMapErr(e.message); });
-  }, []);
-
-  useEffect(() => { map.current?.setMapTypeId(view); }, [view, status]);
-
-  useEffect(() => {
-    if (status !== "ready") return;
-    const g = window.google.maps;
-    markers.current.forEach((m) => m.setMap(null));
-    markers.current = located.map((p) => {
-      const m = new g.Marker({ map: map.current, position: { lat: Number(p.latitude), lng: Number(p.longitude) }, title: p.title });
-      m.addListener("click", () => setSelected(p));
-      return m;
-    });
-  }, [status, located.length]);
+  const located = props.flatMap((p) => {
+    const point = validLatLng(p.latitude, p.longitude);
+    return point ? [{ id: p.id, point, label: p.title }] : [];
+  });
 
   function goTo(p: LatLng, label: string, approx: boolean) {
     setPoint({ p, label, approx });
-    if (status !== "ready") return;
-    map.current.setCenter(p); map.current.setZoom(18);
-    pin.current?.setMap(null);
-    pin.current = new window.google.maps.Marker({ map: map.current, position: p, title: label, opacity: 0.8 });
   }
 
   function onPaste() {
@@ -115,15 +66,18 @@ function MapPage() {
     setMsg(""); goTo(r.point, "Pasted location", false);
   }
   async function onSearch() {
-    if (!session) return setMsg("Please sign in to search addresses (this keeps Google usage under control).");
+    if (searching) return;
     if (address.trim().length < 3) return setMsg("Type at least 3 characters.");
+    setSearching(true);
     setMsg("Searching…");
     try {
-      const res = await geocode({ data: { address } });
+      const res = await searchLocation(address);
       if (!res.length) return setMsg("No match found for that address.");
-      const top = res[0]!;
+      const top = res[0];
+      if (!top) return setMsg("No match found for that address.");
       setMsg(""); goTo({ lat: top.lat, lng: top.lng }, top.address, top.approximate);
     } catch (e) { setMsg((e as Error).message); }
+    finally { setSearching(false); }
   }
   function pickProperty(id: string) {
     const p = props.find((x) => x.id === id); if (!p) return;
@@ -138,8 +92,8 @@ function MapPage() {
       <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Satellite imagery is for orientation only. It is never used to draw legal plot boundaries, judge ownership, or feed our value estimates.</p>
 
       <div className="mt-6 grid gap-3 md:grid-cols-3">
-        <div className="flex gap-2"><Input aria-label="Google Maps link or coordinates" placeholder="Google Maps link or 13.08, 80.27" value={input} onChange={(e) => setInput(e.target.value)} /><Button onClick={onPaste}>Go</Button></div>
-        <div className="flex gap-2"><Input aria-label="Address" placeholder="Search an address" value={address} onChange={(e) => setAddress(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSearch()} /><Button variant="outline" onClick={onSearch}>Search</Button></div>
+        <div className="flex gap-2"><Input aria-label="Map link or coordinates" placeholder="Map link or 13.08, 80.27" value={input} onChange={(e) => setInput(e.target.value)} /><Button onClick={onPaste}>Go</Button></div>
+        <div className="flex gap-2"><Input aria-label="Address" placeholder="Search an address" value={address} onChange={(e) => setAddress(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSearch()} /><Button variant="outline" disabled={searching} onClick={onSearch}>{searching ? "Searching…" : "Search"}</Button></div>
         <select aria-label="Choose a listing" className="h-10 rounded-md border bg-background px-3 text-sm" value={selected?.id ?? ""} onChange={(e) => pickProperty(e.target.value)}>
           <option value="">{props.length ? "Choose a listing…" : "No verified listings live yet"}</option>
           {props.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
@@ -149,19 +103,14 @@ function MapPage() {
       {propsError && <p className="mt-2 text-sm text-destructive">Couldn't load listings. Please refresh.</p>}
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {VIEWS.map(([v, l]) => <Button key={v} size="sm" variant={view === v ? "default" : "outline"} onClick={() => setView(v)}>{l}</Button>)}
+        {VIEWS.map(([v, l]) => <Button key={v} size="sm" aria-pressed={view === v} variant={view === v ? "default" : "outline"} onClick={() => setView(v)}>{l}</Button>)}
         <span className="self-center text-xs text-muted-foreground">{located.length} of {props.length} live listings have a map location</span>
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px]">
         <div className="relative h-[420px] overflow-hidden rounded-xl border bg-muted md:h-[560px]">
-          <div ref={el} className="h-full w-full" />
-          {status !== "ready" && (
-            <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
-              {status === "loading" ? "Loading map…" : mapErr}
-            </div>
-          )}
-          {point && <div className="absolute bottom-2 left-2 rounded bg-background/90 px-2 py-1 text-xs">{point.label} · {point.p.lat.toFixed(5)}, {point.p.lng.toFixed(5)}{point.approx && " · approximate location"}</div>}
+          <LocationMap center={CHENNAI} view={view} pins={located} focus={point} onSelect={(id) => setSelected(props.find((p) => p.id === id) ?? null)} />
+          {point && <div className="pointer-events-none absolute bottom-7 left-2 z-[1000] max-w-[calc(100%-1rem)] rounded bg-background/90 px-2 py-1 text-xs">{point.label} · {point.p.lat.toFixed(5)}, {point.p.lng.toFixed(5)}{point.approx && " · approximate location"}</div>}
         </div>
         <aside className="space-y-4 rounded-xl border p-4 text-sm">
           {selected ? <PropertyPanel p={selected} pool={props} signedIn={!!session} /> : <p className="text-muted-foreground">Choose a listing or click a pin to see its details. {props.length === 0 && "No verified listings are live yet."}</p>}
@@ -171,7 +120,7 @@ function MapPage() {
             <p className="mt-2 text-xs text-muted-foreground">Check ownership and approvals yourself on these sites or with a lawyer. PropWise does not verify them automatically.</p>
           </div>
           <Button asChild className="w-full"><Link to="/consult">Request a plot intelligence report</Link></Button>
-          <p className="text-xs text-muted-foreground">Map data © Google. Distances shown elsewhere as "straight-line" are not road distances.</p>
+          <p className="text-xs text-muted-foreground">Terrain shows a topographic map, not a flood assessment. Address search: Photon / OpenStreetMap, best-effort availability. Distances marked "straight-line" are not road distances.</p>
         </aside>
       </div>
     </div>
@@ -179,9 +128,9 @@ function MapPage() {
 }
 
 function PropertyPanel({ p, pool, signedIn }: { p: Property; pool: Property[]; signedIn: boolean }) {
-  const route = useServerFn(travelRoute);
   const [dest, setDest] = useState("");
   const [trip, setTrip] = useState("");
+  const [routeLink, setRouteLink] = useState("");
   const area = Number(p.property_type === "plot" ? p.land_area_sqft : p.built_area_sqft ?? p.land_area_sqft) || 0;
   // Comparables and the value estimate are sale concepts, so a rent or lease listing is
   // excluded: a monthly figure would otherwise be priced as if it were a purchase.
@@ -193,15 +142,13 @@ function PropertyPanel({ p, pool, signedIn }: { p: Property; pool: Property[]; s
   const na = <span className="text-muted-foreground">Not available</span>;
   const row = (k: string, val: React.ReactNode) => <div className="flex justify-between gap-3 border-b py-1"><span className="text-muted-foreground">{k}</span><span className="text-right">{val ?? na}</span></div>;
 
-  async function onTrip() {
+  function onTrip() {
+    setRouteLink("");
     if (!ll) return setTrip("This listing has no map location, so travel can't be worked out.");
     const r = parseLocationInput(dest);
     if (!r.ok) return setTrip(r.error);
-    setTrip("Working out route…");
-    try {
-      const res = await route({ data: { from: ll, to: r.point, mode: "DRIVE" } });
-      setTrip(res ? `About ${res.minutes} min by car, ${res.km} km by road (Google Routes, typical traffic not included).` : "Google found no route.");
-    } catch (e) { setTrip((e as Error).message); }
+    setTrip("");
+    setRouteLink(`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${ll.lat}%2C${ll.lng}%3B${r.point.lat}%2C${r.point.lng}`);
   }
 
   return (
@@ -224,6 +171,7 @@ function PropertyPanel({ p, pool, signedIn }: { p: Property; pool: Property[]; s
         {signedIn ? (<>
           <div className="flex gap-2"><Input aria-label="Destination coordinates" placeholder="Destination: 13.0, 80.2 or Maps link" value={dest} onChange={(e) => setDest(e.target.value)} /><Button size="sm" variant="outline" onClick={onTrip}>Route</Button></div>
           {trip && <p className="text-xs">{trip}</p>}
+          {routeLink && <a href={routeLink} target="_blank" rel="noopener noreferrer" className="text-primary underline">Open driving route in OpenStreetMap</a>}
         </>) : <p className="text-xs text-muted-foreground">Sign in to check road travel times.</p>}
       </div>
     </div>

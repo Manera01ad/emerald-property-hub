@@ -1,4 +1,6 @@
 # Roadmap (Super Intelligence expansion)
+- [x] Keyless map displays: Leaflet/OSM + Esri four views and coordinate pin verified on 375px/1280px; property display replaced; automatic build OK; 577 tests pass
+- [ ] Complete Google API removal (blocked: maps.functions.ts, places.functions.ts and research/engine.server.ts are owner-only Tier 3; public /map no longer imports or calls them, fonts self-hosted; existing admin/research calls and managed connector remain)
 - [x] Mobile home-screen support: manifest, standalone launch metadata and PropWise icons; no offline cache or account/data changes
 - [x] Area rollout: current pages load; bulk fetching continues past failures with progress; all 45 areas covered in tests; publish controls and 375/768/1440 layouts verified; 96 tests pass
 - [ ] Fetch remaining area data (blocked: free Overpass providers intermittently fail/time out; 7 of 45 saved with height, 1 public; new rows hidden)
