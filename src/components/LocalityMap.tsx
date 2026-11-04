@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { LAYERS, LAYER_KEYS, overpassQuery, parseOverpass, type PoiWithDistance } from "@/lib/livability";
 import { LocationMap } from "@/components/LocationMap";
 
