@@ -159,6 +159,7 @@ function ExplorePage() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let ctl: AbortController | undefined;
     async function load() {
+      if (!m) return;
       if (m.getZoom() < MIN_PLACES_ZOOM) { setViewPois([]); setPlacesState("zoom"); return; }
       const bounds = m.getBounds();
       const box = snapBbox({ south: bounds.getSouth(), west: bounds.getWest(), north: bounds.getNorth(), east: bounds.getEast() });
