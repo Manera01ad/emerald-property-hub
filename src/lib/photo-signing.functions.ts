@@ -26,7 +26,7 @@ const inputSchema = z.object({
 });
 
 /** A path is a bare object name inside the private bucket: no slashes at the start, no traversal. */
-function safePath(p: string): boolean {
+export function isSafePhotoPath(p: string): boolean {
   return p.length > 0 && !p.startsWith("/") && !p.includes("..") && !p.includes("//");
 }
 
