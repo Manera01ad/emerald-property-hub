@@ -32,7 +32,7 @@ export type SignedPhotos = { urlByPath: Record<string, string> };
 export const signPublicPhotos = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => inputSchema.parse(d))
   .handler(async ({ data }): Promise<SignedPhotos> => {
-    const paths = [...new Set(data.paths.filter(safePath))];
+    const paths = [...new Set(data.paths.filter(isSafePhotoPath))];
     if (!paths.length) return { urlByPath: {} };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -64,7 +64,7 @@ export const signAdminPhotos = createServerFn({ method: "POST" })
     });
     if (!isAdmin) throw new Error("Admins only");
 
-    const paths = [...new Set(data.paths.filter(safePath))];
+    const paths = [...new Set(data.paths.filter(isSafePhotoPath))];
     return sign(paths);
   });
 
