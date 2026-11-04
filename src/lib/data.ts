@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { localityDb } from "./localities-data";
 import { sortLocalities, visibleLocalities, type Locality } from "./localities";
 import { canSignPhotos } from "./photo-access";
+import { signAdminPhotos, signPublicPhotos } from "./photo-signing.functions";
 import { useIsAdmin, useSession } from "./auth";
 import type { VisibilityInput } from "./visibility";
 import type { CostRules } from "./deal";
@@ -100,19 +101,30 @@ export const publicPropertiesQuery = queryOptions({
   },
 });
 
-/** Resolve photo entries: full URLs pass through, storage paths get a temporary signed URL. */
-export function usePhotoUrls(photos: string[] | null | undefined) {
+/**
+ * Resolve photo entries: full URLs pass through, storage paths get a temporary signed link.
+ * Links are minted by a server function (see photo-signing.functions.ts), never by the
+ * browser: public callers only get links for publicly visible listings, verified admins
+ * also get links for drafts and other admin-only rows.
+ */
+export function usePhotoUrls(photos: string[] | null | undefined, isAdmin = false) {
   const list = photos ?? [];
   return useQuery({
-    queryKey: ["photos", list],
+    queryKey: ["photos", list, isAdmin],
     enabled: list.length > 0,
     staleTime: 50 * 60_000,
     queryFn: async () => {
       const paths = list.filter((p) => !/^https?:\/\//.test(p));
-      const signed: Record<string, string> = {};
+      let signed: Record<string, string> = {};
       if (paths.length) {
-        const { data } = await supabase.storage.from("property-photos").createSignedUrls(paths, 3600);
-        data?.forEach((d) => d.path && d.signedUrl && (signed[d.path] = d.signedUrl));
+        try {
+          const result = isAdmin
+            ? await signAdminPhotos({ data: { paths } })
+            : await signPublicPhotos({ data: { paths } });
+          signed = result.urlByPath;
+        } catch (error) {
+          console.warn("photo links unavailable", error);
+        }
       }
       return list.map((p) => (/^https?:\/\//.test(p) ? p : signed[p])).filter(Boolean) as string[];
     },

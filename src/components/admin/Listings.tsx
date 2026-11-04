@@ -17,6 +17,7 @@ import { VerificationBadge } from "@/components/Badges";
 import { APPROVALS, AVAILABILITY, DOCS, MARKETS, PLACE_CATEGORIES, PROPERTY_TYPES, VERIFICATION, typeLabel } from "@/lib/constants";
 import { formatINR } from "@/lib/format";
 import { usePhotoUrls, type Property } from "@/lib/data";
+import { useIsAdmin, useSession } from "@/lib/auth";
 import { ListingImport } from "./ListingImport";
 import { NearbyFromSources } from "./NearbyFromSources";
 import { MyLocationBar } from "@/components/MyLocationBar";
@@ -113,7 +114,10 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
   const [permission, setPermission] = useState(initial?.listing_permission ?? false);
   const [busy, setBusy] = useState(false);
   const { data: partners = [] } = useAdminTable("partners");
-  const { data: previews = [] } = usePhotoUrls(photos);
+  // Admin screen: links are minted through the admin path, so drafts preview too.
+  const { session } = useSession();
+  const { data: isAdmin } = useIsAdmin(session?.user.id);
+  const { data: previews = [] } = usePhotoUrls(photos, !!isAdmin);
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;

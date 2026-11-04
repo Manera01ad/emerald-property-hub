@@ -23,3 +23,11 @@ export function canSignPhotos(row: VisibilityInput, isAdmin: boolean): boolean {
 export function photosWithheld(row: VisibilityInput, isAdmin: boolean): boolean {
   return !canSignPhotos(row, isAdmin);
 }
+
+/**
+ * A photo path must be a bare object name inside the private bucket: no leading slash,
+ * no path traversal. Enforced wherever paths are accepted, client and server side.
+ */
+export function isSafePhotoPath(p: string): boolean {
+  return p.length > 0 && !p.startsWith("/") && !p.includes("..") && !p.includes("//");
+}
