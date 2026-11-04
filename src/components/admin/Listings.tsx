@@ -113,7 +113,8 @@ function ListingForm({ initial, onDone }: { initial: Property | null; onDone: (p
   const [permission, setPermission] = useState(initial?.listing_permission ?? false);
   const [busy, setBusy] = useState(false);
   const { data: partners = [] } = useAdminTable("partners");
-  const { data: previews = [] } = usePhotoUrls(photos);
+  // Admin screen: links are minted through the admin path, so drafts preview too.
+  const { data: previews = [] } = usePhotoUrls(photos, !!useIsAdmin(session?.user.id).data);
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;

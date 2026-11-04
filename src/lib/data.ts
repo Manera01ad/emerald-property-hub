@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { localityDb } from "./localities-data";
 import { sortLocalities, visibleLocalities, type Locality } from "./localities";
 import { canSignPhotos } from "./photo-access";
+import { signAdminPhotos, signPublicPhotos } from "./photo-signing.functions";
 import { useIsAdmin, useSession } from "./auth";
 import type { VisibilityInput } from "./visibility";
 import type { CostRules } from "./deal";
