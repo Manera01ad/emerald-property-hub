@@ -16,6 +16,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isSafePhotoPath } from "./photo-access";
 
 export type PhotoMode = "public" | "admin";
 
