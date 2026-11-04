@@ -1,5 +1,6 @@
 # Roadmap (Super Intelligence expansion)
 - [ ] Keyless maps: Leaflet/OSM, Esri satellite/hybrid/terrain, location controls, property map, desktop/mobile verification
+- [ ] Remove remaining Google Maps/API runtime dependencies and required keys; preserve compatible location functions; verify automatic production build
 - [x] Mobile home-screen support: manifest, standalone launch metadata and PropWise icons; no offline cache or account/data changes
 - [x] Area rollout: current pages load; bulk fetching continues past failures with progress; all 45 areas covered in tests; publish controls and 375/768/1440 layouts verified; 96 tests pass
 - [ ] Fetch remaining area data (blocked: free Overpass providers intermittently fail/time out; 7 of 45 saved with height, 1 public; new rows hidden)
