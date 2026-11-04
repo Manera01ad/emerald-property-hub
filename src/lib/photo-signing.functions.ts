@@ -26,11 +26,6 @@ const inputSchema = z.object({
   paths: z.array(z.string().min(1).max(300)).max(MAX_PATHS),
 });
 
-/** A path is a bare object name inside the private bucket: no slashes at the start, no traversal. */
-export function isSafePhotoPath(p: string): boolean {
-  return p.length > 0 && !p.startsWith("/") && !p.includes("..") && !p.includes("//");
-}
-
 export type SignedPhotos = { urlByPath: Record<string, string> };
 
 /** Public mode: sign only photos of publicly visible listings. No sign-in required. */
