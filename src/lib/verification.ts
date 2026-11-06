@@ -38,13 +38,25 @@ export type Fact = {
 };
 
 /**
- * A verification only counts while it is in date. An expired record is treated as
- * missing, because the underlying facts have not been re-checked.
+ * Database date columns use ISO calendar dates. Comparing malformed values as
+ * strings can accidentally make an expired or impossible date look current.
+ */
+function isValidISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+/**
+ * A verification only counts while it is in date. Missing dates are allowed for
+ * legacy records, but dates that ARE present must be valid calendar dates and
+ * must not claim a verification in the future or an expiry in the past.
  */
 export function isVerificationCurrent(p: ListingFacts, today: string = new Date().toISOString().slice(0, 10)): boolean {
   if (p.verification_status !== "verified" && p.verification_status !== "partially_verified") return false;
   if (!p.verification_evidence) return false;
-  if (p.verification_expiry && p.verification_expiry < today) return false;
+  if (p.verification_date && (!isValidISODate(p.verification_date) || p.verification_date > today)) return false;
+  if (p.verification_expiry && (!isValidISODate(p.verification_expiry) || p.verification_expiry < today)) return false;
   return true;
 }
 
@@ -58,14 +70,14 @@ const has = (v: unknown): boolean => v !== null && v !== undefined && v !== "";
 export function disclosureFor(p: ListingFacts, today?: string): { status: Disclosure; note: string } {
   const current = isVerificationCurrent(p, today);
   if (p.verification_status === "verified" && !current) {
-    return { status: "missing", note: "Verification has expired or has no evidence on record — treat as unverified." };
+    return { status: "missing", note: "Verification has expired, has invalid dates, or has no evidence on record — treat as unverified." };
   }
   // Partial verification is checked before the verified branch: some details were
   // checked and others were not, so the listing as a whole is still an estimate.
   if (p.verification_status === "partially_verified") {
     return current
       ? { status: "estimate", note: "Partially verified: some details checked, others owner-supplied." }
-      : { status: "estimate", note: "Partial verification has expired or has no evidence on record." };
+      : { status: "estimate", note: "Partial verification has expired, has invalid dates, or has no evidence on record." };
   }
   if (current) return { status: "verified", note: "Recorded and verified, with evidence and a current date." };
   return { status: "estimate", note: "Owner/developer supplied. Not independently verified." };
