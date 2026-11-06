@@ -1,0 +1,130 @@
+# PropWise AI CTO: manual task preparation with a locked execution gate.
+# No schedule, issue events, provider keys, paid actions or agent launches.
+# Changing the lock or adding a runner requires a separate owner-reviewed PR.
+name: CTO Agent Runner (gated)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Prepare a task packet; execution requests are still locked"
+        required: true
+        type: choice
+        default: plan
+        options:
+          - plan
+          - request-execution
+      issue:
+        description: "Reviewed CTO issue number, or all for a queue report"
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - "51"
+          - "52"
+          - "53"
+          - "54"
+          - "55"
+      agent:
+        description: "Use auto for the existing issue owner"
+        required: true
+        type: choice
+        default: auto
+        options:
+          - auto
+          - deepseek
+          - antigravity
+          - openhands
+          - chatgpt
+
+# Least privilege for the WHOLE workflow, including the future execution gate.
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: cto-agent-${{ github.repository }}-${{ inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Prepare CTO task packet (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out current reviewed branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test the routing and approval policy
+        run: node --test scripts/cto/orchestrator.test.mjs scripts/cto/prepare-run.test.mjs
+
+      - name: Read GitHub task queue
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/cto/orchestrator.mjs --mode queue --format json > "$RUNNER_TEMP/cto-queue.json"
+
+      - name: Prepare selected task or report why it is blocked
+        env:
+          CTO_AGENT_EXECUTION_ENABLED: ${{ vars.CTO_AGENT_EXECUTION_ENABLED }}
+          CTO_MODE: ${{ inputs.mode }}
+          CTO_ISSUE: ${{ inputs.issue }}
+          CTO_AGENT: ${{ inputs.agent }}
+          CTO_ACTOR: ${{ github.actor }}
+          CTO_REF: ${{ github.ref }}
+          CTO_REPOSITORY: ${{ github.repository }}
+        run: |
+          node scripts/cto/prepare-run.mjs \
+            --queue "$RUNNER_TEMP/cto-queue.json" \
+            --mode "$CTO_MODE" \
+            --issue "$CTO_ISSUE" \
+            --agent "$CTO_AGENT" \
+            --actor "$CTO_ACTOR" \
+            --ref "$CTO_REF" \
+            --repository "$CTO_REPOSITORY" \
+            --output "$RUNNER_TEMP/cto-result.json" \
+            --summary "$RUNNER_TEMP/cto-summary.md"
+          cat "$RUNNER_TEMP/cto-summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload task report for owner review
+        uses: actions/upload-artifact@v4
+        with:
+          name: cto-plan-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/cto-queue.json
+            ${{ runner.temp }}/cto-result.json
+            ${{ runner.temp }}/cto-summary.md
+          retention-days: 3
+          if-no-files-found: error
+
+  # This block deliberately refuses to run any LLM. It documents the future
+  # environment approval boundary without activating a paid agent.
+  #
+  # For the job even to *request* environment approval, the owner would need
+  # to set CTO_AGENT_EXECUTION_ENABLED=true and launch request-execution
+  # from main. After that, it still FAILS CLOSED until a later reviewed PR
+  # installs a specific pinned adapter with a separate provider spend limit.
+  execution-locked:
+    name: Agent execution (intentionally unavailable)
+    needs: prepare
+    if: ${{ inputs.mode == 'request-execution' && vars.CTO_AGENT_EXECUTION_ENABLED == 'true' && github.actor == 'Manera01ad' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    environment:
+      name: cto-agent-execution
+    steps:
+      - name: Fail closed without an approved, pinned, budgeted agent adapter
+        run: |
+          echo "External coding agents are NOT connected by this version." >> "$GITHUB_STEP_SUMMARY"
+          echo "No agent has been launched, and no paid API key has been used." >> "$GITHUB_STEP_SUMMARY"
+          echo "An explicit owner-approved adapter and spending controls are required." >> "$GITHUB_STEP_SUMMARY"
+          exit 1
