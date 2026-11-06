@@ -12,6 +12,11 @@ properties, see full purchase cost and locality risk, and ask an AI consultant.
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Operations:** [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
 
+## CTO development control
+
+- **Team responsibilities, approvals and nightly operating rules:** [`docs/CTO_TEAM.md`](docs/CTO_TEAM.md)
+- **Live engineering backlog:** [CTO Control Center #50](https://github.com/Manera01ad/emerald-property-hub/issues/50)
+
 ## Development
 
 Prefer working locally? You need [Bun](https://bun.sh) (or Node.js and npm).
