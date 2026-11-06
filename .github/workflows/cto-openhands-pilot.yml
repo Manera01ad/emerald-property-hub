@@ -1,0 +1,97 @@
+# Preview-only OpenHands integration. This workflow cannot launch an AI agent:
+# the optional external-action job has a hardcoded false condition.
+name: CTO OpenHands QA Pilot (disabled)
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Only the reviewed QA work order is permitted"
+        required: true
+        type: choice
+        default: "53"
+        options:
+          - "53"
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: cto-openhands-qa-preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    name: Validate OpenHands QA work order (no model calls)
+    if: ${{ github.repository == 'Manera01ad/emerald-property-hub' && github.ref == 'refs/heads/main' && github.actor == 'Manera01ad' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout reviewed repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test the CTO and OpenHands policies
+        run: node --test scripts/cto/orchestrator.test.mjs scripts/cto/prepare-run.test.mjs scripts/cto/openhands-pilot.test.mjs
+
+      - name: Load reviewed GitHub task queue (read only)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/cto/orchestrator.mjs --mode queue --format json > "$RUNNER_TEMP/cto-queue.json"
+
+      - name: Generate static OpenHands pilot instructions
+        env:
+          CTO_ISSUE: ${{ inputs.issue }}
+        run: |
+          node scripts/cto/openhands-pilot.mjs "$RUNNER_TEMP/cto-queue.json" "$RUNNER_TEMP/openhands-pilot"
+          cat "$RUNNER_TEMP/openhands-pilot/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload short-lived preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openhands-qa-preview-${{ github.run_id }}
+          path: ${{ runner.temp }}/openhands-pilot/
+          retention-days: 3
+          if-no-files-found: error
+
+  # IMPORTANT: This is an INACTIVE adapter example, not a working agent runner.
+  # There is no situation or dispatch input that can change this hardcoded
+  # false gate. A future PR must review security, billing, permissions and
+  # environment protection BEFORE this code can be enabled.
+  openhands-disabled:
+    name: OpenHands external execution (hard disabled)
+    if: ${{ false }}
+    needs: preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment:
+      name: cto-openhands-pilot
+    permissions:
+      contents: read
+    steps:
+      - name: Download reviewed task packet
+        uses: actions/download-artifact@v4
+        with:
+          pattern: openhands-qa-preview-*
+          path: pilot
+          merge-multiple: true
+
+      - name: Start OpenHands (NOT ENABLED)
+        uses: OpenHands/openhands-github-action@299f19e5122ec18b2b6ede744cbf51801096dc80 # pinned v1
+        with:
+          prompt: pilot/task.md
+          repository: Manera01ad/emerald-property-hub
+          selected-branch: agent/qa-issue-53
+          poll: "true"
+          timeout-seconds: "600"
+          poll-interval-seconds: "30"
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
