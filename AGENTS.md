@@ -1,16 +1,18 @@
-<!-- MIGRATION:BEGIN -->
+<!-- PLATFORM-STATUS:BEGIN -->
 > [!IMPORTANT]
-> This project is migrating off Lovable to self-hosted, zero-cost infrastructure.
-> The plan is `docs/PLAN.md`; the exit runbook is `docs/LOVABLE_EXIT.md`.
+> The owner confirms PropWise AI has ALREADY moved away from both Lovable.dev
+> and Lovable Cloud. Do not repeat a Lovable exit or database migration audit.
+> The canonical product-completion plan is `docs/INDEPENDENCE_PLAN.md`;
+> the current code and feature inventory is `docs/CURRENT_STATE.md`.
+> `docs/PLAN.md` and `docs/LOVABLE_EXIT.md` are historical references.
 >
-> Until the migration is complete, do not rewrite published git history — no
-> force pushing, rebasing, amending or squashing commits that are already pushed.
-> While the Lovable project still exists, rewriting history destroys the owner's
-> project history there. After the migration, the same rule holds for a simpler
-> reason: other clones depend on it.
+> Some Lovable-specific packages and files still exist in the repository.
+> Treat them as code cleanup candidates only after proving they are unused
+> and the independent build continues to pass.
 >
-> Keep the connected branch in a working state; `main` is the deploy source.
-<!-- MIGRATION:END -->
+> Never rewrite published git history (no force pushing, rebasing, or
+> amending commits already pushed). Keep `main` green and deployable.
+<!-- PLATFORM-STATUS:END -->
 
 ## Architecture rules
 - Data access uses the browser backend client with row-level security; public visibility of listings is enforced in policies (published + permission + not demo), so never rely on UI filters alone.
@@ -38,18 +40,18 @@ No change reaches `main` without both keys:
 1. **Machine key** — the `Verify` workflow passes (tests and build).
 2. **Human key** — the repository owner approves the pull request.
 
-`main` is production: it is the branch the site is built and deployed from. There
-is no staging environment, so a merge is a release. Before the migration completes
-the deploy is Lovable's; after it, the deploy is a Cloudflare Workers build gated
-on `Verify` (see `docs/LOVABLE_EXIT.md`). Either way, the two-key rule is the
-control: a green `Verify` run and the owner's approval.
+`main` is the protected source for the owner's independent deployment.
+A merge may trigger a release; never assume an isolated staging environment
+exists unless the current deployment settings verify it. The two-key control
+remains: a green `Verify` run and the owner's approval. The owner authorizes
+production deployment separately from code review.
 
 ### Never, under any circumstances
 
 - Push directly to `main`. Every change goes through a pull request.
 - Force push, rebase, amend, or squash commits that are already pushed. This rewrites published history and loses project history.
 - Apply database migrations. Write the migration file if asked; the owner runs it.
-- Deploy. The deploy is the owner's, whether Lovable today or Cloudflare after the migration.
+- Deploy. Production deployment is controlled by the owner on the independent host.
 - Access production data, or any secret listed under "Secrets" below.
 - Approve or merge your own pull request.
 
@@ -93,7 +95,7 @@ Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and public `VITE_*` val
 
 `bun run test` and `bun run build` must pass — they gate the pull request.
 
-`bun run type-check` and `bun run lint` are reported but do not block. Type-check **passes** (verified on `main` @ `d96a4ff`). Lint fails on pre-existing formatting debt only: `bun run lint` reports about 3,600 problems, almost all `prettier/prettier`, and they are fixable with `--fix`. Do not fix this debt opportunistically inside an unrelated pull request; it makes the diff unreviewable. Clear it in a dedicated pull request, and flip `continue-on-error` to `false` for each check once it is clean — type-check can be flipped today, lint once the formatting debt is cleared.
+`bun run type-check` and `bun run lint` are reported but do not block. Type-check passed in the last repository assessment (`docs/CURRENT_STATE.md`); re-run for each change. Lint has documented pre-existing formatting debt: do not combine repository-wide formatting with functional changes. Do not fix this debt opportunistically inside an unrelated pull request; it makes the diff unreviewable. Clear it in a dedicated pull request, and flip `continue-on-error` to `false` for each check once it is clean — type-check can be flipped today, lint once the formatting debt is cleared.
 
 ### Keep pull requests small
 
@@ -102,4 +104,4 @@ One change per pull request. Three fixes are three pull requests. A large diff c
 - The help assistant (src/lib/assistant, /api/assistant) verifies the caller's token and saves chats under RLS; AI keys stay server-side.
 - Area intelligence uses pure rules and admin-only fetching; rows stay hidden until admin publication.
 - Home-screen support uses a manifest and icons only, without offline caches, to preserve preview freshness.
-- All public map displays dynamically import Leaflet inside an effect and use keyless map-layer definitions with provider attribution; property and locality embeds share LocationMap, while Explore keeps its interactive POI overlays. Public address search uses explicit Photon queries and routing opens OpenStreetMap directions, so buyer maps never require Google credentials. Legacy owner-only research services require owner migration separately.
+- All public map displays dynamically import Leaflet inside an effect and use keyless map-layer definitions with provider attribution; property and locality embeds share LocationMap, while Explore keeps its interactive POI overlays. Public address search uses explicit Photon queries and routing opens OpenStreetMap directions, so buyer maps never require Google credentials. Owner-only research services require verification on the current independent backend before activation.
