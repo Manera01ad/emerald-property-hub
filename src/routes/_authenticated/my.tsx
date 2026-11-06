@@ -16,7 +16,7 @@ import { formatINR } from "@/lib/format";
 import { buyAnalysis, rentAnalysis, rentVsBuy, matchProperty, DUE_DILIGENCE_QUESTIONS } from "@/lib/buyer";
 import { buildReportEvidence } from "@/lib/decision-report";
 import { buildReportHtml } from "@/lib/report-html";
-import { transactionTypeOf } from "@/lib/transaction";
+import { TRANSACTION_LABELS, transactionTypeOf } from "@/lib/transaction";
 
 export const Route = createFileRoute("/_authenticated/my")({
   staticData: { sitemap: false },
@@ -76,7 +76,14 @@ function MyPage() {
       school_preference: f.school_preference || null, commute_destinations: list(f.commute_destinations),
       lifestyle_priorities: list(f.lifestyle_priorities), financing: f.financing || null, move_in_timeframe: f.move_in_timeframe || null,
     }, { onConflict: "user_id" });
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      if (f.intent === "lease" && (error.message.includes("check constraint") || error.message.includes("buyer_profiles_intent_check"))) {
+        toast.error("Saving lease intent requires pending database migration 0019 to be applied by the administrator.");
+        return;
+      }
+      toast.error(error.message);
+      return;
+    }
     toast.success("Preferences saved");
     qc.invalidateQueries({ queryKey: ["buyer-profile"] });
   }
@@ -98,7 +105,20 @@ function MyPage() {
   const rent = rentAnalysis(r);
   const rvb = rentVsBuy(buy, r, horizon);
 
-  const matches = useMemo(() => (props ?? []).map((p) => ({ p, m: matchProperty(p, f, rules) })).sort((a, z) => (z.m.overall ?? -1) - (a.m.overall ?? -1)), [props, f, rules]);
+  const matches = useMemo(
+    () =>
+      (props ?? [])
+        .map((p) => {
+          const type = transactionTypeOf(p);
+          const effectivePref = {
+            ...f,
+            budget: type === "buy" ? f.budget : (f.monthly_rent_budget ?? f.budget),
+          };
+          return { p, m: matchProperty(p, effectivePref, rules) };
+        })
+        .sort((a, z) => (z.m.overall ?? -1) - (a.m.overall ?? -1)),
+    [props, f, rules],
+  );
 
   async function saveReport(kind: "buy" | "rent" | "rent_vs_buy") {
     // Published area rows only (public-read policy), for the flood context of each locality.
@@ -144,18 +164,67 @@ function MyPage() {
 
         <TabsContent value="profile" className="space-y-4 rounded-xl border bg-card p-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>I want to</Label>
-              <select className={sel} value={f.intent} onChange={(e) => setF({ ...f, intent: e.target.value })}><option value="buy">Buy</option><option value="rent">Rent</option></select></div>
-            {f.intent === "buy"
-              ? <div className="space-y-1.5"><Label>Total budget (₹)</Label><Input type="number" value={f.budget ?? ""} onChange={(e) => setF({ ...f, budget: n(e.target.value) })} /></div>
-              : <div className="space-y-1.5"><Label>Monthly rent budget (₹)</Label><Input type="number" value={f.monthly_rent_budget ?? ""} onChange={(e) => setF({ ...f, monthly_rent_budget: n(e.target.value) })} /></div>}
-            <div className="space-y-1.5"><Label>Min bedrooms</Label><Input type="number" min={0} value={f.bedrooms ?? ""} onChange={(e) => setF({ ...f, bedrooms: n(e.target.value) })} /></div>
-            <div className="space-y-1.5"><Label>Min area (sq ft)</Label><Input type="number" min={0} value={f.min_area_sqft ?? ""} onChange={(e) => setF({ ...f, min_area_sqft: n(e.target.value) })} /></div>
-            <div className="space-y-1.5"><Label>School preference</Label><Input placeholder="e.g. CBSE within 3 km" value={f.school_preference} onChange={(e) => setF({ ...f, school_preference: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Commute destinations (comma separated)</Label><Input value={f.commute_destinations} onChange={(e) => setF({ ...f, commute_destinations: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Lifestyle priorities (comma separated)</Label><Input value={f.lifestyle_priorities} onChange={(e) => setF({ ...f, lifestyle_priorities: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Financing</Label><Input placeholder="Home loan / self-funded" value={f.financing} onChange={(e) => setF({ ...f, financing: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Move-in timeframe</Label><Input placeholder="e.g. within 6 months" value={f.move_in_timeframe} onChange={(e) => setF({ ...f, move_in_timeframe: e.target.value })} /></div>
+            <div className="space-y-1.5">
+              <Label htmlFor="intent-select">I want to</Label>
+              <select id="intent-select" className={sel} value={f.intent} onChange={(e) => setF({ ...f, intent: e.target.value })}>
+                <option value="buy">Buy</option>
+                <option value="rent">Rent</option>
+                <option value="lease">Lease</option>
+              </select>
+            </div>
+            {f.intent === "buy" ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="total-budget-input">Total budget (₹)</Label>
+                <Input id="total-budget-input" type="number" value={f.budget ?? ""} onChange={(e) => setF({ ...f, budget: n(e.target.value) })} />
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label htmlFor="monthly-budget-input">
+                  {f.intent === "lease" ? "Monthly lease budget (₹)" : "Monthly rent budget (₹)"}
+                </Label>
+                <Input id="monthly-budget-input" type="number" value={f.monthly_rent_budget ?? ""} onChange={(e) => setF({ ...f, monthly_rent_budget: n(e.target.value) })} />
+              </div>
+            )}
+            {f.intent === "lease" && (
+              <div className="rounded-lg border border-warning/30 bg-warning-soft p-3 text-xs text-muted-foreground sm:col-span-2">
+                <p className="font-medium text-foreground">Lease preferences (Preview)</p>
+                <p className="mt-1">
+                  Long-term lease duration and permitted-use preferences will persist once database migration 0019 is applied by the administrator. In the meantime, your monthly lease budget is used to rank lease listings in Matches, and you can{" "}
+                  <Link to="/properties" search={{ transaction: "lease" }} className="font-medium text-primary underline underline-offset-4">
+                    browse verified Chennai lease listings
+                  </Link>
+                  .
+                </p>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="min-bedrooms-input">Min bedrooms</Label>
+              <Input id="min-bedrooms-input" type="number" min={0} value={f.bedrooms ?? ""} onChange={(e) => setF({ ...f, bedrooms: n(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="min-area-input">Min area (sq ft)</Label>
+              <Input id="min-area-input" type="number" min={0} value={f.min_area_sqft ?? ""} onChange={(e) => setF({ ...f, min_area_sqft: n(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="school-pref-input">School preference</Label>
+              <Input id="school-pref-input" placeholder="e.g. CBSE within 3 km" value={f.school_preference} onChange={(e) => setF({ ...f, school_preference: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="commute-dest-input">Commute destinations (comma separated)</Label>
+              <Input id="commute-dest-input" value={f.commute_destinations} onChange={(e) => setF({ ...f, commute_destinations: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="lifestyle-prio-input">Lifestyle priorities (comma separated)</Label>
+              <Input id="lifestyle-prio-input" value={f.lifestyle_priorities} onChange={(e) => setF({ ...f, lifestyle_priorities: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="financing-input">Financing</Label>
+              <Input id="financing-input" placeholder="Home loan / self-funded" value={f.financing} onChange={(e) => setF({ ...f, financing: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="timeframe-input">Move-in timeframe</Label>
+              <Input id="timeframe-input" placeholder="e.g. within 6 months" value={f.move_in_timeframe} onChange={(e) => setF({ ...f, move_in_timeframe: e.target.value })} />
+            </div>
           </div>
           <div><Label>Property types</Label><div className="mt-2 flex flex-wrap gap-2">{PROPERTY_TYPES.map((t) => (
             <Button key={t.value} size="sm" type="button" variant={f.property_types.includes(t.value) ? "default" : "outline"} onClick={() => toggle("property_types", t.value)}>{t.label}</Button>))}</div></div>
@@ -194,7 +263,13 @@ function MyPage() {
             <div className="rounded-xl border border-dashed p-8 text-muted-foreground">No published listings with owner permission are available yet, so there's nothing to rank. Your cost calculations and reports still work, and matches will appear as real listings are added.</div>
           ) : matches.map(({ p, m }) => (
             <div key={p.id} className="rounded-xl border bg-card p-5">
-              <div className="flex justify-between gap-2"><p className="font-display text-lg">{p.title}</p><p className="font-display text-2xl text-primary">{m.overall ?? "—"}</p></div>
+              <div className="flex justify-between gap-2">
+                <div>
+                  <p className="font-display text-lg">{p.title}</p>
+                  <p className="text-xs text-muted-foreground">{p.location} • {TRANSACTION_LABELS[transactionTypeOf(p)]}</p>
+                </div>
+                <p className="font-display text-2xl text-primary">{m.overall ?? "—"}</p>
+              </div>
               <ul className="mt-2 text-sm text-muted-foreground">{m.parts.map((x) => <li key={x.label}>{x.label}: {x.score ?? "n/a"} — {x.note}</li>)}</ul>
               {m.concerns.length > 0 && <p className="mt-2 text-sm text-destructive">{m.concerns.join(" ")}</p>}
               {m.missing.length > 0 && <p className="mt-1 text-xs text-muted-foreground">Missing: {m.missing.join(", ")}</p>}
