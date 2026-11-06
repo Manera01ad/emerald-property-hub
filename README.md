@@ -3,11 +3,11 @@
 Chennai property and location intelligence: search, compare and analyse
 properties, see full purchase cost and locality risk, and ask an AI consultant.
 
-**Migration decision (2026-11-06):** move both hosting and the Lovable Cloud backend to independently controlled services. The current backend must not be treated as already independent. Follow the data-export and backup gates before cutover.
+**Current project decision (2026-11-06):** the owner confirms PropWise AI has already moved off Lovable.dev and Lovable Cloud. The priority is finishing and maintaining the independent platform, not restarting the exit.
 
-- **Authoritative independence architecture and action plan:** [`docs/INDEPENDENCE_PLAN.md`](docs/INDEPENDENCE_PLAN.md)
-- **Older plan (superseded where contradictory):** [`docs/PLAN.md`](docs/PLAN.md)
-- **Exit runbook:** [`docs/LOVABLE_EXIT.md`](docs/LOVABLE_EXIT.md)
+- **Current product architecture and completion plan:** [`docs/INDEPENDENCE_PLAN.md`](docs/INDEPENDENCE_PLAN.md)
+- **Historical plan (not the active work order):** [`docs/PLAN.md`](docs/PLAN.md)
+- **Historical exit runbook:** [`docs/LOVABLE_EXIT.md`](docs/LOVABLE_EXIT.md)
 - **Cost model:** [`docs/COST_MODEL.md`](docs/COST_MODEL.md)
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Operations:** [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
