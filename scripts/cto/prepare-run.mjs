@@ -61,6 +61,8 @@ export function evaluateRequest(request, queue) {
   }
 
   if (mode === 'request-execution') {
+    // Never publish an executable task packet while external execution is locked.
+    packet = null;
     if (request.executionEnabled !== 'true') reasons.push('CTO_AGENT_EXECUTION_ENABLED is not explicitly enabled.');
     // Hard lock: no credentials or paid executors are wired in this PR.
     reasons.push('No external coding-agent adapter is connected. A separate owner-reviewed activation PR is required.');
