@@ -1,150 +1,156 @@
-# PropWise AI — Independent Platform Architecture and Migration Plan
+# PropWise AI — Independent Product Architecture & Completion Plan
 
-**Decision:** Leave Lovable hosting **and** Lovable Cloud. Keep the current GitHub application and its business logic. Develop through OpenHands pull requests. Target an owner-controlled Supabase project plus Cloudflare Workers.
+**Owner decision (2026-11-06): PropWise AI has ALREADY LEFT BOTH Lovable.dev AND Lovable Cloud.** This is a **post-exit product completion plan**, not an instruction to inspect, migrate from, export data from, or cancel Lovable. Respect the owner's completed migration. Investigate Lovable only if a specific, current code dependency is independently demonstrated to block a task.
 
-**Baseline:** 2026-11-06, GitHub `main` at `41de6877b74a6a572472bf0ff55f1a8a922c8835` (latest Verify completed successfully). This is a **repository assessment**, not a production data, authentication, or deployment verification.
+**Repository:** `Manera01ad/emerald-property-hub`; baseline `main` at `41de6877b74a6a572472bf0ff55f1a8a922c8835`. GitHub's latest `Verify` for that SHA passed. This is a source-and-CI fact; it does not establish the status of every live feature, current credentials, deployment or backend.
 
-> **Stop gate:** The owner has stated that production uses **Lovable Cloud**; independent database access and production backup are not confirmed. The older `docs/PLAN.md` and `docs/LOVABLE_EXIT.md` assert that the Supabase backend is already independently owned. **That assumption is unsafe. Do not follow their database-is-unchanged or cancellation steps.** A tracked Supabase project ID or endpoint is not proof of dashboard ownership or data migration.
+**Current direction:** GitHub is the source of truth; OpenHands develops in small PRs; retain the current TanStack Start + React application and PostgreSQL/Supabase-style data access. The repository includes an independent project reference in `supabase/config.toml` and `.env.example`. Confirm live infrastructure only when needed for a *specific* functional test, without redoing Lovable-exit discovery. Cloudflare Workers is the planned/referenced runtime in repository docs; deployment details should follow the actual independently hosted environment.
 
-## 1. Product objective and v1 boundary
+## 1. Product north star
 
-PropWise AI is a Chennai-first, buyer- and renter-led property decision assistant for **buy, rent, and lease**. Users should be able to express requirements, discover permitted and clearly sourced listings, compare prices and total cost, research localities (flood/drainage, transit, schools, infrastructure, accessibility), assess evidence and unknowns, create research briefs, and optionally request help. The single AI consultant is the front door, but never presents unverified facts as certified.
+**PropWise AI:** a Chennai-first decision intelligence platform for **buying, renting and leasing** plots, flats, homes and commercial property. Buyers should understand the full economics, evidence and unanswered questions *before* they act.
 
-**Phase-1 value:** reliable evidence, comparison, and enquiries for Chennai and nearby markets. Data correctness and human trust take priority over national coverage, unsupported forecasts, automatic scraping, a coin economy, or paid memberships. Community contributions and local research gigs are useful **after** moderation, consent, payouts, and safety controls work.
+The Phase 1 user journey:
 
-Evidence types must remain distinct: official source; verified; estimated; claim; community-reported; unknown. Map layers and price estimates must cite their source, geography, and observation date. Do not promise appreciation, flood safety, legal title, or a guaranteed valuation.
+1. User opens the AI consultant or searches buy/rent/lease listings.
+2. They specify budget, preferred locations, school/commute needs, property type and horizon.
+3. PropWise shows permitted listings and locality context with source/date/evidence labels.
+4. It calculates total ownership/rental/lease cost, affordability, comparables and uncertainty.
+5. It can prepare a readable decision report and offer a voluntary consultation.
+6. Owners can submit listings for moderation; admins verify and publish.
+7. Research agents import only authorized feeds or official/open data into **draft observations** for human review.
 
-## 2. Target architecture
+Keep six evidence meanings separate: **official source, verified, estimate, claim, community-reported, unknown**. Never treat an advertisement, user report or model guess as legally verified or guaranteed. Do not claim government projects/flood safety/appreciation without an attributable source, date and scope.
+
+### Now / later scope
+
+**Now:** stable public pages; buy/rent/lease journeys; AI assistant with hard budget; locality intelligence; admin/CRM; owner submissions; honest source and verification labels; authorized data intake; privacy and security.
+
+**Next:** opt-in, moderated neighborhood insights; location research tasks/gigs; practical buyer reports; optional human follow-up.
+
+**Later, only after proven demand and controls:** memberships/coins, paid research network, payments, riders and negotiation support, large-scale rollout. Legal/regulatory review is required before any transaction-like intermediation or paid referral activity.
+
+## 2. Existing architecture to preserve
 
 ```text
-Visitor / buyer / owner / contributor / administrator
-               |
-     Cloudflare Workers + assets
-        TanStack Start / React
-               |
-     Server routes + server functions
-       |         |           |
-       |         |           +-- AI orchestrator and skill library
-       |         |                -> configurable licensed LLM endpoint
-       |         |                -> per-user + global budget gates
-       |         +-- Research/ingestion workers, scheduled deliberately
-       |               -> permissioned CSV/feed/official/open data
-       |               -> observations, sources, evidence, drafts
-       +-- Owner-controlled Supabase
-               - PostgreSQL + RLS + migration history
-               - Supabase Auth + Google OAuth configuration
-               - Private storage bucket + short-lived signed URLs
-               - User roles, provenance and audit trails
+Buyers / renters / owners / contributors / admins
+                     |
+             TanStack Start / React 19
+       file routes + SSR + API / server functions
+             |                |
+             |           AI consultant + skills
+             |           - assistant/chat.server.ts
+             |           - assistant/tools.ts
+             |           - assistant/skills/*/SKILL.md
+             |           - budget/rate/cost checks
+             |
+    Supabase-compatible backend (independent)
+      PostgreSQL / Row Level Security / RPC
+      Authentication + private file storage
+             |
+    Audited research and contributor pipelines
+      authorized feeds -> observations -> draft
+         human review -> permitted publication
+
+Code -> GitHub PR -> test/build/security -> owner approval
+                                         -> independent deployment
 ```
 
-**Ownership boundaries:**
+**Core trust boundaries (must preserve):**
+- Public listings satisfy `status='published' AND listing_permission=true AND is_demo=false` in both RLS and application logic.
+- Server-only admin/service credentials do not enter browser bundles.
+- Photos remain private with appropriately scoped, short-lived access.
+- Research ingestion never auto-publishes and uses only authorized sources.
+- AI budget limits and request authentication fail closed, including if a budget reservation RPC is missing.
+- Private user data is visible only to its owner or authorized admins.
+- Owner-submitted listings require explicit review; AI evidence does not substitute for title/legal verification.
 
-| Responsibility | Selected owner / service | Critical rule |
+## 3. Current repository facts and open questions
+
+| Area | What is present in code / CI | What remains to test or fix |
 | --- | --- | --- |
-| Source, issues, CI | Owner's GitHub repository | No direct push to main; Verify + owner approval |
-| Coding | OpenHands, working on short-lived branches | Read AGENTS.md; one objective and one PR at a time |
-| Frontend and SSR APIs | Cloudflare Workers (staging, then production) | Preview with *nonproduction* credentials first |
-| Database/Auth/Storage | A **new owner-controlled Supabase** project | Never assume Lovable Cloud credentials or database access can be transferred |
-| AI | Configurable provider via server-only secrets | Fail closed if budget/reservation is unavailable |
-| Maps | Existing Leaflet/OpenStreetMap/attributed layers | No reliance on the previously exposed Google Maps key |
-| Backups | Owner-controlled, tested restore copies | Verify database + auth + storage, not just a zip filename |
+| Web application | TanStack Start, routes, components, tests | Live user journeys and error paths |
+| Database | Drizzle migrations 0000–0018, pending 0017–0021, RLS-oriented client | **Current** database's migration history, role permissions, actual schema |
+| AI | Assistant, skill registry, lookup, budget code, tests | Live 503/unavailable cases; verify `reserve_ai_budget` on current backend before applying anything |
+| Discovery | Property, transaction and locality code | Buy/rent/lease forms, visible listings, safe empty states |
+| Research | Server research engine and feed onboarding | Production scheduler behavior and permissioned feeds |
+| Community and tasks | UI/helpers and pending SQL | Whether intentionally disabled; moderation, consent, payout rules |
+| Hosting | App build currently imports Lovable wrapper and MCP plugin; independent host is owner-reported | Remove *residual* build/registry dependencies without re-migrating infrastructure |
+| Quality | Recent GitHub Verify green | Typecheck/lint debt, e2e browser checks, responsive/accessibility |
 
-**No Cloudflare D1 rewrite** in this migration. The app is already built around PostgreSQL, Supabase Auth, storage, RPCs, and RLS; moving those to D1 is a separate expensive redesign.
+Residual `@lovable.dev/*` packages in `package.json`, `vite.config.ts` and possibly lockfile are **cleanup targets**, not proof the user is still using Lovable Cloud. The old provider may remain an optional fallback; explicitly prevent unapproved paid AI calls.
 
-The newest Cloudflare/TanStack official guides use `@cloudflare/vite-plugin` for native Workers deployment and remove a competing `nitro()` adapter. The prior exit runbook describes a Nitro-based proof of concept. OpenHands must evaluate the **current official adapter**, preserve the project's SSR/custom server behaviour, and prove the build and runtime before choosing. Do not simply paste old configs.
+## 4. Implementation sequence for OpenHands
 
-## 3. What exists and what is not proved
+### Sprint 0 — Make the existing project understandable (docs and read-only checks)
+- Inventory routes/components/services, feature flags, backend endpoints by **name only**, migrations and active imports.
+- Produce a single `docs/CURRENT_STATE.md`: **working, incomplete, disabled, blocked, and obsolete**. Each claim must cite exact file/test evidence; do not infer live status from file existence.
+- Inventory dead/duplicate components via import references. Classify candidates, never mass-delete based on filenames.
+- Find stale references among `docs/PLAN.md`, `docs/LOVABLE_EXIT.md`, `docs/OPERATIONS.md` and historical audit reports. Prefer one canonical README + architecture + execution tracker. Archive old records rather than destroying evidence.
+- Capture `bun run test`, `bun run build`, `bun run type-check`, `bun run lint`, plus optional Playwright; separate pre-existing defects from introduced ones.
+- **Exit gate:** owner gets a short accurate inventory and a prioritized PR backlog. No feature rewrite, live changes, deletion or DB modification.
 
-**Present in `main`:** TanStack Start/React; source routes; buyer/renter and price calculation logic; AI assistant with reusable skill markdown; research engine; RLS-oriented Supabase clients; verified build/test workflows; `drizzle/migrations` 0000–0018; `drizzle/pending` SQL 0017–0021; scripts/sql-check; maps and admin features. Recent GitHub Verify is green. These are code facts, not proof of production services.
+### Sprint 1 — Repair critical functions before cosmetic changes
+- Reproduce and classify AI 503 cases in an isolated environment. Read `budget.server.ts`, `chat.server.ts`, `drizzle/pending/0021_ai_cost_control.sql` and current migration metadata; propose a safe fix only after confirming whether required RPC/table exists on the **current backend**. Never automatically apply SQL.
+- Confirm login, logout and session persistence; role isolation; listing visibility; owner submission; photo access; buy/rent/lease calculations; admin and enquiry workflows.
+- Make unsupported features explicitly say “Not available yet” rather than silently failing.
+- Verify rate limits, per-user allowances and global AI budget with tests and fail-closed behaviour.
+- **Exit gate:** no critical user-path failures, confirmed with deterministic tests and staging smoke results.
 
-**Still coupled to Lovable:** `vite.config.ts` imports `@lovable.dev/vite-tanstack-config` and `@lovable.dev/mcp-js`; package.json includes those and `@lovable.dev/cloud-auth-js`; the lockfile has historically included Lovable private registry URLs; the AI has a Lovable fallback; related metadata and generated MCP routes remain. Inspect active imports **before** removing anything.
+### Sprint 2 — Remove residual Lovable *code* and simplify the build
+- Trace imports and runtime dependencies before removal.
+- Replace `@lovable.dev/vite-tanstack-config` with a tested independent TanStack build for the existing host. Preserve SSR, server-only boundaries, routing and error wrappers.
+- Keep or remove the MCP feature explicitly; if unused, delete plugin-generated routes, support code and `@lovable.dev/mcp-js` together in a dedicated PR.
+- Remove unused `@lovable.dev/cloud-auth-js`, historical `.lovable/` metadata and obsolete provider fallbacks only after usage checks. Retain or adapt anything still required by current auth.
+- Re-resolve `bun.lock` against the public package registry, ensuring no private Lovable cache URLs remain.
+- Re-test independent builds and live/staging routes. Do not change the existing database or deployment account.
+- **Exit gate:** reproducible clean-clone install/build and no required Lovable service or registry.
 
-**Unverified/blocked:** ownership and access to current Lovable Cloud data; usable export, backup/restore, auth identity migration, private object storage export; live database schema and application of pending migrations; AI budget RPC; production scheduler; OAuth callbacks; real property feed licensing. Do not mark these done from code or documentation alone.
+### Sprint 3 — Complete the core decision engine
+- One clean buy/rent/lease choice, shared search, price/EMI/rental-yield and up-front cost math, comparable display, map, shortlist, evidence, unknowns and readable report.
+- Consolidate duplicate navigation; simplify admin information architecture and keep draft/live/experimental features visibly distinct.
+- Attach provenance, dates and permission to every listing/observation. Add tests for demo/nonpublished data invisibility.
+- Build human consultation fallback from the AI assistant, without asserting unbuilt premium services.
+- **Exit gate:** first-time Chennai buyer/renter can complete a useful journey without admin help.
 
-## 4. Execution plan and acceptance gates
+### Sprint 4 — Operations and controlled expansion
+- Verify actual scheduler/cron, logs, budget alerts, backup/restore instructions, runbook, staging-to-production release and rollback.
+- Only then enable moderated community contributions and optional paid local research work, with consent, review, abuse handling and legal boundaries.
+- Measure searches, no-result queries, consultations, repeated usage, verified listings and per-user AI cost. Prioritize by measured demand.
+- **Exit gate:** service is maintainable by the owner with OpenHands, without a full-time engineering team.
 
-### Gate 0 — Protect production (owner + OpenHands read-only audit)
+## 5. File organization and removal policy
 
-1. Freeze destructive changes. No direct changes to main, no production SQL, no deletion, no auto-merge, no Lovable cancellation.
-2. Inventory live auth users, data tables/row counts, public listings, private file buckets and bytes, scheduled jobs, OAuth providers, secrets (names only), configured domains, and revenue integrations.
-3. Find the actual **Lovable Cloud export** controls or contact official Lovable support. Owner previously could not find an export option; do not pretend the export exists. If no database/auth export is available, document what can be extracted lawfully via user-facing APIs and how users will reauthenticate.
-4. Confirm a restorable backup of all accessible data and storage; record checksums, row counts, timestamps, and trial restore evidence. No access = **blocked**, not complete.
-5. Confirm whether the historic Google Maps browser key has been rotated/revoked and origin/API-restricted; browser keys are exposed by design but leaked historical values must not remain active without appropriate restrictions.
+**Keep:** `src/routes/`, `src/components/`, `src/lib/`, assistant skills, `src/integrations/supabase/`, `drizzle/migrations/`, `drizzle/pending/`, `scripts/sql-check/`, `e2e/`, GitHub CI/security rules, `AGENTS.md`, `README.md`, lockfile (until safely regenerated), env **example**, deployment/operations docs, and all regression tests.
 
-**Exit gate:** owner signs off an inventory, export/restore evidence, and an explicit no-data-loss plan.
+**Inspect before removal:** unused UI components; duplicated docs; obsolete hosting URLs; `.lovable/` files; Lovable-only npm packages; unused MCP routes; stale static SPA fallbacks; test fixtures that are no longer referenced. Use `rg`/imports/build output before removal.
 
-### Gate 1 — Independent build, no live data change (OpenHands)
+**Never casually delete:** migrations, RLS functions, auth adapters, backups, historical SQL, generated router code, source provenance, permission logic, and tests. No blanket cleanups or history rewriting.
 
-1. Branch from latest main. Preserve routes, core business logic, migrations, and tests.
-2. Remove the Lovable Vite wrapper; validate native Cloudflare TanStack Start adapter on a preview only. Maintain server-only import protection and SSR error behaviour. If unavailable, prove an alternative adapter with recorded tests.
-3. Decide whether public MCP is actually needed. If not, remove the MCP routes, support files, generated metadata, and `@lovable.dev/mcp-js` **together** in a dedicated PR. If needed, port independently in a separate PR.
-4. Remove unused `@lovable.dev/cloud-auth-js` after an import scan. Remove Lovable AI defaults only after configuring a non-Lovable endpoint or a clean 'AI not configured' response.
-5. Re-resolve `bun.lock` against the public registry and verify no Lovable private cache domains remain. Never strip packages based only on their names.
-6. Add staging environment documentation and tests for no baked-in production backend, no private keys in browser bundles, and no hardcoded Lovable hosts.
-7. Require `bun run test`, `bun run build`, typecheck, and Cloudflare preview smoke tests. CI green is necessary, not sufficient.
+**Preferred docs:**
+- `README.md` = 1-page entry, setup, current links.
+- `AGENTS.md` = OpenHands development and safety contract.
+- `docs/INDEPENDENCE_PLAN.md` = **this** canonical architecture and execution plan.
+- `docs/CURRENT_STATE.md` = agent-produced live implementation ledger (next PR).
+- `docs/OPERATIONS.md` = deployment, recovery, logging, secrets names.
+- `docs/ARCHITECTURE.md` = detailed implementation/trust boundaries.
+- Historical `docs/PLAN.md` and `docs/LOVABLE_EXIT.md` = archival history, not current actions.
 
-**Exit gate:** app runs in independent Cloudflare preview with synthetic data or an isolated test backend, using no Lovable service.
+## 6. OpenHands rules and first task
 
-### Gate 2 — Owner-controlled backend (owner creates account; agent supplies audited scripts)
+Follow `AGENTS.md`. Work only in feature branches off the latest `main`. One small PR per coherent change. No direct main pushes, deployment, secrets, migrations or production writes. PR descriptions must name problem, files, test output, untested areas, user/security/data impact and rollback. Keep Verify green and require owner approval.
 
-1. Create a fresh Supabase project **owned by the user**; choose an appropriate region, billing alert, backups and controlled access. Never write its secrets to GitHub or chat.
-2. In a throwaway scratch project, execute the applied migrations in order; reconcile `drizzle/pending` carefully, since filenames overlap and some features may not be deployed. Run SQL/RLS/adversarial tests. Do **not** replay migrations or pending SQL blindly on production.
-3. Restore database records from an owner-authorized export with original IDs and relationships, including auth users if a supported safe route exists. If auth export cannot be obtained, plan account re-invitation/re-authentication and avoid broken ownership links.
-4. Copy private storage objects, metadata, access policies, and signed-URL logic. Test a real photo access path; an empty bucket is not a migration.
-5. Recreate OAuth providers, site URL, redirect allowlist, scheduler secrets/cron if actually required, and least-privilege service settings.
-6. Compare source and target table counts, sample records, auth roles, photos and storage checksums. Document exceptions and a rollback decision.
+**The next OpenHands task is NOT a Lovable exit inspection.** It is a read-only **current-state inventory + actionable cleanup backlog** followed by short PRs for critical failures and residual build dependencies. Prefer completing working code over opening endless planning loops. Do not ask the owner to repeat solved decisions.
 
-**Exit gate:** independent database, auth, and storage pass restoration and permission tests. Only the owner may execute production-affecting operations.
+## 7. Completion criteria
 
-### Gate 3 — Real product testing (private staging)
+PropWise AI is done for its initial Chennai release when:
+1. Main flows for buy/rent/lease, discovery, comparison, locality, AI and consultation work in staging and production.
+2. Auth, RLS, private media, owner submissions and admin permissions are tested.
+3. AI costs are hard limited, degraded gracefully and auditable.
+4. Authorized feeds and reports communicate provenance and uncertainty honestly.
+5. Code installs, builds and runs from GitHub without any required Lovable package/service.
+6. Obsolete files are removed in reviewed PRs; docs describe **today's** system.
+7. Owner has a tested backup/rollback procedure and simple release checklist.
 
-Test signed-out visitor, signed-in buyer, owner submission, admin role/RLS, property publication permissions, property photos, comparison, buy/rent/lease inputs and totals, evidence labels, localities/maps, consent, research agent feed authorization, AI limit, scheduler authentication, mobile at 375px, error handling, sitemap and login callbacks. Run fail-closed AI test with `AI_DAILY_BUDGET_INR=0`; enable paid AI only by explicit owner decision. Label feature-flagged/unmigrated functions 'not available yet', not 'live'.
-
-**Exit gate:** owner has staging URL and signed checklist, 0 blocker defects, and a verified rollback route.
-
-### Gate 4 — Cutover, monitor, then cancel Lovable
-
-1. Confirm domain ownership and a fresh backup. Schedule a brief write freeze for the final export/delta synchronization. Record rollback window.
-2. Change only the relevant custom-domain routing, after checking auth callbacks, env at build and runtime, DNS/TLS, site URL, asset serving, and SSR API routes. Keep the old site accessible for comparison; avoid two writable production backends.
-3. Monitor logs, failed logins, API errors, AI spend and scheduler activity. Validate post-cutover counts.
-4. **Only after owner verification** stop Lovable deployments, archive useful editor history, and cancel Lovable. Do not cancel merely because a preview URL opens.
-
-**Exit gate:** production works independently for real accounts and data with a documented recovery path.
-
-### Gate 5 — Feature-complete Chennai release (after migration)
-
-Order by user value: (1) trusted buy/rent/lease discovery and comparison; (2) locality, flood and infrastructure research with sources and dates; (3) AI consultant + human enquiry fallback with enforced cost caps; (4) admin workflow and data ingestion provenance; (5) moderated community and paid contributor tasks only after operational policies; (6) optional reports/riders/negotiation with appropriate legal review. Keep unsupported nationwide rollout, memberships, payments and automated scraping out of the cutover scope.
-
-## 5. File and documentation retention plan
-
-**Keep now:** `AGENTS.md`, `README.md`, `src/routes/`, `src/components/`, `src/lib/` including assistant skills and domain tests, `src/integrations/supabase/` until an audited replacement exists, `drizzle/migrations/`, `drizzle/pending/`, `scripts/sql-check/`, `e2e/`, `.github/workflows/`, `bun.lock` (until safely regenerated), `.env.example` (placeholders only), `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md`, `docs/TESTING.md`, and this plan.
-
-**Candidate removals after replacement and impact scan:** `.lovable/`, the unused Lovable auth package, Lovable build wrapper, Lovable-specific MCP files/routes and package if not needed, stale old-host references, invalid SPA fallback rules, private-registry lockfile pins. A file marked generated is **not** automatically disposable. Do not delete database migrations, tests, RLS policies, assistant skills, or UI components without verifying imports and behavior.
-
-**Documentation policy:** `README.md` is the entry point, `AGENTS.md` is the developer contract, **this file is the authoritative independence plan**, and `docs/LOVABLE_EXIT.md` is a gated procedural checklist. Older audits and status trackers are dated evidence, not current deployment authority. Archive superseded reports in a later docs-only PR after references are checked; do not mass-delete project history.
-
-## 6. OpenHands development contract
-
-- Read `AGENTS.md` first; analyze latest `main`; do not resurrect already merged PRs.
-- One small PR per gate or concern. Never direct-push, merge, force-push, deploy, apply production migrations, or read/print secrets.
-- Every PR states problem, exact files, test output, tests not run, security/data/public-site impact, rollback, and migration prerequisites.
-- First engineering PR: **independent build preview only**, with no production backend changes.
-- Second: package/lockfile independence.
-- Subsequent PRs: backend schema tests and migration tooling, staging deployment, owner-approved cutover preparation.
-- Keep pending SQL pending until owner has a known target project, backup, reviewed sequence and verified smoke tests.
-
-## 7. Definition of done
-
-- Live domain loads without Lovable hosting or `@lovable.dev/*` runtime/build dependencies.
-- GitHub clone can install/build/test without Lovable registries.
-- Owner controls Supabase dashboard, Auth, backups and storage; live rows and files are reconciled.
-- AI and research jobs cannot spend money or mutate data unexpectedly.
-- User, owner and admin journeys are verified end-to-end; unknown facts are labeled correctly.
-- No exposure of service secrets, no unexplained deletion, and a tested rollback exists.
-- Lovable is cancelled only after owner acceptance.
-
-## References
-
-- Existing code and docs: this repository (`main` baseline above).
-- Official Cloudflare TanStack Start guide: https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/
-- Supabase Knowledge Base: https://supabase.com/kb/troubleshooting/identify-lovable-cloud-or-supabase-backend and https://supabase.com/kb/troubleshooting/cant-access-supabase-project-lovable-cloud
+**Do not restart an already completed exit. Finish, simplify and operate the existing independent product.**
