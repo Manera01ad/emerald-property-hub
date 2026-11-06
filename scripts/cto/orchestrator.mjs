@@ -45,7 +45,7 @@ export function pathsOverlap(a, b) {
 
 function referencesIssue(pr, number) {
   // Only count explicit issue references; never infer from generic PR titles.
-  return new RegExp(\`(?:^|[^0-9])#\${number}(?![0-9])\`).test(pr.body || '');
+  return new RegExp(`(?:^|[^0-9])#${number}(?![0-9])`).test(pr.body || '');
 }
 
 function riskState(risk) {
@@ -73,8 +73,8 @@ export function buildPlan({ issues = [], pullRequests = [], filesByPR = {} } = {
     else state = 'ready';
     return {
       issue: task.issue, priority: task.priority, agent: task.agent, risk: task.risk,
-      title: issue?.title || \`Issue #\${task.issue}\`, state, execution: riskState(task.risk),
-      url: issue?.html_url || \`https://github.com/\${DEFAULT_REPO}/issues/\${task.issue}\`,
+      title: issue?.title || `Issue #${task.issue}`, state, execution: riskState(task.risk),
+      url: issue?.html_url || `https://github.com/${DEFAULT_REPO}/issues/${task.issue}`,
       dependsOn: missingDeps, relatedPRs: ownPRs.map((p) => p.number),
       conflictingPRs: conflictingPRs.map((p) => p.number), objective: task.objective,
       scopes: task.scopes,
@@ -87,20 +87,20 @@ export function buildPlan({ issues = [], pullRequests = [], filesByPR = {} } = {
 
 export function taskPacket(plan, issueNumber) {
   const task = plan.tasks.find((t) => t.issue === issueNumber);
-  if (!task) throw new Error(\`Unregistered CTO issue #\${issueNumber}\`);
-  if (task.state !== 'ready') throw new Error(\`Issue #\${issueNumber} is not ready (\${task.state})\`);
-  if (task.risk === 'R3') throw new Error(\`Owner approval required for issue #\${issueNumber}\`);
+  if (!task) throw new Error(`Unregistered CTO issue #${issueNumber}`);
+  if (task.state !== 'ready') throw new Error(`Issue #${issueNumber} is not ready (${task.state})`);
+  if (task.risk === 'R3') throw new Error(`Owner approval required for issue #${issueNumber}`);
   return {
     issue: task.issue, agent: task.agent, risk: task.risk,
     approvalRequiredBeforeMerge: true,
     automaticExecutionAuthorized: false,
     allowedScopes: task.scopes,
     instructions: [
-      \`Repository: \${DEFAULT_REPO}. Work order: \${task.url}.\`,
+      `Repository: ${DEFAULT_REPO}. Work order: ${task.url}.`,
       'Read AGENTS.md, docs/INDEPENDENCE_PLAN.md and docs/CTO_TEAM.md if merged.',
       'The product has already exited Lovable.dev and Lovable Cloud; do not redo the exit.',
       task.objective,
-      \`Own only these files/scopes: \${task.scopes.join(', ')}. Coordinate before changing shared files.\`,
+      `Own only these files/scopes: ${task.scopes.join(', ')}. Coordinate before changing shared files.`,
       'Create one branch/PR. Do not push to main; do not approve/merge/deploy.',
       'No production data, migrations, credentials, RLS/auth, CI settings, paid APIs, unrestricted host permissions or skipped safety gates.',
       'Report exact test commands/results, anything untested, risks, financial impact and rollback.',
@@ -111,16 +111,16 @@ export function taskPacket(plan, issueNumber) {
 export function markdownReport(plan) {
   const lines = [
     '# PropWise AI CTO queue',
-    \`Generated: \${plan.generatedAt}\`,
+    `Generated: ${plan.generatedAt}`,
     '',
     '| Issue | Agent | Risk | State | PR/conflict |',
     '| --- | --- | --- | --- | --- |',
   ];
   for (const t of plan.tasks) {
-    const related = t.relatedPRs.length ? \`PR \${t.relatedPRs.map((n) => \`#\${n}\`).join(', ')}\` :
-      t.conflictingPRs.length ? \`Conflicts with \${t.conflictingPRs.map((n) => \`#\${n}\`).join(', ')}\` :
-      t.dependsOn.length ? \`Needs \${t.dependsOn.map((n) => \`#\${n}\`).join(', ')}\` : '—';
-    lines.push(\`| [#\${t.issue}](\${t.url}) | \${t.agent} | \${t.risk} | \${t.state} | \${related} |\`);
+    const related = t.relatedPRs.length ? `PR ${t.relatedPRs.map((n) => `#${n}`).join(', ')}` :
+      t.conflictingPRs.length ? `Conflicts with ${t.conflictingPRs.map((n) => `#${n}`).join(', ')}` :
+      t.dependsOn.length ? `Needs ${t.dependsOn.map((n) => `#${n}`).join(', ')}` : '—';
+    lines.push(`| [#${t.issue}](${t.url}) | ${t.agent} | ${t.risk} | ${t.state} | ${related} |`);
   }
   lines.push('', '## Handoff',
     'This program is read-only. READY means a task packet can be prepared, **not** that an agent process has been launched.',
@@ -130,24 +130,24 @@ export function markdownReport(plan) {
 }
 
 async function gh(repo, path, token) {
-  const url = \`https://api.github.com/repos/\${repo}\${path}\`;
+  const url = `https://api.github.com/repos/${repo}${path}`;
   const response = await fetch(url, { headers: {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'User-Agent': 'propwise-cto-readonly',
-    ...(token ? { Authorization: \`Bearer \${token}\` } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   } });
-  if (!response.ok) throw new Error(\`GitHub API \${response.status} on \${path} (\${response.status === 403 ? 'check rate limit/token permissions' : 'request failed'})\`);
+  if (!response.ok) throw new Error(`GitHub API ${response.status} on ${path} (${response.status === 403 ? 'check rate limit/token permissions' : 'request failed'})`);
   return response.json();
 }
 
 async function livePlan(repo, token) {
   const [issues, pullRequests] = await Promise.all([
-    Promise.all(WORK_ORDERS.map((t) => gh(repo, \`/issues/\${t.issue}\`, token))),
+    Promise.all(WORK_ORDERS.map((t) => gh(repo, `/issues/${t.issue}`, token))),
     gh(repo, '/pulls?state=open&per_page=100', token),
   ]);
   const pairs = await Promise.all(pullRequests.map(async (pr) => {
-    const files = await gh(repo, \`/pulls/\${pr.number}/files?per_page=100\`, token);
+    const files = await gh(repo, `/pulls/${pr.number}/files?per_page=100`, token);
     return [pr.number, files.map((f) => f.filename)];
   }));
   return buildPlan({ issues, pullRequests, filesByPR: Object.fromEntries(pairs) });
@@ -158,9 +158,9 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     if (['--mode', '--repo', '--issue', '--format'].includes(flag)) {
-      if (i + 1 >= argv.length) throw new Error(\`Missing value for \${flag}\`);
+      if (i + 1 >= argv.length) throw new Error(`Missing value for ${flag}`);
       const key = flag.slice(2); options[key] = argv[++i];
-    } else throw new Error(\`Unknown argument: \${flag}\`);
+    } else throw new Error(`Unknown argument: ${flag}`);
   }
   if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(options.repo)) throw new Error('Invalid repository identifier');
   if (!['report', 'queue', 'packet'].includes(options.mode)) throw new Error('Unknown mode');
@@ -182,5 +182,5 @@ export async function main(argv = process.argv.slice(2)) {
 }
 
 if (process.argv[1]?.endsWith('orchestrator.mjs')) {
-  main().catch((error) => { console.error(\`CTO router failed: \${error.message}\`); process.exitCode = 1; });
+  main().catch((error) => { console.error(`CTO router failed: ${error.message}`); process.exitCode = 1; });
 }
