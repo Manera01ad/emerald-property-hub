@@ -261,11 +261,12 @@ These are the decisions only you can make. The plan pauses on each.
 | D5 | Rotate the leaked Google Maps key? | It is a real credential in git history | Stays exposed |
 | D6 | Keep the Google Maps connector, or drop it (the app now uses keyless Leaflet)? | Removing it drops a dependency and a secret | Kept, unused |
 | D7 | Keep the MCP server, or drop it? | Keeping it means porting ~300 lines to the official SDK; dropping it is simpler | Kept, still on `@lovable.dev/mcp-js` |
+| D8 | Migrate existing data from `dashpanandamjickoytj`, or start the new project empty? | An empty start is simpler; the live site keeps its data until cutover either way | Owner's call — see `docs/LOVABLE_EXIT.md` §3.1.2 step 4 |
 
 Recommended answers: D1 Cloudflare; D2 free subdomain first; D3 off until the
 free product is solid, then a free Gemini/Groq tier; D4 apply only what you
 intend to launch; D5 rotate now; D6 drop it; D7 drop it unless you are actively
-using MCP clients.
+using MCP clients; D8 start empty unless there is real listing data you need.
 
 ---
 
@@ -275,6 +276,8 @@ using MCP clients.
 | --- | --- | --- | --- |
 | Build-config swap breaks the build | Low | High | **Verified working** (`docs/LOVABLE_EXIT.md` §3.1); still isolated in its own PR, old config kept until green |
 | Lockfile pins ~120 packages to Lovable's private registry | Medium | High | Re-resolve `bun.lock` against npmjs.org (§3.3); CI's `--frozen-lockfile` could otherwise fail after cancelling |
+| A build silently uses the Lovable Supabase project | **Fixed** | High | Fallback removed from `vite.config.ts`; `supabase/config.toml` repointed; guarded by `src/test/build-config.test.ts` |
+| Data not migrated before cutover, giving an empty live site | Medium | High | Ordered cutover in `docs/LOVABLE_EXIT.md` §3.1.2; verify row counts, not just that the export ran |
 | Free tier limit hit (Worker requests, Supabase bandwidth) | Low now | Medium | `docs/COST_MODEL.md` lists the limits and the first one you will hit |
 | AI spend runs away | Low | High | Per-user cap + global daily budget + fail-closed; default ₹0 |
 | Data loss during migration | Low | High | Migration touches no data; Supabase backups unchanged; `docs/OPERATIONS.md` §5 |

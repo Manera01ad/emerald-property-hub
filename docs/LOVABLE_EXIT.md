@@ -115,13 +115,9 @@ export default defineConfig({
       cloudflare: { nodeCompat: true, deployConfig: true },
     }),
   ],
-  define: {
-    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
-      process.env["VITE_SUPABASE_URL"] || "https://dashpanandamjickoytj.supabase.co",
-    ),
-    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
-      process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "sb_publishable_...",
-    ),
+  vite: {
+    // No Supabase fallback: the URL and publishable key must come from the build
+    // environment, or the app fails loudly. See the note below.
   },
 });
 ```
@@ -130,8 +126,11 @@ Why each piece is there:
 
 - `importProtection` is copied from the wrapper. Without it, server-only code can
   be pulled into the browser bundle. It is a security control, not a nicety.
-- The `define` block keeps the public-only Supabase fallback the wrapper injected,
-  so a hosted build with no `.env` does not produce a blank site.
+- **There is deliberately no `define` fallback for the Supabase URL or key.**
+  The wrapper used to default both to the Lovable-managed project, which meant a
+  build with no `.env` silently talked to that database. Removing the fallback
+  turns a misconfigured deploy into a loud error instead of a quiet read of the
+  wrong data.
 - `nitro` runs on every command (the wrapper ran it on build only). Harmless, and
   simpler to reason about.
 - Verified output: `.output/server/wrangler.json` with `main: index.mjs`,
@@ -139,6 +138,65 @@ Why each piece is there:
   shape Lovable produces.
 
 Do not add both `tanstackStart()` and the Lovable wrapper; pick one.
+
+### 3.1.1 Two hidden places the old Supabase project was baked into the build
+
+Removing the `vite.config.ts` fallback is not enough on its own. The Lovable
+build tooling injects the whole `import.meta.env` object, and it took the project
+ref from `supabase/config.toml`. Verified behaviour:
+
+- `@lovable.dev/mcp-js`'s `productionImportMetaEnv()` calls
+  `readSupabaseProjectRef(config.root)`, which reads `project_id` from
+  `supabase/config.toml` and injects it as `VITE_SUPABASE_PROJECT_ID`.
+- `@lovable.dev/vite-tanstack-config` injects every `VITE_*` value found by
+  Vite's `loadEnv`, so any `VITE_SUPABASE_*` set in the build environment is
+  baked into the browser bundle.
+
+So there were **two** sources, and a clean build with no `.env` still contained
+the old project URL and publishable key. Both are fixed:
+
+1. `supabase/config.toml` now names your own project ref.
+2. `vite.config.ts` no longer carries a fallback.
+
+`src/test/build-config.test.ts` fails if either the old ref or the old key
+reappears in a build input. Verify with a clean build, which is the only reliable
+check because both build tools cache:
+
+```sh
+rm -rf node_modules/.nitro node_modules/.vite .output .wrangler
+bun run build
+grep -rl "dashpanandamjickoytj" .output/ | wc -l   # expect 0
+```
+
+### 3.1.2 Cutover order matters, and the data has not moved yet
+
+Changing `supabase/config.toml` points the tooling at the new project, and a build
+with the new `VITE_*` values points the app at it too. The **data is still in the
+old project** until you migrate it. So the order below is not a preference; doing
+it out of order gives a working-looking deploy with no tables.
+
+1. Create the new Supabase project.
+2. Apply every migration, in order, per `docs/APPLY_RUNBOOK.md`: the applied set
+   (`drizzle/migrations/` 0000→0018), then the pending queue
+   (`drizzle/pending/` 0017→0021).
+3. Confirm with `scripts/sql-check/verify-applied.sql`.
+4. Move any real data you want to keep out of the old project (see §7). Verify
+   counts, not just that the export ran.
+5. Re-enable the Google provider in the new project's auth settings; OAuth
+   redirect URLs are per project.
+6. Recreate the `property-photos` storage bucket and its policies.
+7. Only then set the new `VITE_*` values in the build environment and deploy.
+8. Check the live site, then cancel Lovable.
+
+Step 2 is also what fixes the assistant's 503: the guard needs
+`reserve_ai_budget`, which arrives with `0021_ai_cost_control.sql`. Until that
+migration is applied, the assistant fails closed by design.
+
+### 3.1.3 One stale generated file to clear with D7
+
+`.lovable/mcp/manifest.json` is a generated snapshot and still names the old
+issuer. It is not read by the build, so it cannot cause the silent-wrong-database
+problem, but it is misleading. Delete it along with the MCP decision in §3.2.
 
 ### 3.2 Remove the MCP plugin
 

@@ -199,8 +199,10 @@ See §5 below for the full treatment.
 ### 3.1 Application
 
 - **Stack:** TanStack Start (SSR) + React 19 + Vite 8, deployed by Lovable from
-  `main`. Supabase project `dashpanandamjickoytj` for database, auth and storage.
-  Drizzle for migrations, Bun as the package manager, Vitest for tests.
+  `main`. Supabase project `dashpanandamjickoytj` for database, auth and storage,
+  migrating to an owner-controlled project `lgetjiksdzoqfryelvmv` (see
+  `docs/LOVABLE_EXIT.md` §3.1.2 for the cutover order). Drizzle for migrations,
+  Bun as the package manager, Vitest for tests.
 - **Routing:** file-based under `src/routes/`, 36 route files, including
   `src/routes/api/` (assistant + research tick) and `_authenticated/` (admin,
   my, assistant).

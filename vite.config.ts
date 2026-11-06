@@ -15,15 +15,15 @@ export default defineConfig({
   },
   vite: {
     plugins: [mcpPlugin()],
-    // Public-only fallback: hosted builds may run without .env (it is git-ignored),
-    // which blanked the live site. URL and publishable key are safe to ship.
-    define: {
-      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
-        process.env['VITE_SUPABASE_URL'] || "https://dashpanandamjickoytj.supabase.co",
-      ),
-      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
-        process.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || "sb_publishable_srom6OnzGr3MGJL_X3GySQ_RLwfGu7K",
-      ),
-    },
+    // No Supabase fallback here on purpose.
+    //
+    // This used to default to the Lovable-managed project, so a build with no
+    // .env silently talked to that database instead of failing. There is now no
+    // fallback: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` must be
+    // set wherever the build runs, or the app refuses to start with a clear
+    // error instead of reading someone else's data.
+    //
+    // Vite injects any `VITE_*` variable that is present at build time, so
+    // setting these in the build environment is enough.
   },
 });
