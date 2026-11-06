@@ -7,8 +7,9 @@ import { useSession } from "@/lib/auth";
 import { useFlag } from "@/lib/use-flag";
 import { mySubmissions } from "@/lib/submissions-data";
 import { STATUS_LABELS, statusTone } from "@/lib/submissions";
+import { siteUrl } from "@/lib/site";
 
-const URL = "https://emerald-property-hub.lovable.app/owners";
+const URL = siteUrl("/owners");
 
 export const Route = createFileRoute("/owners")({
   staticData: { sitemap: false },

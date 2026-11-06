@@ -26,6 +26,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OwnersRouteImport } from './routes/owners'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResearchServicesRouteImport } from './routes/research-services'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -126,6 +127,11 @@ const ResearchServicesRoute = ResearchServicesRouteImport.update({
   path: '/research-services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/owners': typeof OwnersRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/owners': typeof OwnersRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/owners': typeof OwnersRoute
   '/privacy': typeof PrivacyRoute
   '/research-services': typeof ResearchServicesRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/owners'
     | '/privacy'
     | '/research-services'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/oauth-protected-resource'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/owners'
     | '/privacy'
     | '/research-services'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/oauth-protected-resource'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/owners'
     | '/privacy'
     | '/research-services'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/oauth-protected-resource'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   OwnersRoute: typeof OwnersRoute
   PrivacyRoute: typeof PrivacyRoute
   ResearchServicesRoute: typeof ResearchServicesRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -561,6 +574,13 @@ declare module '@tanstack/react-router' {
       path: '/research-services'
       fullPath: '/research-services'
       preLoaderRoute: typeof ResearchServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -704,6 +724,7 @@ const rootRouteChildren: RootRouteChildren = {
   OwnersRoute: OwnersRoute,
   PrivacyRoute: PrivacyRoute,
   ResearchServicesRoute: ResearchServicesRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:

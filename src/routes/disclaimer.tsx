@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/LegalPage";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/disclaimer")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/disclaimer" }],
+    links: [{ rel: "canonical", href: siteUrl("/disclaimer") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/disclaimer" },
+      { property: "og:url", content: siteUrl("/disclaimer") },
       { title: "Disclaimer & RERA — PropWise AI" },
       { name: "description", content: "Estimates, verification labels and RERA information on PropWise AI." },
       { property: "og:title", content: "Disclaimer & RERA — PropWise AI" },

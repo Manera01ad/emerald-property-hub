@@ -2,15 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { useSettings, whatsappLink } from "@/lib/data";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/contact")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/contact" }],
+    links: [{ rel: "canonical", href: siteUrl("/contact") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/contact" },
+      { property: "og:url", content: siteUrl("/contact") },
       { title: "Contact PropWise AI — Chennai Property Consultants" },
       { name: "description", content: "Get in touch with PropWise AI by phone, WhatsApp or email." },
       { property: "og:title", content: "Contact PropWise AI" },

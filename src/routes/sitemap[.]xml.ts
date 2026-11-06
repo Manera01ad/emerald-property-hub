@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getRouterInstance } from "@tanstack/react-start";
 import { isSitemapRouteIncluded, sitemapPathForLocation, sitemapStaticPaths, sitemapXML, type SitemapEntry } from "@/lib/sitemap";
+import { SITE_URL } from "@/lib/site";
 
-const BASE_URL = "https://emerald-property-hub.lovable.app";
+const BASE_URL = SITE_URL;
 
 export const Route = createFileRoute("/sitemap.xml")({
   staticData: { sitemap: false },

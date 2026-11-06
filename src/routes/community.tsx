@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { NotOpenYet } from "@/components/NotOpenYet";
 import { NewThreadForm, ThreadList } from "@/components/Community";
 import { useFlag } from "@/lib/use-flag";
+import { siteUrl } from "@/lib/site";
 
-const URL = "https://emerald-property-hub.lovable.app/community";
+const URL = siteUrl("/community");
 
 export const Route = createFileRoute("/community")({
   staticData: { sitemap: false },

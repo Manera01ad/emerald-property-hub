@@ -8,8 +8,9 @@ import { AreaIntelCard } from "@/components/AreaIntelCard";
 import type { AreaSummary } from "@/lib/area-intel";
 import { areaPoint } from "@/lib/areas";
 import { searchString } from "@/lib/search-params";
+import { siteUrl } from "@/lib/site";
 
-const URL = "https://emerald-property-hub.lovable.app/location-intelligence";
+const URL = siteUrl("/location-intelligence");
 const TITLE = "Location intelligence for Chennai areas — PropWise AI";
 const DESC = "Water bodies, parks, bus and train access and height above sea level for Chennai localities, from open map data.";
 

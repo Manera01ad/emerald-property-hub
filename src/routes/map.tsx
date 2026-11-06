@@ -12,13 +12,14 @@ import { searchLocation } from "@/lib/open-location-search";
 import { useSession } from "@/lib/auth";
 import { LocationMap } from "@/components/LocationMap";
 import type { MapView } from "@/lib/map-layers";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/map")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/map" }],
+    links: [{ rel: "canonical", href: siteUrl("/map") }],
     meta: [
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/map" },
+      { property: "og:url", content: siteUrl("/map") },
       { title: "Map intelligence — PropWise AI" },
       { name: "description", content: "Satellite, hybrid and terrain maps of verified PropWise listings in Chennai, with value estimates and official land-record links." },
       { property: "og:title", content: "Map intelligence — PropWise AI" },

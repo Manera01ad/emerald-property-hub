@@ -9,11 +9,47 @@
  * published prices, not credentials.
  */
 
-/** The assistant model. Changing this changes the price, so both move together. */
-export const ASSISTANT_MODEL_ID = "openai/gpt-6-astra";
+/**
+ * Read an environment variable where one exists. `pricing.ts` is also reached
+ * from the admin UI bundle, where `process` is absent, so this returns undefined
+ * rather than throwing in the browser.
+ */
+function env(name: string): string | undefined {
+  return typeof process !== "undefined" ? process.env?.[name] : undefined;
+}
 
-/** The AI gateway the assistant calls. */
-export const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
+/** The assistant model. Changing this changes the price, so both move together. */
+export const ASSISTANT_MODEL_ID = env("AI_MODEL") || "openai/gpt-6-astra";
+
+/**
+ * The AI gateway the assistant calls. An OpenAI-compatible base URL, so the
+ * provider can be swapped by configuration alone: the Lovable gateway by
+ * default, or OpenAI, Google Gemini, Groq or OpenRouter (each has a free tier)
+ * by setting `AI_BASE_URL`.
+ */
+export const AI_GATEWAY_URL = env("AI_BASE_URL") || "https://ai.gateway.lovable.dev/v1";
+
+/**
+ * The API key for that endpoint. `AI_API_KEY` is the neutral name; the Lovable
+ * name is a fallback so an existing deployment keeps working during migration.
+ * When neither is set the assistant is treated as unconfigured and refuses the
+ * call before spending anything.
+ */
+export function aiApiKey(): string | undefined {
+  return env("AI_API_KEY") || env("LOVABLE_API_KEY");
+}
+
+/**
+ * Extra headers the endpoint needs beyond `Authorization`. The Lovable gateway
+ * wants its key in its own header plus an SDK marker; most providers want
+ * neither. Kept here so `chat.server.ts` stays provider-agnostic.
+ */
+export function aiProviderHeaders(apiKey: string): Record<string, string> {
+  if (AI_GATEWAY_URL.includes("gateway.lovable.dev")) {
+    return { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" };
+  }
+  return {};
+}
 
 /**
  * Rupees per US dollar. A fixed assumption rather than a live rate: a live rate

@@ -25,6 +25,7 @@ import {
   searchNumber,
   searchString,
 } from "@/lib/search-params";
+import { siteUrl } from "@/lib/site";
 
 // Tolerant by design: a mistyped filter in the URL is dropped, never a 500.
 const searchSchema = z.object({
@@ -47,11 +48,11 @@ export const Route = createFileRoute("/properties/")({
   staticData: { sitemap: true },
   validateSearch: searchSchema,
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/properties" }],
+    links: [{ rel: "canonical", href: siteUrl("/properties") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/properties" },
+      { property: "og:url", content: siteUrl("/properties") },
       { title: "Search Properties in Chennai — PropWise AI" },
       { name: "description", content: "Filter villas, houses, apartments and plots in Chennai by price, bedrooms, land area and approvals." },
       { property: "og:title", content: "Search Properties in Chennai — PropWise AI" },

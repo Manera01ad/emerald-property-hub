@@ -25,6 +25,7 @@ import { evidenceFlags, valueProperty, type Kind } from "@/lib/valuation";
 import { getPublicPropertyMetadata } from "@/lib/property-seo.functions";
 import { LocationMap } from "@/components/LocationMap";
 import { validLatLng } from "@/lib/mapurl";
+import { siteUrl } from "@/lib/site";
 
 /** The asking price is what the seller states, so it is always a CLAIM, never verified by us. */
 const ASKING_PRICE_EVIDENCE: Evidence = "CLAIM";
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/properties/$id")({
     catch { return null; } // Keep the existing listing retry UI available on a data outage.
   },
   head: ({ params, loaderData }) => {
-    const url = `https://emerald-property-hub.lovable.app/properties/${encodeURIComponent(params.id)}`;
+    const url = siteUrl(`/properties/${encodeURIComponent(params.id)}`);
     const title = loaderData ? `${loaderData.title} in ${loaderData.location} — PropWise AI` : "Listing not available — PropWise AI";
     const description = loaderData
       ? (loaderData.description?.trim() || `Explore this ${typeLabel(loaderData.property_type)} in ${loaderData.location}: specifications, estimated purchase cost and recorded verification status.`).slice(0, 160)
