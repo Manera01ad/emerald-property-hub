@@ -51,6 +51,28 @@ describe("isVerificationCurrent", () => {
   it("treats a verification with no expiry date as current when evidence exists", () => {
     expect(isVerificationCurrent({ ...base, verification_expiry: null }, TODAY)).toBe(true);
   });
+
+  it("rejects malformed and impossible expiry dates instead of treating them as current", () => {
+    for (const expiry of ["not-a-date", "2026-02-30", "2026-13-01", "2026-10-29T00:00:00Z"]) {
+      expect(isVerificationCurrent({ ...base, verification_expiry: expiry }, TODAY)).toBe(false);
+      expect(disclosureFor({ ...base, verification_expiry: expiry }, TODAY).status).not.toBe("verified");
+    }
+  });
+
+  it("does not accept a verification date from the future", () => {
+    expect(isVerificationCurrent({ ...base, verification_date: "2026-10-30" }, TODAY)).toBe(false);
+    expect(disclosureFor({ ...base, verification_date: "2026-10-30" }, TODAY).status).not.toBe("verified");
+  });
+
+  it("rejects invalid verification dates but keeps legacy records without a date", () => {
+    expect(isVerificationCurrent({ ...base, verification_date: "2026-02-30" }, TODAY)).toBe(false);
+    expect(isVerificationCurrent({ ...base, verification_date: null }, TODAY)).toBe(true);
+  });
+
+  it("accepts a verification expiring today, but not yesterday", () => {
+    expect(isVerificationCurrent({ ...base, verification_expiry: TODAY }, TODAY)).toBe(true);
+    expect(isVerificationCurrent({ ...base, verification_expiry: "2026-10-28" }, TODAY)).toBe(false);
+  });
 });
 
 describe("disclosureFor", () => {
