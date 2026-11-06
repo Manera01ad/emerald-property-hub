@@ -1,4 +1,7 @@
-# Leaving Lovable — Exit Runbook
+# Leaving Lovable — Exit Runbook (historical archive)
+
+> **Historical only (2026-11-06):** The owner confirms the product has already left Lovable.dev and Lovable Cloud. Do not interpret this older guide as a current migration checklist. Follow [INDEPENDENCE_PLAN.md](INDEPENDENCE_PLAN.md) for post-exit product completion, code cleanup and development priorities.
+
 
 The step-by-step procedure to take this project off Lovable and onto your own
 free hosting. Companion to `docs/PLAN.md` (which holds the phases and the "why").

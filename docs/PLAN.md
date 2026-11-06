@@ -1,4 +1,6 @@
-# PropWise AI — Master Plan
+# PropWise AI — Master Plan (historical baseline)
+
+> **Historical only (2026-11-06):** The owner confirms the exit from Lovable.dev and Lovable Cloud is already completed. Do not reopen that migration. The current architecture and execution order are in [INDEPENDENCE_PLAN.md](INDEPENDENCE_PLAN.md).
 
 Owner-facing plan for (1) leaving Lovable, (2) running at zero cost, and (3)
 making the app fully functional with no debug work left over.

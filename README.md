@@ -3,10 +3,11 @@
 Chennai property and location intelligence: search, compare and analyse
 properties, see full purchase cost and locality risk, and ask an AI consultant.
 
-This project is migrating off Lovable to self-hosted, zero-cost infrastructure.
+**Current project decision (2026-11-06):** the owner confirms PropWise AI has already moved off Lovable.dev and Lovable Cloud. The priority is finishing and maintaining the independent platform, not restarting the exit.
 
-- **Plan and phases:** [`docs/PLAN.md`](docs/PLAN.md)
-- **Exit runbook:** [`docs/LOVABLE_EXIT.md`](docs/LOVABLE_EXIT.md)
+- **Current product architecture and completion plan:** [`docs/INDEPENDENCE_PLAN.md`](docs/INDEPENDENCE_PLAN.md)
+- **Historical plan (not the active work order):** [`docs/PLAN.md`](docs/PLAN.md)
+- **Historical exit runbook:** [`docs/LOVABLE_EXIT.md`](docs/LOVABLE_EXIT.md)
 - **Cost model:** [`docs/COST_MODEL.md`](docs/COST_MODEL.md)
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Operations:** [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
