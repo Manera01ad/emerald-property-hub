@@ -1,4 +1,7 @@
-# Leaving Lovable — Exit Runbook
+# Leaving Lovable — Exit Runbook (legacy, conditional)
+
+> **IMPORTANT, 2026-11-06:** This runbook's claim that the database/auth/storage is already separate from Lovable is **not verified and contradicts the owner's confirmed Lovable Cloud usage**. **Do not follow its 'database stays unchanged', migration, or cancel-Lovable instructions as-is.** The authoritative architecture, export/restore safety gates, and OpenHands action order are now in [INDEPENDENCE_PLAN.md](INDEPENDENCE_PLAN.md). This file remains a technical reference for build/package details until rewritten after independent backend access is proven.
+
 
 The step-by-step procedure to take this project off Lovable and onto your own
 free hosting. Companion to `docs/PLAN.md` (which holds the phases and the "why").
