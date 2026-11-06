@@ -18,8 +18,9 @@ import { infraStatusLabel } from "@/lib/infrastructure";
 import { formatINR } from "@/lib/format";
 import { findLocality } from "@/lib/localities";
 import type { Evidence } from "@/lib/evidence";
+import { siteUrl } from "@/lib/site";
 
-const BASE = "https://emerald-property-hub.lovable.app/location-intelligence";
+const BASE = siteUrl("/location-intelligence");
 
 export const Route = createFileRoute("/location-intelligence/$area")({
   staticData: { sitemap: false },

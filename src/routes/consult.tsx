@@ -3,15 +3,16 @@ import { MessageCircle } from "lucide-react";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { Button } from "@/components/ui/button";
 import { useSettings, whatsappLink } from "@/lib/data";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/consult")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/consult" }],
+    links: [{ rel: "canonical", href: siteUrl("/consult") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/consult" },
+      { property: "og:url", content: siteUrl("/consult") },
       { title: "Ask PropWise AI about a Chennai property — PropWise AI" },
       { name: "description", content: "Tell us your budget and preferences. We help you understand an area, read the evidence on a listing and check documents." },
       { property: "og:title", content: "Ask PropWise AI about a Chennai property" },

@@ -30,9 +30,14 @@ That is why §4 exists.
 
 ### What is backed up, and by whom
 
-The database, auth users and the `property-photos` storage bucket live in the
-Supabase project `dashpanandamjickoytj`. Backups are a property of that project's
-plan, not of this repository.
+The database, auth users and the `property-photos` storage bucket currently live
+in the Lovable-managed Supabase project `dashpanandamjickoytj`. **The migration
+target is a new, owner-controlled project, `lgetjiksdzoqfryelvmv`.** Backups are
+a property of whichever project is in use, not of this repository.
+
+Until the cutover is complete, `dashpanandamjickoytj` is still the live database.
+After it, it is history. `docs/LOVABLE_EXIT.md` §3.1.2 gives the order; the
+important part is that the data does not move by itself.
 
 **Action for the owner, once:** open the Supabase dashboard for the project and
 record, in the table below, the plan's backup retention and whether

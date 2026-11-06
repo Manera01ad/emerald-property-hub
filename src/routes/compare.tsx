@@ -10,15 +10,16 @@ import { dealScore, missingDocs, pricePerSqft, purchaseCost } from "@/lib/deal";
 import { formatINR } from "@/lib/format";
 import { AVAILABILITY, typeLabel } from "@/lib/constants";
 import { TRANSACTION_LABELS, transactionTypeOf } from "@/lib/transaction";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/compare")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/compare" }],
+    links: [{ rel: "canonical", href: siteUrl("/compare") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/compare" },
+      { property: "og:url", content: siteUrl("/compare") },
       { title: "Compare Properties — PropWise AI" },
       { name: "description", content: "Compare up to four Chennai properties side by side on total cost, area, approvals and documents." },
       { property: "og:title", content: "Compare Properties — PropWise AI" },

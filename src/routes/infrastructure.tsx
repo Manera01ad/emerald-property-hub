@@ -3,15 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { groupByArea, infraStatusLabel } from "@/lib/infrastructure";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/infrastructure")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/infrastructure" }],
+    links: [{ rel: "canonical", href: siteUrl("/infrastructure") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/infrastructure" },
+      { property: "og:url", content: siteUrl("/infrastructure") },
       { title: "Chennai Infrastructure Projects — PropWise AI" },
       { name: "description", content: "Infrastructure projects near Chennai's growth corridors, with sources and verified progress status." },
       { property: "og:title", content: "Chennai Infrastructure Projects — PropWise AI" },

@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/LegalPage";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/privacy")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/privacy" }],
+    links: [{ rel: "canonical", href: siteUrl("/privacy") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/privacy" },
+      { property: "og:url", content: siteUrl("/privacy") },
       { title: "Privacy Policy — PropWise AI" },
       { name: "description", content: "How PropWise AI collects, uses and protects your personal information." },
       { property: "og:title", content: "Privacy Policy — PropWise AI" },

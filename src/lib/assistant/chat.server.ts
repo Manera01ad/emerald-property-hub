@@ -13,7 +13,7 @@ import { SKILLS } from "./skill-files";
 import { withSkills } from "./skills";
 import { DAILY_MESSAGE_LIMIT, LIMIT_REACHED_MESSAGE, MAX_HISTORY_MESSAGES, UNAVAILABLE_MESSAGE, checkMessage, windowStart } from "./limits";
 import { buildUsageRecord } from "./cost";
-import { ASSISTANT_MODEL_ID, AI_GATEWAY_URL } from "./pricing";
+import { ASSISTANT_MODEL_ID, AI_GATEWAY_URL, aiApiKey, aiProviderHeaders } from "./pricing";
 import { reconcileBudget, refusalFor, reserveBudget } from "./budget.server";
 
 const MODEL = ASSISTANT_MODEL_ID;
@@ -85,7 +85,7 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
     return json(500, "Couldn't save your message. Please try again.");
   }
 
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  const apiKey = aiApiKey();
   if (!apiKey) return json(500, "The assistant isn't configured yet.");
 
   // Global daily cap, checked before the paid call. The per-user limit above
@@ -104,7 +104,7 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
   const provider = createOpenAI({
     baseURL: GATEWAY,
     apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    headers: aiProviderHeaders(apiKey),
     fetch: runIdFetch.fetch,
   });
 
@@ -158,7 +158,7 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
     },
     onError: (error) => {
       const status = (error as { statusCode?: number })?.statusCode;
-      if (status === 402) { console.error("assistant: Lovable AI credits exhausted"); return UNAVAILABLE_MESSAGE; }
+      if (status === 402) { console.error("assistant: AI provider credits exhausted"); return UNAVAILABLE_MESSAGE; }
       if (status === 429) return "The assistant is busy right now. Please wait a moment and try again.";
       if (status === 403) return "The assistant isn't allowed to answer this request.";
       return "The assistant couldn't answer just now. Please try again.";

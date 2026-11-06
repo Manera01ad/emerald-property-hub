@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +30,9 @@ function AuthPage() {
   const next = rawNext ? oauthReturnPath(rawNext) : "/my";
   const [mode, setMode] = useState<"in" | "up">("in");
   const [busy, setBusy] = useState(false);
-  const go = () => { if (next.startsWith("/.lovable/")) window.location.href = next; else navigate({ to: next }); };
+  // A cross-origin OAuth callback target (for example a consent screen) must be
+  // a full-page navigation, not a router push.
+  const go = () => { if (next.startsWith("/") && !next.startsWith("//")) navigate({ to: next }); else window.location.href = next; };
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,10 +54,14 @@ function AuthPage() {
   }
 
   async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: new URL(next, window.location.origin).href });
-    if (r.error) { toast.error("Google sign-in failed"); return; }
-    if (r.redirected) return;
-    go();
+    // Google sign-in is Supabase's own OAuth flow, so the provider is configured
+    // in the Supabase project and this app carries no auth vendor. The browser is
+    // redirected to the provider; the callback returns to `next`.
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: new URL(next, window.location.origin).href },
+    });
+    if (error) toast.error("Google sign-in failed");
   }
 
   return (

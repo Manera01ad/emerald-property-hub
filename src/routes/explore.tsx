@@ -19,16 +19,17 @@ import { mapLayers } from "@/lib/map-layers";
 import { validLatLng, type LatLng } from "@/lib/mapurl";
 import { searchString } from "@/lib/search-params";
 import { LOCATION_FILTER_GRID, SHRINKABLE_SELECT } from "@/lib/responsive";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/explore")({
   staticData: { sitemap: true },
   validateSearch: z.object({ area: searchString }),
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/explore" }],
+    links: [{ rel: "canonical", href: siteUrl("/explore") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/explore" },
+      { property: "og:url", content: siteUrl("/explore") },
       { title: "Explore Chennai Properties on a Map — PropWise AI" },
       { name: "description", content: "See homes with the schools, hospitals, shops and transit around them. Pick your area and see homes nearby." },
       { property: "og:title", content: "Explore Chennai Properties on a Map — PropWise AI" },

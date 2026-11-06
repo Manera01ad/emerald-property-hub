@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CHALLENGES, CONTRIBUTE_NOTICES, CONTRIBUTE_STEPS } from "@/lib/contribute";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/contribute")({
   staticData: { sitemap: true },
   head: () => ({
-    links: [{ rel: "canonical", href: "https://emerald-property-hub.lovable.app/contribute" }],
+    links: [{ rel: "canonical", href: siteUrl("/contribute") }],
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://emerald-property-hub.lovable.app/contribute" },
+      { property: "og:url", content: siteUrl("/contribute") },
       { title: "Contribute — PropWise AI" },
       {
         name: "description",

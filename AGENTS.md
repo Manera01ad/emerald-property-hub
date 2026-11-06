@@ -1,13 +1,16 @@
-<!-- LOVABLE:BEGIN -->
+<!-- MIGRATION:BEGIN -->
 > [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
+> This project is migrating off Lovable to self-hosted, zero-cost infrastructure.
+> The plan is `docs/PLAN.md`; the exit runbook is `docs/LOVABLE_EXIT.md`.
 >
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+> Until the migration is complete, do not rewrite published git history — no
+> force pushing, rebasing, amending or squashing commits that are already pushed.
+> While the Lovable project still exists, rewriting history destroys the owner's
+> project history there. After the migration, the same rule holds for a simpler
+> reason: other clones depend on it.
+>
+> Keep the connected branch in a working state; `main` is the deploy source.
+<!-- MIGRATION:END -->
 
 ## Architecture rules
 - Data access uses the browser backend client with row-level security; public visibility of listings is enforced in policies (published + permission + not demo), so never rely on UI filters alone.
@@ -35,14 +38,18 @@ No change reaches `main` without both keys:
 1. **Machine key** — the `Verify` workflow passes (tests and build).
 2. **Human key** — the repository owner approves the pull request.
 
-`main` is production: Lovable builds the live site from it, and commits sync back into the Lovable editor. There is no separate deploy step and no staging environment, so a merge is a release.
+`main` is production: it is the branch the site is built and deployed from. There
+is no staging environment, so a merge is a release. Before the migration completes
+the deploy is Lovable's; after it, the deploy is a Cloudflare Workers build gated
+on `Verify` (see `docs/LOVABLE_EXIT.md`). Either way, the two-key rule is the
+control: a green `Verify` run and the owner's approval.
 
 ### Never, under any circumstances
 
 - Push directly to `main`. Every change goes through a pull request.
-- Force push, rebase, amend, or squash commits that are already pushed. This rewrites history on Lovable's side and the owner loses project history.
+- Force push, rebase, amend, or squash commits that are already pushed. This rewrites published history and loses project history.
 - Apply database migrations. Write the migration file if asked; the owner runs it.
-- Deploy. Lovable deploys.
+- Deploy. The deploy is the owner's, whether Lovable today or Cloudflare after the migration.
 - Access production data, or any secret listed under "Secrets" below.
 - Approve or merge your own pull request.
 
@@ -76,8 +83,9 @@ Point 4 matters most. "I did not exercise the photo-upload path because it needs
 Never request, read, or embed these. They are absent from the agent environment on purpose:
 
 - `SUPABASE_SERVICE_ROLE_KEY` — bypasses every row-level security rule.
-- `LOVABLE_DB_MIGRATION_URL` — can alter the production schema.
-- `LOVABLE_CRON_SECRET` and the `private.scheduler_token` value — can trigger the research pipeline.
+- `DATABASE_MIGRATION_URL` (was `LOVABLE_DB_MIGRATION_URL`) — can alter the production schema.
+- `CRON_SECRET` (was `LOVABLE_CRON_SECRET`) and the `private.scheduler_token` value — can trigger the research pipeline.
+- `AI_API_KEY` (was `LOVABLE_API_KEY`) — spends money per assistant message.
 
 Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and public `VITE_*` values. Keep `.env` and `.env.*` ignored except `.env.example`; hosted runtime and build bindings must supply configuration so credentials are not tracked in Git.
 
