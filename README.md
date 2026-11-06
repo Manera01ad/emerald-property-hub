@@ -3,9 +3,10 @@
 Chennai property and location intelligence: search, compare and analyse
 properties, see full purchase cost and locality risk, and ask an AI consultant.
 
-This project is migrating off Lovable to self-hosted, zero-cost infrastructure.
+**Migration decision (2026-11-06):** move both hosting and the Lovable Cloud backend to independently controlled services. The current backend must not be treated as already independent. Follow the data-export and backup gates before cutover.
 
-- **Plan and phases:** [`docs/PLAN.md`](docs/PLAN.md)
+- **Authoritative independence architecture and action plan:** [`docs/INDEPENDENCE_PLAN.md`](docs/INDEPENDENCE_PLAN.md)
+- **Older plan (superseded where contradictory):** [`docs/PLAN.md`](docs/PLAN.md)
 - **Exit runbook:** [`docs/LOVABLE_EXIT.md`](docs/LOVABLE_EXIT.md)
 - **Cost model:** [`docs/COST_MODEL.md`](docs/COST_MODEL.md)
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
