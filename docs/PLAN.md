@@ -1,4 +1,6 @@
-# PropWise AI — Master Plan
+# PropWise AI — Master Plan (historical baseline)
+
+> **Superseded for migration execution (2026-11-06):** See [INDEPENDENCE_PLAN.md](INDEPENDENCE_PLAN.md). The owner confirmed Lovable Cloud is the present backend; independent Supabase ownership, backup, and restoration are unverified. Do not infer that data remains accessible after leaving Lovable, or execute production SQL/cancellation from this older plan.
 
 Owner-facing plan for (1) leaving Lovable, (2) running at zero cost, and (3)
 making the app fully functional with no debug work left over.
