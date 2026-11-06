@@ -1,0 +1,17 @@
+# gitleaks fingerprints to suppress, one per line.
+#
+# Keep this list short and each entry justified. A fingerprint is
+# `<commit>:<file>:<rule>:<line>`, so it suppresses one finding in one commit
+# and nothing else. Prefer this over widening .gitleaks.toml's regexes, which
+# would blind the scan to a whole class of string everywhere.
+#
+# 6d09df0 — the regression guard in src/test/build-config.test.ts first named the
+# old Supabase publishable key as a single literal. That key is public by design
+# (row-level security protects the data, not the key) and .gitleaks.toml already
+# allowlists the full `sb_publishable_...` form; it was flagged only because the
+# literal was a 15-character truncated prefix, below that pattern's {20,} bound.
+# The file no longer holds any key literal at all — it now matches the key's
+# shape instead — so nothing current is being hidden. The commit is already
+# pushed, and rewriting published history is not permitted, so the one historical
+# finding is recorded here.
+6d09df001e4f2ad00a2ba9a02beef571cccbdd18:src/test/build-config.test.ts:generic-api-key:15

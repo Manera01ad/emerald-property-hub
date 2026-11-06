@@ -12,10 +12,11 @@ import { describe, expect, it } from "vitest";
  * error, which is the worst way for a migration to fail.
  */
 const LEGACY_REF = "dashpanandamjickoytj";
-// Split so the literal is not a contiguous `sb_publishable_…` string, which would
-// otherwise trip the repository's gitleaks scan. The key is public by design;
-// this keeps the scan honest rather than hiding anything.
-const LEGACY_KEY_PREFIX = ["sb_publishable", "srom6OnzGr3MGJL"].join("_");
+// Shape, not a value. A publishable key must come from the environment, so no
+// key literal belongs in a build input. Matching the shape rather than one old
+// value also catches a future hardcoded key, and keeps no key-shaped literal in
+// this file for the repository's secret scan to trip over.
+const PUBLISHABLE_KEY_SHAPE = /sb_publishable_[A-Za-z0-9_-]{20,}/;
 
 // Files that feed the build. Docs and audit records are allowed to name the old
 // project; configuration is not.
@@ -37,7 +38,7 @@ describe("build configuration", () => {
         return; // optional file
       }
       expect(content).not.toContain(LEGACY_REF);
-      expect(content).not.toContain(LEGACY_KEY_PREFIX);
+      expect(content).not.toMatch(PUBLISHABLE_KEY_SHAPE);
     });
   }
 
