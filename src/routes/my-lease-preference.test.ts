@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
+import { isIntentConstraintError } from "@/routes/_authenticated/my";
 import { matchProperty, type Preferences } from "@/lib/buyer";
 import type { CostRules } from "@/lib/deal";
 import type { Property } from "@/lib/data";
@@ -68,6 +69,26 @@ describe("My Property Research lease preferences and accessibility", () => {
     const ids = [...src.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
     expect(dupes).toEqual([]);
+  });
+
+  it("uses truthful copy for Chennai lease listings and avoids unverified claims", () => {
+    expect(src).toContain("browse Chennai lease listings");
+    expect(src).not.toContain("browse verified Chennai lease listings");
+    expect(src).not.toContain("verified Chennai lease listings");
+  });
+
+  it("classifies lease save constraint errors precisely without misclassifying other check constraints", () => {
+    expect(src).toContain("isIntentConstraintError");
+    expect(isIntentConstraintError('new row for relation "buyer_profiles" violates check constraint "buyer_profiles_intent_check"')).toBe(true);
+    expect(isIntentConstraintError('violates check constraint "intent_check"')).toBe(true);
+    expect(isIntentConstraintError('violates check constraint on column "intent"')).toBe(true);
+
+    expect(isIntentConstraintError('new row for relation "buyer_profiles" violates check constraint "buyer_profiles_bedrooms_check"')).toBe(false);
+    expect(isIntentConstraintError('new row for relation "buyer_profiles" violates check constraint "buyer_profiles_budget_check"')).toBe(false);
+    expect(isIntentConstraintError('new row for relation "buyer_profiles" violates check constraint "buyer_profiles_monthly_rent_budget_check"')).toBe(false);
+    expect(isIntentConstraintError("some generic check constraint violation")).toBe(false);
+    expect(isIntentConstraintError("")).toBe(false);
+    expect(isIntentConstraintError(undefined)).toBe(false);
   });
 
   it("handles unmigrated database constraint error gracefully in saveProfile", () => {
@@ -147,5 +168,26 @@ describe("transaction-aware matching for lease and rent in seeker research", () 
     expect(match.missing).toContain("Lease duration");
     expect(match.missing).toContain("Escalation clause");
     expect(match.missing).toContain("Deposit");
+  });
+
+  it("prevents rent and lease matching from using the purchase budget when monthly_rent_budget is missing", () => {
+    expect(src).toContain('budget: type === "buy" ? f.budget : (f.monthly_rent_budget ?? null)');
+    expect(src).not.toContain('budget: type === "buy" ? f.budget : (f.monthly_rent_budget ?? f.budget)');
+
+    // When monthly_rent_budget is missing (null), effective budget must be null, not purchase budget
+    const seekerWithBuyBudgetOnly: Preferences = {
+      intent: "lease",
+      property_types: ["office"],
+      budget: null, // Effective budget passed when monthly_rent_budget is missing
+      preferred_locations: ["OMR"],
+      bedrooms: null,
+      min_area_sqft: 1500,
+    };
+
+    const match = matchProperty(dummyLeaseListing, seekerWithBuyBudgetOnly, rules);
+    const budgetPart = match.parts.find((p) => p.label === "Budget fit" || p.label === "Monthly rent fit");
+    expect(budgetPart?.score).toBeNull();
+    expect(budgetPart?.note).toBe("No budget set");
+    expect(budgetPart?.note).not.toContain("vs budget");
   });
 });
