@@ -117,9 +117,11 @@ export function dealScore(p: DealProperty, pool: DealProperty[], places: NearbyP
       score: null,
       evidence: "UNKNOWN",
       reason:
-        comps.count === 0
-          ? "No comparable listings to compare against."
-          : `Only ${comps.count} comparable listing(s); at least ${MIN_COMPARABLES} are needed.`,
+        comps.count >= MIN_COMPARABLES
+          ? "This listing has no usable price per sq ft to compare."
+          : comps.count === 0
+            ? "No comparable listings to compare against."
+            : `Only ${comps.count} comparable listing(s); at least ${MIN_COMPARABLES} are needed.`,
     });
   }
 

@@ -53,7 +53,11 @@ describe.each(["buy", "rent", "lease"])("usable %s comparison prices", (type) =>
     expect(comparablesFor(invalid, pool).deltaPct).toBeNull();
     expect(
       dealScore(invalid, pool, []).parts.find((part) => part.key === "affordability"),
-    ).toMatchObject({ score: null, evidence: "UNKNOWN" });
+    ).toMatchObject({
+      score: null,
+      evidence: "UNKNOWN",
+      reason: "This listing has no usable price per sq ft to compare.",
+    });
   });
 
   it("preserves estimates when five usable comparables remain", () => {
