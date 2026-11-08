@@ -43,6 +43,7 @@ type Profile = {
 const empty: Profile = { intent: "buy", property_types: [], budget: null, monthly_rent_budget: null, preferred_locations: [], bedrooms: null, min_area_sqft: null, school_preference: "", commute_destinations: "", lifestyle_priorities: "", financing: "", move_in_timeframe: "" };
 const n = (v: string) => (v === "" ? null : Number(v));
 const sel = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm";
+export const isIntentConstraintError = (msg?: string) => !!msg && (msg.includes("buyer_profiles_intent_check") || (msg.includes("check constraint") && msg.toLowerCase().includes("intent")));
 
 function MyPage() {
   const { session } = useSession();
@@ -77,7 +78,7 @@ function MyPage() {
       lifestyle_priorities: list(f.lifestyle_priorities), financing: f.financing || null, move_in_timeframe: f.move_in_timeframe || null,
     }, { onConflict: "user_id" });
     if (error) {
-      if (f.intent === "lease" && (error.message.includes("check constraint") || error.message.includes("buyer_profiles_intent_check"))) {
+      if (f.intent === "lease" && isIntentConstraintError(error.message)) {
         toast.error("Saving lease intent requires pending database migration 0019 to be applied by the administrator.");
         return;
       }
@@ -112,7 +113,7 @@ function MyPage() {
           const type = transactionTypeOf(p);
           const effectivePref = {
             ...f,
-            budget: type === "buy" ? f.budget : (f.monthly_rent_budget ?? f.budget),
+            budget: type === "buy" ? f.budget : (f.monthly_rent_budget ?? null),
           };
           return { p, m: matchProperty(p, effectivePref, rules) };
         })
@@ -191,7 +192,7 @@ function MyPage() {
                 <p className="mt-1">
                   Long-term lease duration and permitted-use preferences will persist once database migration 0019 is applied by the administrator. In the meantime, your monthly lease budget is used to rank lease listings in Matches, and you can{" "}
                   <Link to="/properties" search={{ transaction: "lease" }} className="font-medium text-primary underline underline-offset-4">
-                    browse verified Chennai lease listings
+                    browse Chennai lease listings
                   </Link>
                   .
                 </p>
