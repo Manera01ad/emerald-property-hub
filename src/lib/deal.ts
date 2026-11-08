@@ -45,7 +45,11 @@ export function areaFor(p: DealProperty): number | null {
 
 export function pricePerSqft(p: DealProperty): number | null {
   const a = areaFor(p);
-  return a ? Number(p.asking_price) / a : null;
+  const price = Number(p.asking_price);
+  if (a == null || !Number.isFinite(a) || !Number.isFinite(price) || price <= 0) return null;
+  const rate = price / a;
+  // Unusable figures must not count toward the minimum comparison evidence.
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
 }
 
 export type Comparables = {
@@ -113,9 +117,11 @@ export function dealScore(p: DealProperty, pool: DealProperty[], places: NearbyP
       score: null,
       evidence: "UNKNOWN",
       reason:
-        comps.count === 0
-          ? "No comparable listings to compare against."
-          : `Only ${comps.count} comparable listing(s); at least ${MIN_COMPARABLES} are needed.`,
+        comps.count >= MIN_COMPARABLES
+          ? "This listing has no usable price per sq ft to compare."
+          : comps.count === 0
+            ? "No comparable listings to compare against."
+            : `Only ${comps.count} comparable listing(s); at least ${MIN_COMPARABLES} are needed.`,
     });
   }
 
