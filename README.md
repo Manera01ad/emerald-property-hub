@@ -5,16 +5,19 @@ properties, see full purchase cost and locality risk, and ask an AI consultant.
 
 **Current project decision (2026-11-06):** the owner confirms PropWise AI has already moved off Lovable.dev and Lovable Cloud. The priority is finishing and maintaining the independent platform, not restarting the exit.
 
+- **Documentation index (start here):** [`docs/README.md`](docs/README.md)
+- **Current state and backlog:** [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md)
 - **Current product architecture and completion plan:** [`docs/INDEPENDENCE_PLAN.md`](docs/INDEPENDENCE_PLAN.md)
-- **Historical plan (not the active work order):** [`docs/PLAN.md`](docs/PLAN.md)
-- **Historical exit runbook:** [`docs/LOVABLE_EXIT.md`](docs/LOVABLE_EXIT.md)
+- **Historical plan (not the active work order):** [`docs/archive/PLAN.md`](docs/archive/PLAN.md)
+- **Historical exit runbook:** [`docs/archive/LOVABLE_EXIT.md`](docs/archive/LOVABLE_EXIT.md)
 - **Cost model:** [`docs/COST_MODEL.md`](docs/COST_MODEL.md)
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Operations:** [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+- **Historical documents:** [`docs/archive/`](docs/archive/README.md)
 
 ## CTO development control
 
-- **Team responsibilities, approvals and nightly operating rules:** [`docs/CTO_TEAM.md`](docs/CTO_TEAM.md)
+- **Team responsibilities, approvals and nightly operating rules:** [`docs/cto/CTO_TEAM.md`](docs/cto/CTO_TEAM.md)
 - **Live engineering backlog:** [CTO Control Center #50](https://github.com/Manera01ad/emerald-property-hub/issues/50)
 
 ## Development

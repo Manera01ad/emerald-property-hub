@@ -91,19 +91,19 @@ All journeys were executed against Chrome at desktop (1440x900) and mobile (375x
 ## 4. Visual Evidence (Screenshots)
 
 ````carousel
-![My Property Research - Lease Preference (Desktop)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/my-research-lease-preference-desktop.png)
+![My Property Research - Lease Preference (Desktop)](../../test-evidence/my-research-lease-preference-desktop.png)
 <!-- slide -->
-![My Property Research - Lease Preference (Mobile 375px)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/my-research-lease-preference-mobile.png)
+![My Property Research - Lease Preference (Mobile 375px)](../../test-evidence/my-research-lease-preference-mobile.png)
 <!-- slide -->
-![Lease Journey - Properties Listing (Desktop)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/lease-journey-desktop.png)
+![Lease Journey - Properties Listing (Desktop)](../../test-evidence/lease-journey-desktop.png)
 <!-- slide -->
-![Lease Journey - Properties Listing (Mobile 375px)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/lease-journey-mobile.png)
+![Lease Journey - Properties Listing (Mobile 375px)](../../test-evidence/lease-journey-mobile.png)
 <!-- slide -->
-![Buy Journey - Properties Listing (Desktop)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/buy-journey-desktop.png)
+![Buy Journey - Properties Listing (Desktop)](../../test-evidence/buy-journey-desktop.png)
 <!-- slide -->
-![Rent Journey - Properties Listing (Desktop)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/rent-journey-desktop.png)
+![Rent Journey - Properties Listing (Desktop)](../../test-evidence/rent-journey-desktop.png)
 <!-- slide -->
-![Compare Journey - Side-by-Side (Desktop)](/C:/Users/faiyaz/.gemini/antigravity/brain/a6d0bbb5-25ab-4883-91bd-aec994b9ce48/compare-desktop.png)
+![Compare Journey - Side-by-Side (Desktop)](../../test-evidence/compare-desktop.png)
 ````
 
 ---

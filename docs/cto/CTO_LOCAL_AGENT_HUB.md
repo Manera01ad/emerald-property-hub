@@ -6,7 +6,7 @@ The owner already uses **Ollama**, **DeepSeek** and **Antigravity** and wants Op
 
 ## Do this once
 
-1. After reviewing and approving the PR that added this document, open [`scripts/cto/local-agent-readiness.ps1`](../scripts/cto/local-agent-readiness.ps1) in GitHub and select **Raw → Save as** in Downloads. Inspect the downloaded file before running it.
+1. After reviewing and approving the PR that added this document, open [`scripts/cto/local-agent-readiness.ps1`](../../scripts/cto/local-agent-readiness.ps1) in GitHub and select **Raw → Save as** in Downloads. Inspect the downloaded file before running it.
 2. Open **Windows PowerShell**. Run the commands below from Downloads:
 
    ```powershell

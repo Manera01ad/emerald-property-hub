@@ -97,7 +97,7 @@ export function taskPacket(plan, issueNumber) {
     allowedScopes: task.scopes,
     instructions: [
       `Repository: ${DEFAULT_REPO}. Work order: ${task.url}.`,
-      'Read AGENTS.md, docs/INDEPENDENCE_PLAN.md and docs/CTO_TEAM.md if merged.',
+      'Read AGENTS.md, docs/INDEPENDENCE_PLAN.md and docs/cto/CTO_TEAM.md if merged.',
       'The product has already exited Lovable.dev and Lovable Cloud; do not redo the exit.',
       task.objective,
       `Own only these files/scopes: ${task.scopes.join(', ')}. Coordinate before changing shared files.`,

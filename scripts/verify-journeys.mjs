@@ -2,7 +2,7 @@ import { chromium } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 
-const outDir = resolve("docs/evidence");
+const outDir = resolve("test-evidence");
 mkdirSync(outDir, { recursive: true });
 
 async function checkOverflow(page) {

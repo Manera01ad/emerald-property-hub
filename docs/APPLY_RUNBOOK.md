@@ -358,7 +358,7 @@ a build that renders a blank page, which the current unit tests cannot.
   billing, and nothing should until a provider is chosen and approved.
 * **Legal questions.** Applying SQL does not settle anything about Tamil Nadu
   real estate regulation, privacy, tax, or how contributor rewards are treated.
-  Those remain open, and are flagged in `docs/RELEASE_AUDIT.md`.
+  Those remain open, and are flagged in `docs/archive/RELEASE_AUDIT.md`.
 * **The Google Maps key.** Still in git history across four commits. Applying
   migrations does not help; the key needs rotating at the provider.
 * **Rollback of a half-applied file.** If a file fails part way through, some of

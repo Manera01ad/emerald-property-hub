@@ -86,7 +86,7 @@ Residual `@lovable.dev/*` packages in `package.json`, `vite.config.ts` and possi
 - Inventory routes/components/services, feature flags, backend endpoints by **name only**, migrations and active imports.
 - Produce a single `docs/CURRENT_STATE.md`: **working, incomplete, disabled, blocked, and obsolete**. Each claim must cite exact file/test evidence; do not infer live status from file existence.
 - Inventory dead/duplicate components via import references. Classify candidates, never mass-delete based on filenames.
-- Find stale references among `docs/PLAN.md`, `docs/LOVABLE_EXIT.md`, `docs/OPERATIONS.md` and historical audit reports. Prefer one canonical README + architecture + execution tracker. Archive old records rather than destroying evidence.
+- Find stale references among `docs/archive/PLAN.md`, `docs/archive/LOVABLE_EXIT.md`, `docs/OPERATIONS.md` and historical audit reports. Prefer one canonical README + architecture + execution tracker. Archive old records rather than destroying evidence.
 - Capture `bun run test`, `bun run build`, `bun run type-check`, `bun run lint`, plus optional Playwright; separate pre-existing defects from introduced ones.
 - **Exit gate:** owner gets a short accurate inventory and a prioritized PR backlog. No feature rewrite, live changes, deletion or DB modification.
 
@@ -134,7 +134,7 @@ Residual `@lovable.dev/*` packages in `package.json`, `vite.config.ts` and possi
 - `docs/CURRENT_STATE.md` = agent-produced live implementation ledger (next PR).
 - `docs/OPERATIONS.md` = deployment, recovery, logging, secrets names.
 - `docs/ARCHITECTURE.md` = detailed implementation/trust boundaries.
-- Historical `docs/PLAN.md` and `docs/LOVABLE_EXIT.md` = archival history, not current actions.
+- Historical `docs/archive/PLAN.md` and `docs/archive/LOVABLE_EXIT.md` = archival history, not current actions.
 
 ## 6. OpenHands rules and first task
 
