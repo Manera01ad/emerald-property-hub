@@ -93,8 +93,8 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
 
   // Save the question only once the call is actually going to be made. Saving it
   // first charged the 15-per-day allowance for an answer that was never produced:
-  // during an outage (for example the unmigrated reserve_ai_budget function) the
-  // fifteenth refusal turned a truthful 503 into a false "reached today's limit",
+  // during an outage (for example a missing reserve_ai_budget function) the
+  // sixteenth refusal turned a truthful 503 into a false "reached today's limit",
   // and the rows kept the user locked out for up to a day after the outage ended.
   // A refused call must cost the user nothing.
   const { error: saveError } = await db.from("assistant_messages").upsert(

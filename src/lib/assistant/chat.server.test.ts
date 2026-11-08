@@ -4,8 +4,8 @@
  * The defect guarded here: a refused call used to persist the user's question
  * *before* asking for budget, so a refused call charged the 15-per-day allowance
  * for an answer that was never produced. During an outage — for example the
- * unmigrated `reserve_ai_budget` function, which is the current production state
- * per docs/CURRENT_STATE.md §4.1 — the fifteenth refusal turned a truthful 503
+ * missing `reserve_ai_budget` function (the deployed status is unknown) — the
+ * sixteenth refusal turned a truthful 503
  * into a false "you have reached today's limit", and the stored rows kept the
  * user out for up to a day after the outage ended.
  *
@@ -14,6 +14,7 @@
  * replaced; the ordering and status mapping under test are the real code.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { streamText } from "ai";
 
 type Upsert = { table: string; row: Record<string, unknown> };
 
@@ -42,12 +43,11 @@ vi.mock("@supabase/supabase-js", () => ({
   createClient: () => (globalThis as unknown as { __PW_DB__?: unknown }).__PW_DB__,
 }));
 
-// A stub that would report the defect loudly if a paid call were ever reached
-// on a refusal path: toUIMessageStreamResponse is only used by the granted case.
+// Spy on model entry so every refusal explicitly proves it never reaches it.
 vi.mock("ai", () => ({
-  streamText: () => ({
+  streamText: vi.fn(() => ({
     toUIMessageStreamResponse: () => new Response("{}", { status: 200 }),
-  }),
+  })),
   convertToModelMessages: async (messages: unknown) => messages,
   stepCountIs: () => () => true,
 }));
@@ -134,16 +134,26 @@ beforeEach(() => {
     upserts: [],
     rpcResult: MISSING_FUNCTION,
   };
-  (globalThis as unknown as { __PW_DB__?: unknown }).__PW_DB__ = makeDb(state);
+  vi.clearAllMocks();
+  vi.stubGlobal("__PW_DB__", makeDb(state));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => {
+      throw new Error("Unexpected network call in assistant regression test");
+    }),
+  );
   // Dummy values only; no real secret is read or sent anywhere.
   vi.stubEnv("SUPABASE_URL", "http://localhost:54321");
   vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "test-publishable-key");
   vi.stubEnv("AI_API_KEY", "test-key-not-real");
+  vi.stubEnv("AI_DAILY_BUDGET_INR", "500");
   vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
+  expect(fetch).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
@@ -157,6 +167,7 @@ describe("handleAssistantChat refusals", () => {
     expect(body.error).toMatch(/unavailable right now/i);
     // The question was never answered, so it must not be stored against the user.
     expect(state.upserts).toHaveLength(0);
+    expect(streamText).not.toHaveBeenCalled();
   });
 
   it("does not turn an outage into a false daily-limit refusal", async () => {
@@ -172,6 +183,7 @@ describe("handleAssistantChat refusals", () => {
     // 16 truthful "unavailable" answers, not 15 then a misleading 429.
     expect(statuses).toEqual(new Array<number>(16).fill(503));
     expect(state.upserts).toHaveLength(0);
+    expect(streamText).not.toHaveBeenCalled();
   });
 
   it("keeps a genuine cap at 429 and still records nothing", async () => {
@@ -188,6 +200,7 @@ describe("handleAssistantChat refusals", () => {
     const body = (await response.json()) as { error: string };
     expect(body.error).toMatch(/today's usage limit/i);
     expect(state.upserts).toHaveLength(0);
+    expect(streamText).not.toHaveBeenCalled();
   });
 
   it("does not record the question when the assistant is not configured", async () => {
@@ -198,6 +211,7 @@ describe("handleAssistantChat refusals", () => {
 
     expect(response.status).toBe(500);
     expect(state.upserts).toHaveLength(0);
+    expect(streamText).not.toHaveBeenCalled();
   });
 
   it("records the question once a reservation is granted", async () => {
@@ -211,5 +225,6 @@ describe("handleAssistantChat refusals", () => {
     expect(response.status).toBe(200);
     expect(state.upserts).toHaveLength(1);
     expect(state.upserts[0]?.table).toBe("assistant_messages");
+    expect(streamText).toHaveBeenCalledOnce();
   });
 });
