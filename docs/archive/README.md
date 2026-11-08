@@ -23,4 +23,5 @@ maintained.
 | [`DELIVERY_REPORT.md`](DELIVERY_REPORT.md) | 2026-11-01 programme report | [`../CURRENT_STATE.md`](../CURRENT_STATE.md) |
 | [`RELEASE_AUDIT.md`](RELEASE_AUDIT.md) | 2026-11-01 release audit, overlaps the delivery report | [`../CURRENT_STATE.md`](../CURRENT_STATE.md) |
 | [`roadmap.md`](roadmap.md) | stale 22-line roadmap; open items are tracked in the backlog | [`../CURRENT_STATE.md`](../CURRENT_STATE.md) §7 |
+| [`north-star.md`](north-star.md) | Lovable-written product note; moved out of `.lovable/` when the platform dependency was removed | [`../INDEPENDENCE_PLAN.md`](../INDEPENDENCE_PLAN.md) |
 | [`ORGANIZATION_PLAN.md`](ORGANIZATION_PLAN.md) | decision record for the 2026-11-08 reorganisation, not a product document | [`../README.md`](../README.md) |
