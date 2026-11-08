@@ -76,15 +76,6 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
     }
     if ((count ?? 0) >= DAILY_MESSAGE_LIMIT) return json(429, LIMIT_REACHED_MESSAGE);
   }
-  const { error: saveError } = await db.from("assistant_messages").upsert(
-    { user_id: userId, message_id: last.id, role: "user", message: last as unknown as Json },
-    { onConflict: "user_id,message_id", ignoreDuplicates: true },
-  );
-  if (saveError) {
-    console.error("assistant: saving user message failed", saveError);
-    return json(500, "Couldn't save your message. Please try again.");
-  }
-
   const apiKey = aiApiKey();
   if (!apiKey) return json(500, "The assistant isn't configured yet.");
 
@@ -98,6 +89,21 @@ export async function handleAssistantChat(request: Request): Promise<Response> {
       reservation.reason === "budget_exhausted" ? 429 : 503,
       refusalFor(reservation.reason),
     );
+  }
+
+  // Save the question only once the call is actually going to be made. Saving it
+  // first charged the 15-per-day allowance for an answer that was never produced:
+  // during an outage (for example a missing reserve_ai_budget function) the
+  // sixteenth refusal turned a truthful 503 into a false "reached today's limit",
+  // and the rows kept the user locked out for up to a day after the outage ended.
+  // A refused call must cost the user nothing.
+  const { error: saveError } = await db.from("assistant_messages").upsert(
+    { user_id: userId, message_id: last.id, role: "user", message: last as unknown as Json },
+    { onConflict: "user_id,message_id", ignoreDuplicates: true },
+  );
+  if (saveError) {
+    console.error("assistant: saving user message failed", saveError);
+    return json(500, "Couldn't save your message. Please try again.");
   }
 
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
