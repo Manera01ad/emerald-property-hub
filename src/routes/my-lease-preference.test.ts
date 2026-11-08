@@ -5,6 +5,8 @@ import { matchProperty, type Preferences } from "@/lib/buyer";
 import type { CostRules } from "@/lib/deal";
 import type { Property } from "@/lib/data";
 
+const src = readFileSync("src/routes/_authenticated/my.tsx", "utf8");
+
 function createListing(over: Record<string, unknown> = {}): Property {
   return {
     id: "p1",
@@ -23,8 +25,6 @@ function createListing(over: Record<string, unknown> = {}): Property {
  * Regression guards for seeker lease preferences and accessibility in My Property Research.
  */
 describe("My Property Research lease preferences and accessibility", () => {
-  const src = readFileSync("src/routes/_authenticated/my.tsx", "utf8");
-
   it("includes the Lease option in the intent selector", () => {
     expect(src).toContain('<option value="lease">Lease</option>');
   });
