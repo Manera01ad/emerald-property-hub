@@ -4,7 +4,7 @@ name: Verify
 #
 # IMPORTANT: this workflow never deploys and never writes to the repository.
 # It only decides whether a change is safe enough to be reviewed; the deploy is
-# the owner's, gated on this passing (see docs/PLAN.md). `permissions: contents:
+# the owner's, gated on this passing (see docs/archive/PLAN.md). `permissions: contents:
 # read` makes that guarantee enforceable rather than merely intended.
 on:
   pull_request:

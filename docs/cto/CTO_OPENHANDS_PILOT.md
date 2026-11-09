@@ -40,7 +40,7 @@ The CTO queue is the source of task identity, ownership, dependency and status. 
 - Existing execution lock: `scripts/cto/prepare-run.mjs`
 - OpenHands task preview: `scripts/cto/openhands-pilot.mjs`
 - Tests: `scripts/cto/openhands-pilot.test.mjs`
-- Team policy: `docs/CTO_TEAM.md`
+- Team policy: `docs/cto/CTO_TEAM.md`
 - Control center: https://github.com/Manera01ad/emerald-property-hub/issues/50
 
 References: https://github.com/OpenHands/openhands-github-action and https://docs.openhands.dev/openhands/usage/run-openhands/github-action

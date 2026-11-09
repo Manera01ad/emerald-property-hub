@@ -1,6 +1,6 @@
 # Cost model — how this stays at zero
 
-Companion to `docs/PLAN.md`. This answers one question: what does running
+Companion to `docs/archive/PLAN.md`. This answers one question: what does running
 PropWise AI cost, and what switch turns cost on or off?
 
 Honesty first: **free tiers are not unlimited.** "Zero cost" here means "stays
@@ -133,7 +133,7 @@ can correct them.
 - Custom domain — roughly ₹800–1,000/year for a `.in`/`.com`, plus free
   Cloudflare DNS.
 
-Decision D2 in `docs/PLAN.md`. Start free; add a domain when you want one.
+Decision D2 in `docs/archive/PLAN.md`. Start free; add a domain when you want one.
 
 ---
 

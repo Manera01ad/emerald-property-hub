@@ -1,6 +1,6 @@
 # Testing
 
-Companion to `docs/PLAN.md`. How to prove a change works before it ships.
+Companion to `docs/archive/PLAN.md`. How to prove a change works before it ships.
 
 ---
 

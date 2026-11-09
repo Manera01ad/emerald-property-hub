@@ -180,7 +180,7 @@ hand-written narrow shapes instead of generated types.
 `0017_assistant_locality_search` share the `0017` prefix, and
 `pending/0018_community` and the applied `0018_owner_submissions` share `0018`.
 Promoting the pending files must renumber them to `0019`–`0022` to avoid a
-second collision. See `docs/integration-plan.md`.
+second collision. See `docs/archive/integration-plan.md`.
 
 ---
 

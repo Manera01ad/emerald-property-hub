@@ -4,7 +4,7 @@
 > and Lovable Cloud. Do not repeat a Lovable exit or database migration audit.
 > The canonical product-completion plan is `docs/INDEPENDENCE_PLAN.md`;
 > the current code and feature inventory is `docs/CURRENT_STATE.md`.
-> `docs/PLAN.md` and `docs/LOVABLE_EXIT.md` are historical references.
+> `docs/archive/PLAN.md` and `docs/archive/LOVABLE_EXIT.md` are historical references.
 >
 > Some Lovable-specific packages and files still exist in the repository.
 > Treat them as code cleanup candidates only after proving they are unused

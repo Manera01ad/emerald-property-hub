@@ -3,7 +3,7 @@
 Runs every migration in this repository against a real PostgreSQL 16 server, then
 tests what the SQL actually does.
 
-`docs/RELEASE_AUDIT.md` recorded that no SQL here had ever been executed. This
+`docs/archive/RELEASE_AUDIT.md` recorded that no SQL here had ever been executed. This
 directory closes that gap. It applies all 24 migration files in order and runs
 five suites against the result.
 

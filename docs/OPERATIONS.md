@@ -1,7 +1,7 @@
 # Operations
 
-Companion to `docs/PLAN.md`. How to run, deploy, verify and recover the site.
-The pre-migration runbook is `docs/runbook.md` (backups, restore, health); this
+Companion to `docs/archive/PLAN.md`. How to run, deploy, verify and recover the site.
+The pre-migration runbook is `docs/archive/runbook.md` (backups, restore, health); this
 file adds the post-Lovable procedures. Where they overlap, this file wins.
 
 ---
@@ -103,9 +103,9 @@ keeps a free Supabase project from pausing for inactivity.
 
 ## 5. Backups and restore
 
-Unchanged from `docs/runbook.md`. The database, auth users and the
+Unchanged from `docs/archive/runbook.md`. The database, auth users and the
 `property-photos` bucket live in Supabase; backups are a property of that
-project's plan. Record the plan's retention in the table in `docs/runbook.md`,
+project's plan. Record the plan's retention in the table in `docs/archive/runbook.md`,
 and restore once into a scratch project to prove it works.
 
 The Lovable migration touches **no data**, so no restore should ever be needed
@@ -143,7 +143,7 @@ Migrations are never applied by an agent. To apply one:
 1. Set `DATABASE_MIGRATION_URL` locally.
 2. Review the SQL in `drizzle/pending/`.
 3. Apply it yourself, deliberately.
-4. Update `docs/PLAN.md` D4 and the feature's status.
+4. Update `docs/archive/PLAN.md` D4 and the feature's status.
 
 Four are pending (`0017`–`0021`). Each gates a feature that otherwise shows "not
 open yet". Do not announce a feature before its migration is applied.

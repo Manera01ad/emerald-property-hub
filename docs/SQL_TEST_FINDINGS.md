@@ -3,7 +3,7 @@
 What this document is: the results of running every migration in this repository
 against a real PostgreSQL 16 server, for the first time.
 
-Why it exists: `docs/RELEASE_AUDIT.md` recorded that no SQL in this repository had
+Why it exists: `docs/archive/RELEASE_AUDIT.md` recorded that no SQL in this repository had
 ever been executed — not the 19 applied migrations, not the 5 in
 `drizzle/pending/`. Everything below was found by running the files, not by
 reading them.

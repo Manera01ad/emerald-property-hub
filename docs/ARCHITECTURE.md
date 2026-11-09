@@ -1,8 +1,8 @@
 # Architecture
 
-Companion to `docs/PLAN.md`. What the system is made of, and how each piece
+Companion to `docs/archive/PLAN.md`. What the system is made of, and how each piece
 changes when it leaves Lovable. Read `docs/DATA_FLOW.md` for the data detail and
-`docs/audit-2026-10-29.md` for the original audit.
+`docs/archive/audit-2026-10-29.md` for the original audit.
 
 ---
 
@@ -90,13 +90,13 @@ providers.
 
 | Concern | Today (Lovable wrapper) | After |
 | --- | --- | --- |
-| Vite config | `@lovable.dev/vite-tanstack-config` | direct plugins (verified; see `docs/LOVABLE_EXIT.md` §3.1) |
+| Vite config | `@lovable.dev/vite-tanstack-config` | direct plugins (verified; see `docs/archive/LOVABLE_EXIT.md` §3.1) |
 | SSR server entry | `src/server.ts` via `tanstackStart.server.entry` | unchanged |
 | Worker output | `cloudflare-module` preset | unchanged (pinned explicitly) |
 | MCP routes | `@lovable.dev/mcp-js` plugin | removed or ported to the official SDK (D7) |
 | Deploy | Lovable builds `main` | `wrangler deploy` from your CI |
 | Env injection | Lovable's `VITE_*` injection | explicit `define` in `vite.config.ts` |
-| Lockfile registry | Lovable's private npm cache (~120 packages) | `registry.npmjs.org` (`docs/LOVABLE_EXIT.md` §3.3) |
+| Lockfile registry | Lovable's private npm cache (~120 packages) | `registry.npmjs.org` (`docs/archive/LOVABLE_EXIT.md` §3.3) |
 
 Versions in play (from `package.json`, verify in `node_modules` when editing):
 
@@ -108,14 +108,14 @@ Versions in play (from `package.json`, verify in `node_modules` when editing):
 
 The Nitro version is a beta, which is the one genuinely fragile dependency in
 the build swap. If the plugin API differs from the snippet, adjust the call
-rather than the app. (The snippet in `docs/LOVABLE_EXIT.md` §3.1 was verified
+rather than the app. (The snippet in `docs/archive/LOVABLE_EXIT.md` §3.1 was verified
 against these exact versions and builds a working Worker.)
 
 **Supply chain note.** `bun.lock` resolves most dependencies from Lovable's
 private package cache rather than the public npm registry. The public registry
 does serve the `@lovable.dev/*` packages, so this is a re-resolve, not a
 rewrite — but it must be done before the Lovable subscription is cancelled, or a
-fresh CI install may fail. Procedure in `docs/LOVABLE_EXIT.md` §3.3.
+fresh CI install may fail. Procedure in `docs/archive/LOVABLE_EXIT.md` §3.3.
 
 ---
 
@@ -125,7 +125,7 @@ fresh CI install may fail. Procedure in `docs/LOVABLE_EXIT.md` §3.3.
 left blank"). The authoritative schema is the SQL in `drizzle/migrations/`
 (applied) and `drizzle/pending/` (not applied). The generated TypeScript types
 live in `src/integrations/supabase/types.ts`. Four migrations are pending and
-each gates a feature — see `docs/PLAN.md` D4.
+each gates a feature — see `docs/archive/PLAN.md` D4.
 
 ---
 
@@ -134,7 +134,7 @@ each gates a feature — see `docs/PLAN.md` D4.
 There is no hidden state and no build-time magic once the Lovable wrapper is
 gone. Every input to the running system is one of:
 
-- an environment variable (documented in `docs/LOVABLE_EXIT.md` §4.2),
+- an environment variable (documented in `docs/archive/LOVABLE_EXIT.md` §4.2),
 - a row in Supabase,
 - a file in `public/` or `src/`.
 

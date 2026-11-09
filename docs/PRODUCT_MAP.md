@@ -206,5 +206,5 @@ pipeline, one admin dashboard. No consolidation of those is needed.
 - **Authenticated flows.** `/admin`, `/my` and `/assistant` are `ssr: false`; I
   did not sign in, so I did not exercise CRUD, moderation or the assistant.
 - **The scheduler.** No `cron.schedule` exists in the repository (see
-  `docs/audit-2026-10-29.md` §5.1). Unchanged by this audit.
+  `docs/archive/audit-2026-10-29.md` §5.1). Unchanged by this audit.
 - **Photo upload / signed links.** Needs a live authenticated session.

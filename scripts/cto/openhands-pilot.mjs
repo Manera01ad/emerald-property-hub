@@ -39,7 +39,7 @@ export function buildOpenHandsPreview(queue, context) {
     'Repository: Manera01ad/emerald-property-hub',
     'Task: https://github.com/Manera01ad/emerald-property-hub/issues/53',
     '',
-    'Read AGENTS.md and docs/CTO_TEAM.md. PropWise AI already left Lovable.dev and Lovable Cloud.',
+    'Read AGENTS.md and docs/cto/CTO_TEAM.md. PropWise AI already left Lovable.dev and Lovable Cloud.',
     'Create only a small, reviewable QA/test PR. Do not edit application source.',
     'Permitted changed paths only: e2e/ and src/test/.',
     'Focus on public listing visibility, private photos, enquiry consent and authenticated access using mocks or a nonproduction test backend.',

@@ -7,8 +7,9 @@ production data was touched.
 **Date:** 2026-11-06.
 **Baseline:** `main` @ `776c4d4` (PR #46 merge, `docs/lovable-cloud-independence-20261106`).
 **Companion documents:** [`INDEPENDENCE_PLAN.md`](INDEPENDENCE_PLAN.md) is the
-canonical plan. [`PLAN.md`](PLAN.md) and [`LOVABLE_EXIT.md`](LOVABLE_EXIT.md) are
-historical and marked as such in their own headers.
+canonical plan. [`archive/PLAN.md`](archive/PLAN.md) and
+[`archive/LOVABLE_EXIT.md`](archive/LOVABLE_EXIT.md) are historical and marked as
+such in their own headers.
 
 This document answers one question: **what actually works today, and what is
 left to do?** Every claim cites a file or a command output. Where something could
@@ -265,7 +266,7 @@ itself and its own test.
 | `.lovable/` (`project.json`, `mcp/manifest.json`, `north-star/north-star.md`) | Lovable project metadata; `manifest.json` still names the legacy project ref `dashpanandamjickoytj`. |
 | `@lovable.dev/cloud-auth-js` (`package.json`) | Zero importers in `src/`. |
 
-> `roadmap.md` already flags the `maps.functions.ts` / `places.functions.ts` /
+> `docs/archive/roadmap.md` already flags the `maps.functions.ts` / `places.functions.ts` /
 > `research/engine.server.ts` Google-connector removal as blocked (owner-only).
 > Removal of the first two is a Tier 3 change.
 
@@ -313,11 +314,11 @@ and lists five pending files — still accurate. But it also documents the
 
 | Item | Blocked on | Evidence |
 | --- | --- | --- |
-| Real Chennai listings | Authorised listing details + permission evidence not supplied | `roadmap.md` |
-| Publish site | Photo-access finding to be fixed first (owner-only signing change) | `roadmap.md`, `src/lib/photo-access.ts` header |
-| Remaining area data | Free Overpass providers time out intermittently | `roadmap.md` |
-| Google API removal | `maps.functions.ts`, `places.functions.ts`, `engine.server.ts` are Tier 3 | `CODEOWNERS`, `roadmap.md` |
-| Payments / subscriptions / riders | Product decisions + legal review | `roadmap.md`, `INDEPENDENCE_PLAN.md` §1 |
+| Real Chennai listings | Authorised listing details + permission evidence not supplied | `docs/archive/roadmap.md` |
+| Publish site | Photo-access finding to be fixed first (owner-only signing change) | `docs/archive/roadmap.md`, `src/lib/photo-access.ts` header |
+| Remaining area data | Free Overpass providers time out intermittently | `docs/archive/roadmap.md` |
+| Google API removal | `maps.functions.ts`, `places.functions.ts`, `engine.server.ts` are Tier 3 | `CODEOWNERS`, `docs/archive/roadmap.md` |
+| Payments / subscriptions / riders | Product decisions + legal review | `docs/archive/roadmap.md`, `INDEPENDENCE_PLAN.md` §1 |
 
 ### 6.2 Residual Lovable code (cleanup, not migration)
 
@@ -384,7 +385,7 @@ Lovable exit.
 12. Resolve the `0017`/`0018` migration-numbering collision
     (`docs/APPLY_RUNBOOK.md:98–101`).
 13. Refresh stale baselines: `docs/TESTING.md:20`, `docs/APPLY_RUNBOOK.md`, and
-    fold `roadmap.md` into the tracker or archive it.
+    fold `docs/archive/roadmap.md` into the tracker or archive it.
 14. Wire `src/lib/video.ts` into the property page **or** mark it deferred and
     drop the orphan.
 
