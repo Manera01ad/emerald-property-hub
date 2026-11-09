@@ -1,5 +1,5 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "propwise-ai",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
+    "check:docs": "node scripts/check-docs-links.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

@@ -1,6 +1,6 @@
 # Testing
 
-Companion to `docs/archive/PLAN.md`. How to prove a change works before it ships.
+Companion to `docs/INDEPENDENCE_PLAN.md`. How to prove a change works before it ships.
 
 ---
 
@@ -10,6 +10,7 @@ Companion to `docs/archive/PLAN.md`. How to prove a change works before it ships
 | --- | --- | --- |
 | `bun run test` | Vitest unit/component tests | **yes** |
 | `bun run build` | Production build | **yes** |
+| `bun run check:docs` | Relative-link check across Markdown | reported |
 | `bun run type-check` | `tsc --noEmit` | reported |
 | `bun run lint` | ESLint | reported |
 | `bun run test:e2e` | Playwright browser tests | optional |
@@ -17,12 +18,36 @@ Companion to `docs/archive/PLAN.md`. How to prove a change works before it ships
 The two blocking checks are the **machine key** in `AGENTS.md`. A pull request
 that fails either does not merge.
 
-Current baseline (this machine, `main` @ `c543147`): 584 tests pass, build
-passes, type-check passes, lint reports pre-existing formatting debt only.
+Current baseline (2026-11-08, `main` @ `33f4c9d`): 66 test files and 603 tests
+pass. `bun run build` passes in CI.
+
+**Windows note:** `bun run build` currently fails on Windows inside the
+`@lovable.dev/mcp-js` Vite plugin, which compares resolved paths without
+normalising separators (`C:/...` against `C:\...`). The app build itself succeeds
+once that comparison is normalised. Use CI, or a Linux/macOS checkout, for the
+build gate; do not treat the Windows failure as a code regression.
 
 ---
 
-## 2. What the suite covers
+## 2. Where the tests live
+
+Five locations, deliberately:
+
+| Location | Runner | What belongs there |
+| --- | --- | --- |
+| `src/**/*.test.ts(x)` | Vitest | most unit and component tests, colocated with the code |
+| `src/test/` | Vitest | `setup.ts` plus cross-cutting tests (routing, build config, navigation, public copy) |
+| `scripts/cto/*.test.mjs` | `node --test` | agent-harness and policy tests; run with `node --test scripts/cto/*.test.mjs` |
+| `e2e/` | Playwright | smoke, accessibility and responsive browser checks |
+| `scripts/verify-journeys.mjs` | Node + Playwright | evidence generator; writes `test-evidence/`, not a gate |
+
+Do not create a duplicate suite elsewhere. New logic gets a colocated test; a
+browser-only concern gets an `e2e/` spec; a policy rule gets a `scripts/cto`
+suite.
+
+---
+
+## 3. What the suite covers
 
 - **Pure logic** — the bulk. Calculators, visibility rules, evidence handling,
   transaction maths, research rules, budget and cost arithmetic. These run with
@@ -38,7 +63,7 @@ passes, type-check passes, lint reports pre-existing formatting debt only.
 
 ---
 
-## 3. Rules for adding tests
+## 4. Rules for adding tests
 
 1. **Test real code paths, not mocks.** Mocks are a last resort and must be
    justified in the pull request.
@@ -53,7 +78,7 @@ passes, type-check passes, lint reports pre-existing formatting debt only.
 
 ---
 
-## 4. What a pull request must state (from `AGENTS.md`)
+## 5. What a pull request must state (from `AGENTS.md`)
 
 1. What problem this solves.
 2. What exactly changed.
@@ -67,7 +92,7 @@ turns out to be wrong.
 
 ---
 
-## 5. Testing the migration specifically
+## 6. Testing the migration specifically
 
 | Change | How it is proven |
 | --- | --- |
