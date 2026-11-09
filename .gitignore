@@ -43,3 +43,6 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Agent worktrees created by DeepSeek Harness (local scratch; never commit them)
+.agents/worktrees/

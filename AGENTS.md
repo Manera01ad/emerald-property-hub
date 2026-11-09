@@ -14,20 +14,42 @@
 > amending commits already pushed). Keep `main` green and deployable.
 <!-- PLATFORM-STATUS:END -->
 
-## Architecture rules
-- Data access uses the browser backend client with row-level security; public visibility of listings is enforced in policies (published + permission + not demo), so never rely on UI filters alone.
-- Property photos live in a private bucket and are shown via short-lived signed links (workspace blocks public buckets).
-- Purchase-cost rates and contact/WhatsApp numbers come from the app_settings table, never hardcoded, so the owner can change them.
-- The first account that signs up becomes admin (database trigger); further admins must be granted in user_roles.
-- Research engine logic lives in src/lib/research (pure rules in core.ts, I/O in engine.server.ts) and runs with the admin client only from the scheduler route or an admin-checked server function, so agents never run from the browser.
-- The hourly scheduler authenticates with a token kept in the private schema and checked by a service-role-only function, because the publishable key is visible to anyone.
-- Agents only contact sources marked authorised and enabled, read structured feeds only, and never publish: research output becomes draft, unverified listings without listing permission (test-fixture drafts are also marked demo).
-- Every scheduler call is logged in research_ticks; the database job sends X-PropWise-Origin: pg_cron so automatic runs are distinguishable from manual calls to the tick address.
-- Feed onboarding (CSV/JSON) requires identity, permission evidence and an ID field mapping; imports go through an admin-checked server function and stay private observations.
-- Buyer/renter data lives in buyer_profiles and buyer_reports, owner-only via RLS with admin read; buy/rent maths is pure in src/lib/buyer.ts so it stays testable.
-- Agent integrations (MCP) live in src/lib/mcp (one tool per file) and require OAuth sign-in; tools act as the caller under RLS and listing tools re-apply the public-visibility filter so admin callers never leak drafts.
-- Public property head metadata and sitemap data use a session-free publishable client with explicit public-visibility filters; this keeps private drafts out of crawler responses while preserving browser-based admin previews.
-- The sitemap derives static URLs from required route-level sitemap decisions and paginates public property IDs; private subtrees are excluded and failures return no partial XML.
+## How agent context works
+
+This file is the contract and the router. Area instructions live in
+`.agents/skills/<area>/SKILL.md` using the OpenHands convention (YAML `name` and
+`description` frontmatter); both OpenHands and DeepSeek Harness discover them.
+Load the skill for an area before changing it. If a skill and this file disagree,
+this file wins. Product and operations documents are indexed in `docs/README.md`.
+
+## Architecture invariants
+
+These hold in every change. The Skill column names the file with the detail.
+
+| Area | Invariant | Skill |
+| --- | --- | --- |
+| Data and RLS | Public listing visibility is enforced by database policies (published + permission + not demo), never by UI filters. Buyer and renter data is owner-only via RLS with admin read. | `supabase-rls` |
+| Photos | Property photos live in a private bucket and are shown through short-lived signed links. | `supabase-rls` |
+| Pricing config | Purchase-cost rates, contact and WhatsApp numbers come from `app_settings`, never hardcoded. | `supabase-rls` |
+| Admin bootstrap | The first signup becomes admin through a database trigger; further admins are granted in `user_roles`. | `supabase-rls` |
+| Research | Pure rules live in `src/lib/research/core.ts`, I/O in `engine.server.ts`; the admin client runs only from the scheduler route or an admin-checked server function; sources must be authorised and enabled; output is draft, unverified and never published. | `research-engine` |
+| Scheduler | The hourly tick authenticates with a private-schema token checked by a service-role-only function, and every call is logged in `research_ticks` with `X-PropWise-Origin: pg_cron`. | `research-engine` |
+| Feed onboarding | CSV/JSON imports require identity, permission evidence and an ID field mapping; they go through an admin-checked function and stay private observations. | `research-engine` |
+| Assistant | `/api/assistant` verifies the caller, saves chats under RLS, keeps AI keys server-side and enforces the daily allowance. | `assistant-budget` |
+| Buyer maths | `src/lib/buyer.ts` and its neighbours stay pure and testable; `buyer_profiles` and `buyer_reports` RLS is the boundary. | `buyer-maths` |
+| MCP | Tools live one per file in `src/lib/mcp`, require OAuth, act as the caller under RLS, and listing tools re-apply the public-visibility filter. | `mcp-integration` |
+| Public metadata | Head metadata and sitemap use the session-free publishable client with explicit public filters; private drafts never reach crawlers, and failures return no partial XML. | `public-site` |
+| Area intelligence | Pure rules with admin-only fetching; rows stay hidden until an admin publishes them. | `public-site` |
+| Maps | Public maps dynamically import Leaflet inside an effect, use keyless layers with attribution, and never require Google credentials. | `public-site` |
+| Home screen | Support is manifest and icons only, with no offline caches, so previews stay fresh. | `public-site` |
+
+Three further skills cover process rather than one area:
+
+| Skill | Load when |
+| --- | --- |
+| `repo-map` | finding where code, tests or configuration live; any change spanning areas |
+| `cto-queue` | picking up a CTO work order, preparing a task packet, or changing agent policy |
+| `verification` | before opening a pull request, choosing evidence, or running the gates |
 
 ## AI development system
 
@@ -101,7 +123,4 @@ Safe to use: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and public `VITE_*` val
 
 One change per pull request. Three fixes are three pull requests. A large diff cannot be reviewed properly, and review is the only control that catches what the tests miss.
 
-- The help assistant (src/lib/assistant, /api/assistant) verifies the caller's token and saves chats under RLS; AI keys stay server-side.
-- Area intelligence uses pure rules and admin-only fetching; rows stay hidden until admin publication.
-- Home-screen support uses a manifest and icons only, without offline caches, to preserve preview freshness.
-- All public map displays dynamically import Leaflet inside an effect and use keyless map-layer definitions with provider attribution; property and locality embeds share LocationMap, while Explore keeps its interactive POI overlays. Public address search uses explicit Photon queries and routing opens OpenStreetMap directions, so buyer maps never require Google credentials. Owner-only research services require verification on the current independent backend before activation.
+Use `.github/PULL_REQUEST_TEMPLATE.md`. The `HUMAN:` section is reserved for the owner; agents must not edit it.
